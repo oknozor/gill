@@ -9,6 +9,3 @@ services:
     ports:
       - "2222:22"
       - "3000:3000"
-    volumes:
-      - ~/git-server/keys:/git-server/keys
-      - ~/git-server/repos:/git-server/repos

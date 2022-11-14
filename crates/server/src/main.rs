@@ -7,7 +7,8 @@ async fn main() {
     println!("starting server");
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/repository/init", post(init_repository));
+        .route("/repository/init", post(init_repository))
+        .route("/ssh_key/register", post(register_ssh_key));
 
 
     // run it with hyper on localhost:3000
@@ -22,6 +23,11 @@ struct InitRepository {
     name: String,
 }
 
+#[derive(Deserialize)]
+struct CreateSSHKey {
+    key: String,
+}
+
 async fn init_repository(extract::Json(repository): extract::Json<InitRepository>) -> String {
     println!("Creating repository");
     gitox::init_bare(&repository.name)
@@ -29,3 +35,12 @@ async fn init_repository(extract::Json(repository): extract::Json<InitRepository
 
     "Ok".to_string()
 }
+
+async fn register_ssh_key(extract::Json(ssh_key): extract::Json<CreateSSHKey>) -> String {
+    println!("Append ssh key {}", ssh_key.key);
+    gitox::append_ssh_key(&ssh_key.key)
+        .expect("Failed to append ssh key");
+
+    "Ok".to_string()
+}
+

@@ -3,25 +3,26 @@ MAINTAINER Paul Delafosse "paul.delafosse@protonmail.com"
 
 RUN apk add --no-cache \
   openssh \
+  bash \
   git
 
 RUN ssh-keygen -A
 
-WORKDIR /git-server/
-
-# -D flag avoids password generation
-# -s flag changes user's shell
-RUN mkdir /git-server/keys \
-  && adduser -D -s /usr/bin/git-shell git \
+RUN  adduser -D -s /bin/bash git \
   && echo git:12345 | chpasswd \
-  && mkdir /home/git/.ssh
+  && mkdir /home/git/.ssh \
+  && touch /home/git/.ssh/authorized_keys \
+  && chown -R git:git /home/git/.ssh \
+  && chmod 700 /home/git/.ssh \
+  && chmod -R 600 /home/git/.ssh/*
 
-COPY git-shell-commands /home/git/git-shell-commands
 COPY sshd_config /etc/ssh/sshd_config
 EXPOSE 22
 
-COPY target/x86_64-unknown-linux-musl/release/server /git-server/server
-COPY start.sh start.sh
+WORKDIR /home/git
+COPY target/x86_64-unknown-linux-musl/release/server /usr/bin/server
+COPY target/x86_64-unknown-linux-musl/release/gitserve /usr/bin/gitserve
+COPY docker/entrypoint.sh entrypoint.sh
+COPY docker/gix /usr/bin/gix
 
-ENTRYPOINT ["sh", "start.sh"]
-CMD ["/git-server/server"]
+CMD ["./entrypoint.sh"]

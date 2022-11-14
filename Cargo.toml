@@ -9,5 +9,6 @@ edition = "2021"
 members = [
     "crates/server",
     "crates/gitox",
-    "crates/model"
+    "crates/model",
+    "crates/gitserve"
 ]
