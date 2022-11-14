@@ -1,0 +1,8 @@
+###  Init a repository
+GET http://localhost:3000
+
+### Init a repository
+POST http://localhost:3000/repository/init
+Content-Type: application/json
+
+{ "name" : "test" }
