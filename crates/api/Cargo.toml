@@ -6,8 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.6.0-rc.4", features = ["json"]}
+axum = { version = "0.6.0-rc.4", features = ["json", "headers"]}
+axum-macros = "0.3.0-rc.2"
 tokio = { version = "1.21.2", features = [ "full" ] }
+sqlx = { version = "0.5.10", features = ["runtime-tokio-rustls", "any", "postgres"] }
+eyre = "0.6.8"
 serde_json = "1.0.87"
 serde = {  version =  "1.0.147", features = [ "derive"] }
 git-lib = { path = "../git-lib" }
@@ -16,3 +19,4 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 aide = { path = "../../../aide/crates/aide", features = ["axum", "redoc"] }
 schemars = { version = "0.8.10", features = ["uuid1"] }
+dotenvy = "0.15.6"

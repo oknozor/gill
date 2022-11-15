@@ -7,6 +7,12 @@ Content-Type: application/json
 
 { "name" : "test" }
 
+### Create user
+POST http://localhost:3000/user
+Content-Type: application/json
+
+{  "username": "oknozor" }
+
 ### Create ssh key
 POST http://localhost:3000/ssh_key/register
 Content-Type: application/json
