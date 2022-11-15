@@ -1,5 +1,5 @@
 [package]
-name = "FitHub"
+name = "legit"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,8 +7,8 @@ edition = "2021"
 
 [workspace]
 members = [
-    "crates/server",
-    "crates/gitox",
+    "crates/api",
+    "crates/git-lib",
     "crates/model",
-    "crates/gitserve"
+    "crates/git-server"
 ]

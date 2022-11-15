@@ -1,8 +1,6 @@
-use std::{env, fs};
+use std::env;
 use std::fs::OpenOptions;
-use std::io::Stdout;
 use std::process::{Command, Stdio};
-use eyre::eyre;
 use std::io::Write;
 
 fn main() -> eyre::Result<()> {
@@ -35,21 +33,6 @@ fn main() -> eyre::Result<()> {
             writeln!(log_file, "{output}")?;
         }
 
-       // "git-receive-pack"  => {
-       //     writeln!(log_file, "command={cmd}, args={repo_path}")?;
-
-       //     let output = Command::new("gix")
-       //         .current_dir("/home/git")
-       //         .stdout(Stdio::inherit())
-       //         .stdin(Stdio::inherit())
-       //         .stderr(Stdio::inherit())
-       //         .args(&["free", "pack", "receive", repo_path])
-       //         .output()?;
-
-       //     let output = String::from_utf8_lossy(&output.stdout);
-
-       //     writeln!(log_file, "{output}")?;
-       // }
         _  => writeln!(log_file, "unwknown command: {cmd}")?
     };
 

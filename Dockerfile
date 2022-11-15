@@ -16,7 +16,7 @@ RUN  adduser -D -s /bin/bash git \
   && chmod 700 /home/git/.ssh \
   && chmod -R 600 /home/git/.ssh/*
 
-COPY sshd_config /etc/ssh/sshd_config
+COPY docker/sshd_config /etc/ssh/sshd_config
 EXPOSE 22
 
 WORKDIR /home/git
