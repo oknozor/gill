@@ -1,4 +1,3 @@
-use server::app;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use std::time::Duration;
@@ -29,7 +28,7 @@ async fn main() -> eyre::Result<()> {
     sqlx::migrate!().run(&pool).await?;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    app::serve(pool, addr).await?;
+    server::serve(pool, addr).await?;
 
     Ok(())
 }

@@ -40,7 +40,7 @@ async fn get_user_by_id(db: PgPool) -> eyre::Result<()> {
 }
 
 fn service(db: PgPool) -> RouterService {
-    let router = app::app(db);
+    let router = server::app(db);
     let router = Router::from(router);
     router.into_service()
 }
