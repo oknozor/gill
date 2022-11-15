@@ -1,14 +1,17 @@
-version: '2'
+version: '3.9'
 
 services:
-
   git-server:
     image: fserver:alpine
+    depends_on:
+      - postgres
     restart: always
     container_name: git-server
     ports:
       - "2222:22"
       - "3000:3000"
+    networks:
+      - local-legit
 
   postgres:
     image: postgres:13.2
@@ -17,25 +20,41 @@ services:
       POSTGRES_DB: legit
       POSTGRES_USER: legit
       POSTGRES_PASSWORD: legit
+    ports:
+      - "5432:5432"
+    networks:
+      - local-legit
+
+  keycloakdb:
+    image: postgres:13.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "keycloak"
+      POSTGRES_USER: "keycloak"
+      POSTGRES_PASSWORD: "keycloak"
     networks:
       - local-keycloak
 
   keycloak:
-      depends_on:
-        - postgres
-      container_name: local_keycloak
-      environment:
-        DB_VENDOR: postgres
-        DB_ADDR: postgres
-        DB_DATABASE: ${POSTGRESQL_DB}
-        DB_USER: ${POSTGRESQL_USER}
-        DB_PASSWORD: ${POSTGRESQL_PASS}
-      image: jboss/keycloak:${KEYCLOAK_VERSION}
-      ports:
-        - "28080:8080"
-      restart: unless-stopped
-      networks:
-        - local-keycloak
-
+    image: jboss/keycloak:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    container_name: local_keycloak
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloakdb
+      DB_DATABASE: "keycloak"
+      DB_USER: "keycloak"
+      DB_PASSWORD: "keycloak"
+    ports:
+      - "8080:8080"
+    # TODO: Setup a test Realm and import it
+    #   KEYCLOAK_IMPORT: /tmp/realm-export.json
+    # volumes:
+    #   - ./dev/realm-export.json:/tmp/realm-export.json
+    networks:
+      - local-keycloak
 networks:
   local-keycloak:
+  local-legit:

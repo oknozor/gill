@@ -20,9 +20,18 @@ COPY docker/sshd_config /etc/ssh/sshd_config
 EXPOSE 22
 
 WORKDIR /home/git
-COPY target/x86_64-unknown-linux-musl/release/server /usr/bin/server
-COPY target/x86_64-unknown-linux-musl/release/gitserve /usr/bin/gitserve
-COPY docker/entrypoint.sh entrypoint.sh
-COPY docker/gix /usr/bin/gix
+RUN mkdir bin
+COPY target/x86_64-unknown-linux-musl/release/api ./bin/api
+COPY target/x86_64-unknown-linux-musl/release/git-server ./bin/git-server
+COPY .env ./.env
+COPY config.toml ./config.toml
+COPY crates/api/migrations ./migrations
+COPY docker/entrypoint.sh ./entrypoint.sh
+COPY docker/gix ./bin/gix
 
-CMD ["./entrypoint.sh"]
+RUN chown git:git ./.env
+RUN chown -R git:git ./migrations
+RUN chown git:git ./config.toml
+RUN chown -R git:git ./bin/api
+
+ CMD ["./entrypoint.sh"]

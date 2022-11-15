@@ -17,7 +17,6 @@ async fn main() -> eyre::Result<()> {
     let db_connection_str = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://legit:legit@localhost/legit".to_string());
 
-    // setup connection pool
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .idle_timeout(Duration::from_secs(3))
@@ -28,7 +27,7 @@ async fn main() -> eyre::Result<()> {
     sqlx::migrate!().run(&pool).await?;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    server::serve(pool, addr).await?;
+    api::serve(pool, addr).await?;
 
     Ok(())
 }

@@ -1,18 +1,25 @@
 use aide::axum::routing::{get, post};
 use aide::axum::ApiRouter;
-use aide::axum_redoc::Redoc;
+use aide::redoc::Redoc;
 use aide::openapi::{Info, OpenApi};
 use axum::Extension;
 use sqlx::PgPool;
 use std::net::SocketAddr;
+use once_cell::sync::Lazy;
 use tower_http::trace::TraceLayer;
+use crate::settings::Settings;
 
 pub mod error;
 pub mod route;
+pub mod oauth;
+pub mod settings;
+
+pub const SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
 
 pub fn app(pool: PgPool) -> ApiRouter {
+
     ApiRouter::new()
-        .nest("/docs", Redoc::setup("/openapi.json").into())
+        .route("/docs", Redoc::new("/openapi.json").axum_route())
         .route("/openapi.json", get(route::openapi::serve_api))
         .api_route("/", get(|| async { "Hello, World!" }))
         .api_route("/users", post(route::user::create))

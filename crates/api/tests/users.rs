@@ -3,8 +3,8 @@ use axum::http::header::CONTENT_TYPE;
 use axum::http::Request;
 use axum::{http, Router, RouterService};
 use serde_json::json;
-use server::app;
-use server::route::user::User;
+use api::app;
+use api::route::user::User;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 use tower::ServiceExt;
@@ -40,7 +40,7 @@ async fn get_user_by_id(db: PgPool) -> eyre::Result<()> {
 }
 
 fn service(db: PgPool) -> RouterService {
-    let router = server::app(db);
+    let router = api::app(db);
     let router = Router::from(router);
     router.into_service()
 }

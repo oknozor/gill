@@ -1,25 +1,27 @@
 [package]
-name = "server"
+name = "api"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-axum = { version = "0.6.0-rc.4", features = ["json", "headers", "macros"]}
+axum = { version = "0.6.0-rc.4", features = ["json", "headers", "macros"] }
 axum-macros = "0.3.0-rc.2"
-tokio = { version = "1.21.2", features = [ "full" ] }
-sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "any", "postgres"] }
+tokio = { version = "1.21.2", features = ["full"] }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "any", "postgres", "offline"] }
 eyre = "0.6.8"
 serde_json = "1.0.87"
-serde = {  version =  "1.0.147", features = [ "derive"] }
+serde = { version = "1.0.147", features = ["derive"] }
 git-lib = { path = "../git-lib" }
 tower-http = { version = "0.3.0", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-aide = { path = "../../../aide/crates/aide", features = ["axum", "redoc"] }
+# Todo: switch to upstream when https://github.com/tamasfe/aide/pull/12 gets merged
+aide = { git = "https://github.com/oknozor/aide", features = ["axum", "redoc"] }
 schemars = { version = "0.8.10", features = ["uuid1"] }
 dotenvy = "0.15.6"
+reqwest = { version = "0.11.12", features = ["json", "native-tls-vendored"] }
+config = "0.13.2"
+once_cell = "1.16.0"
 
 [dev-dependencies]
 tower = "0.4.13"

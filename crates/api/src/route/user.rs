@@ -1,5 +1,4 @@
 use crate::error::AppError;
-use aide::axum::IntoApiResponse;
 use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -25,13 +24,12 @@ pub struct User {
     pub username: String,
 }
 
-#[debug_handler]
 pub async fn create(
     pool: Extension<PgPool>,
     Json(user): Json<CreateUser>,
 ) -> Result<Response, AppError> {
     let username = user.username;
-    sqlx::query!(
+        sqlx::query!(
         // language=PostgreSQL
         r#"
             insert into "users"(username)
@@ -45,9 +43,6 @@ pub async fn create(
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
 
-use axum_macros::debug_handler;
-
-#[debug_handler]
 pub async fn by_id(
     pool: Extension<PgPool>,
     Path(user_id): Path<i32>,
@@ -68,8 +63,8 @@ pub async fn by_id(
     Ok(Json(user))
 }
 
-pub async fn register_ssh_key(Json(ssh_key): Json<CreateSSHKey>) -> impl IntoApiResponse {
+pub async fn register_ssh_key(Json(ssh_key): Json<CreateSSHKey>) -> Result<Response, AppError> {
     git_lib::append_ssh_key(&ssh_key.key).expect("Failed to append ssh key");
 
-    "Ok".to_string()
+    Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
