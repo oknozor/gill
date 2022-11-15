@@ -1,8 +1,8 @@
-use std::{fs, io};
-use std::io::Write;
-use std::path::PathBuf;
 use git_repository::init::Error;
 use git_repository::Repository;
+use std::io::Write;
+use std::path::PathBuf;
+use std::{fs, io};
 
 mod init;
 
@@ -23,4 +23,3 @@ pub fn append_ssh_key(ssh_key: &str) -> io::Result<()> {
 
     write!(file, "command=\"gitserve\" {ssh_key}")
 }
-

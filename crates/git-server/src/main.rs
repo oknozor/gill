@@ -1,7 +1,7 @@
 use std::env;
 use std::fs::OpenOptions;
-use std::process::{Command, Stdio};
 use std::io::Write;
+use std::process::{Command, Stdio};
 
 fn main() -> eyre::Result<()> {
     let mut log_file = OpenOptions::new()
@@ -33,7 +33,7 @@ fn main() -> eyre::Result<()> {
             writeln!(log_file, "{output}")?;
         }
 
-        _  => writeln!(log_file, "unwknown command: {cmd}")?
+        _ => writeln!(log_file, "unwknown command: {cmd}")?,
     };
 
     Ok(())
