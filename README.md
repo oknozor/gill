@@ -1,5 +1,4 @@
-# Legit
-
+# Ruisseau 
 
 ## Dev
 
@@ -7,15 +6,25 @@
 
 ```shell
 cargo install sqlx-cli
-cd crates/api
+cd crates/ruisseau-api
 sqlx migrate run
 ```
 
 ```sql
-CREATE role legit WITH PASSWORD legit;
-ALTER ROLE legit WITH LOGIN;
-CREATE DATABASE legit;
-GRANT ALL on database legit to legit;
+CREATE role ruisseau WITH PASSWORD ruisseau;
+ALTER ROLE ruisseau WITH LOGIN;
+CREATE DATABASE ruisseau;
+GRANT ALL on database ruisseau to ruisseau;
+```
+
+### Create keycloak admin 
+
+```shell
+docker exec local_keycloak \
+    /opt/jboss/keycloak/bin/add-user-keycloak.sh \
+    -u admin \
+    -p admin \
+&& docker restart local_keycloak
 ```
 ## Todo MVP
 
@@ -43,6 +52,9 @@ GRANT ALL on database legit to legit;
 - [x] Basic operation (clone, push, fetch, etc)
 - [ ] Use git oxide instead of git
 - [ ] use AuthorizedKeysCommand instead of `command=` to retrieve user ssh key from database
+- [ ] set up server side hooks
+  - [ ] `pre-receive` branch protection 
+  - [ ] `post-receive` notification 
 
 ### Front end
 

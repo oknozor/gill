@@ -1,0 +1,13 @@
+[package]
+name = "ruisseau-git"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+git-repository = "0.27.0"
+eyre = "0.6.8"
+
+[dev-dependencies]
+sealed_test = "1.0.0"

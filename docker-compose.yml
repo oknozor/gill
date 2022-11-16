@@ -6,55 +6,23 @@ services:
     depends_on:
       - postgres
     restart: always
-    container_name: git-server
+    container_name: ruisseau-git-server
     ports:
       - "2222:22"
       - "3000:3000"
     networks:
-      - local-legit
+      - local-ruisseau
 
   postgres:
     image: postgres:13.2
     restart: unless-stopped
     environment:
-      POSTGRES_DB: legit
-      POSTGRES_USER: legit
-      POSTGRES_PASSWORD: legit
+      POSTGRES_DB: ruisseau
+      POSTGRES_USER: ruisseau
+      POSTGRES_PASSWORD: ruisseau
     ports:
       - "5432:5432"
     networks:
-      - local-legit
-
-  keycloakdb:
-    image: postgres:13.2
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: "keycloak"
-      POSTGRES_USER: "keycloak"
-      POSTGRES_PASSWORD: "keycloak"
-    networks:
-      - local-keycloak
-
-  keycloak:
-    image: jboss/keycloak:latest
-    restart: unless-stopped
-    depends_on:
-      - postgres
-    container_name: local_keycloak
-    environment:
-      DB_VENDOR: postgres
-      DB_ADDR: keycloakdb
-      DB_DATABASE: "keycloak"
-      DB_USER: "keycloak"
-      DB_PASSWORD: "keycloak"
-    ports:
-      - "8080:8080"
-    # TODO: Setup a test Realm and import it
-    #   KEYCLOAK_IMPORT: /tmp/realm-export.json
-    # volumes:
-    #   - ./dev/realm-export.json:/tmp/realm-export.json
-    networks:
-      - local-keycloak
+      - local-ruisseau
 networks:
-  local-keycloak:
-  local-legit:
+  local-ruisseau:

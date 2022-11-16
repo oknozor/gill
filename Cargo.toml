@@ -1,9 +1,17 @@
 [package]
-name = "legit"
+name = "ruisseau"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = [ "crates/*" ]
+members = ["crates/*"]
+
+[[bin]]
+name = "ruisseau-api"
+path = "crates/ruisseau-api"
+
+[[bin]]
+name = "ruisseau-git-server"
+path = "crates/ruisseau-git-server"

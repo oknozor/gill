@@ -21,17 +21,17 @@ EXPOSE 22
 
 WORKDIR /home/git
 RUN mkdir bin
-COPY target/x86_64-unknown-linux-musl/release/api ./bin/api
-COPY target/x86_64-unknown-linux-musl/release/git-server ./bin/git-server
+COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
+COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
 COPY .env ./.env
 COPY config.toml ./config.toml
-COPY crates/api/migrations ./migrations
+COPY crates/ruisseau-api/migrations ./migrations
 COPY docker/entrypoint.sh ./entrypoint.sh
 COPY docker/gix ./bin/gix
 
 RUN chown git:git ./.env
 RUN chown -R git:git ./migrations
 RUN chown git:git ./config.toml
-RUN chown -R git:git ./bin/api
+RUN chown -R git:git ./bin/ruisseau-api
 
  CMD ["./entrypoint.sh"]

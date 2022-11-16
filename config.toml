@@ -1,1 +1,1 @@
-user_info_url = "tptp"
+user_info_url = "http://localhost:8080/auth/realms/ruisseau/protocol/openid-connect/userinfo"
