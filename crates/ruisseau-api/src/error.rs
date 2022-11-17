@@ -2,6 +2,7 @@ use aide::OperationOutput;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 
+#[derive(Debug)]
 pub struct AppError(pub eyre::Error);
 
 impl OperationOutput for AppError {

@@ -2,7 +2,7 @@
 CREATE TABLE users
 (
     id       SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE ,
     email VARCHAR(255) NOT NULL
 );
 
@@ -15,8 +15,9 @@ CREATE TABLE organisation
 CREATE TABLE repository
 (
     id       SERIAL PRIMARY KEY,
-    name     VARCHAR(100),
-    owner_id INT REFERENCES users (id)
+    name     VARCHAR(100) NOT NULL,
+    owner_id INT REFERENCES users (id) NOT NULL,
+    CONSTRAINT Unique_Name_For_Repository UNIQUE (name, owner_id)
 );
 
 CREATE TABLE org_repository

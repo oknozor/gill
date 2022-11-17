@@ -16,7 +16,9 @@ tower-http = { version = "0.3.0", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Todo: switch to upstream when https://github.com/tamasfe/aide/pull/12 gets merged
-aide = { git = "https://github.com/oknozor/aide", features = ["axum", "redoc"] }
+aide = { git = "https://github.com/oknozor/aide", features = ["axum", "redoc", "macros", "axum-extra-query"] }
+axum-jsonschema = { version = "0.3.0", features = ["aide"] }
+
 schemars = { version = "0.8.10", features = ["uuid1"] }
 dotenvy = "0.15.6"
 reqwest = { version = "0.11.12", features = ["json", "native-tls-vendored"] }

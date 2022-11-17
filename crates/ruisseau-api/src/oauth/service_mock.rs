@@ -6,7 +6,6 @@ use axum::{
 };
 
 pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
-    println!("Mock auth called");
     tracing::debug!("Getting mock user for test");
     req.extensions_mut().insert(User {
         id: 0,

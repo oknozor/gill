@@ -18,10 +18,11 @@ async fn create_user(db: PgPool) -> eyre::Result<()> {
     let response = service(db).oneshot(request).await?;
 
     assert_that!(response.status()).is_equal_to(StatusCode::NO_CONTENT);
+
     Ok(())
 }
 
-#[sqlx::test(fixtures("users"))]
+#[sqlx::test(fixtures("base"))]
 async fn by_email(db: PgPool) -> eyre::Result<()> {
     let user = User::by_email("alice@wonder.land", &db).await;
 
@@ -30,5 +31,6 @@ async fn by_email(db: PgPool) -> eyre::Result<()> {
         username: "alice".to_string(),
         email: "alice@wonder.land".to_string(),
     });
+
     Ok(())
 }

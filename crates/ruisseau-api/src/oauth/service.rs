@@ -13,7 +13,6 @@ use sqlx::PgPool;
 static CLIENT: Lazy<reqwest::Client> = Lazy::new(|| reqwest::Client::new());
 
 pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
-    println!("real user");
     let auth_header = req
         .headers()
         .get(http::header::AUTHORIZATION)
@@ -53,16 +52,11 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
 }
 
 async fn user_info(bearer: &str) -> eyre::Result<Oauth2User> {
-    println!("{}", bearer);
-    let value: serde_json::Value = CLIENT
+    CLIENT
         .get(&SETTINGS.user_info_url)
         .header("Authorization", bearer)
         .send()
         .await?
         .json()
-        .await?;
-
-    println!("{}", value);
-
-    serde_json::from_value(value).map_err(Into::into)
+        .await
 }

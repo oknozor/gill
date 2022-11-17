@@ -1,1 +1,0 @@
-INSERT INTO users (id, username, email) VALUES (0, 'alice', 'alice@wonder.land');

@@ -1,4 +1,4 @@
-use crate::route::repository::{InitRepository, Repository};
+use crate::route::repository::{InitRepository, OwnedRepository, Repository};
 use sqlx::PgPool;
 
 impl Repository {
@@ -20,5 +20,28 @@ impl Repository {
         .await?;
 
         Ok(())
+    }
+
+    pub async fn list(
+        limit: i64,
+        offset: i64,
+        pool: &PgPool,
+    ) -> sqlx::Result<Vec<OwnedRepository>> {
+        let repositories = sqlx::query_as!(
+            OwnedRepository,
+            // language=PostgreSQL
+            r#"
+                SELECT r.id, r.owner_id, r.name, u.username as owner_name FROM repository r
+                JOIN users u ON u.id = r.owner_id
+                LIMIT $1
+                OFFSET $2
+            "#,
+            limit,
+            offset
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(repositories)
     }
 }
