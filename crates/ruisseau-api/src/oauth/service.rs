@@ -59,4 +59,5 @@ async fn user_info(bearer: &str) -> eyre::Result<Oauth2User> {
         .await?
         .json()
         .await
+        .map_err(Into::into)
 }

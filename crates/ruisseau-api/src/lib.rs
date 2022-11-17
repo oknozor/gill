@@ -5,6 +5,7 @@ pub mod db;
 pub mod error;
 pub mod oauth;
 pub mod route;
+pub mod app;
 pub mod settings;
 
 pub const SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));

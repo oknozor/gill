@@ -2,10 +2,9 @@ use crate::oauth;
 use aide::axum::routing::{get, post};
 use aide::axum::ApiRouter;
 use aide::redoc::Redoc;
-use axum::{middleware, Extension};
+use axum::{middleware};
 use schemars::JsonSchema;
 use serde::Deserialize;
-use sqlx::PgPool;
 use std::num::NonZeroI64;
 use tower_http::trace::TraceLayer;
 
@@ -26,18 +25,16 @@ impl Default for Pagination {
     }
 }
 
-pub fn app(pool: PgPool) -> ApiRouter {
+pub fn app() -> ApiRouter {
     let public = ApiRouter::new()
         .api_route("/health", get(|| async { "Pong" }))
         .api_route("/users", post(user::create))
         .api_route("/repositories", get(repository::list))
-        .layer(Extension(pool.clone()))
         .layer(TraceLayer::new_for_http());
 
     let authenticated = ApiRouter::new()
         .api_route("/users/ssh_key/add", post(user::register_ssh_key))
         .api_route("/repositories", post(repository::init))
-        .layer(Extension(pool.clone()))
         .layer(TraceLayer::new_for_http())
         .route_layer(middleware::from_fn(oauth::service::auth));
 

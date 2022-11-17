@@ -46,7 +46,7 @@ pub async fn init(
     // TODO: handle database error
     Repository::create(user.id, &repository, &pool).await?;
     #[cfg(not(feature = "integration"))]
-    ruisseau_git::init_bare(&user.username, &repository.name)?;
+    ruisseau_git::repository::init_bare(&user.username, &repository.name)?;
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
 

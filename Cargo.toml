@@ -8,10 +8,4 @@ edition = "2021"
 [workspace]
 members = ["crates/*"]
 
-[[bin]]
-name = "ruisseau-api"
-path = "crates/ruisseau-api"
 
-[[bin]]
-name = "ruisseau-git-server"
-path = "crates/ruisseau-git-server"

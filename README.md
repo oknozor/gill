@@ -31,6 +31,7 @@ docker exec local_keycloak \
 ### Rest API
 
 - [ ] oauth (see: https://github.com/tokio-rs/axum/blob/93251fa20321b3e93dd6c8c3a229ad005928bdab/examples/oauth/src/main.rs)
+- [x] oauth resources (REST api using Bearer)
 - [ ] database & route
   - [ ] user
     - [x] Create
@@ -42,8 +43,11 @@ docker exec local_keycloak \
         - [ ] Create 
         - [ ] Delete 
   - [ ] repository
-    - [ ] Create
+    - [x] Create
     - [ ] Read
+      - [ ] All
+      - [x] All on instance 
+      - [ ] One 
     - [ ] Update
     - [ ] Delete
 
@@ -53,8 +57,8 @@ docker exec local_keycloak \
 - [ ] Use git oxide instead of git
 - [ ] use AuthorizedKeysCommand instead of `command=` to retrieve user ssh key from database
 - [ ] set up server side hooks
-  - [ ] `pre-receive` branch protection 
-  - [ ] `post-receive` notification 
+  - [ ] `pre-receive` branch protection, user permission etc.
+  - [ ] `post-receive` notification. 
 
 ### Front end
 

@@ -1,10 +1,11 @@
 use aide::openapi::{Info, OpenApi};
 use axum::Extension;
-use ruisseau_api::route;
+use ruisseau_api::{app, route};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use std::time::Duration;
+use axum::routing::get;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -48,10 +49,12 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
 
     axum::Server::bind(&addr)
         .serve(
-            route::app(db)
+            route::app()
                 .nest("/docs", route::docs_router())
                 .finish_api(&mut api)
                 .layer(Extension(api))
+                .route("/repo", get(app::repositories_pages::list))
+                .layer(Extension(db))
                 .into_make_service(),
         )
         .await?;
