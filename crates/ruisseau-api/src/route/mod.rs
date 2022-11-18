@@ -2,7 +2,7 @@ use crate::oauth;
 use aide::axum::routing::{get, post};
 use aide::axum::ApiRouter;
 use aide::redoc::Redoc;
-use axum::{middleware};
+use axum::middleware;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::num::NonZeroI64;

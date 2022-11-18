@@ -1,8 +1,7 @@
+use git_repository::init::Error;
+use git_repository::Repository;
 use std::fs;
 use std::path::PathBuf;
-use git_repository::Repository;
-use git_repository::init::Error;
-
 
 pub fn init_bare(namespace: &str, name: &str) -> Result<Repository, Error> {
     let path = PathBuf::from(namespace);
@@ -14,9 +13,9 @@ pub fn init_bare(namespace: &str, name: &str) -> Result<Repository, Error> {
 }
 
 mod private {
-    use std::path::PathBuf;
-    use git_repository::Repository;
     use git_repository::init::Error;
+    use git_repository::Repository;
+    use std::path::PathBuf;
 
     pub fn init_bare(base: PathBuf, name: &str) -> Result<Repository, Error> {
         let path = base.join(format!("{name}.git"));
@@ -25,9 +24,9 @@ mod private {
 
     #[cfg(test)]
     mod test {
+        use super::init_bare;
         use sealed_test::prelude::*;
         use std::path::PathBuf;
-        use super::init_bare;
 
         #[sealed_test]
         fn should_init_bare() {
@@ -36,4 +35,3 @@ mod private {
         }
     }
 }
-

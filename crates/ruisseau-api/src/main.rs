@@ -1,11 +1,11 @@
 use aide::openapi::{Info, OpenApi};
+use axum::routing::get;
 use axum::Extension;
 use ruisseau_api::{app, route};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use std::time::Duration;
-use axum::routing::get;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 

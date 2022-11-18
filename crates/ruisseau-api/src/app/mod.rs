@@ -1,14 +1,13 @@
 use askama::Template;
-use axum::response::Response;
 use axum::http::StatusCode;
+use axum::response::Response;
 use axum::response::{Html, IntoResponse};
 
 struct HtmlTemplate<T>(T);
 
-
 impl<T> IntoResponse for HtmlTemplate<T>
-    where
-        T: Template,
+where
+    T: Template,
 {
     fn into_response(self) -> Response {
         match self.0.render() {
