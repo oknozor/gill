@@ -1,13 +1,19 @@
 use git_repository::bstr::BString;
 use git_repository::{ObjectId, Repository};
 use std::collections::HashMap;
+use std::path::Path;
 
 /// Traverse the whole repository and return a [`TreeMap`].
-pub fn traverse(repo: &Repository) -> TreeMap {
+pub fn traverse<P: AsRef<Path>>(repo: P, path: Option<&str>) -> eyre::Result<TreeMap> {
+    let repo = git_repository::open(repo.as_ref())?;
     let tree = imp::treeish_to_tree(None, &repo).unwrap();
     let mut delegate = imp::Traversal::default();
     tree.traverse().breadthfirst(&mut delegate).unwrap();
-    delegate.tree_root
+
+    Ok(match path {
+        None => delegate.tree_root,
+        Some(path) => delegate.tree_root.get_tree(path)?,
+    })
 }
 
 /// A Graph representation of a given tree
@@ -54,6 +60,7 @@ mod imp {
     use std::collections::VecDeque;
     use std::fmt;
     use std::fmt::Formatter;
+    use eyre::eyre;
 
     pub fn treeish_to_tree<'repo>(
         treeish: Option<&str>,
@@ -88,6 +95,16 @@ mod imp {
                 blobs: vec![],
                 trees: Default::default(),
             }
+        }
+
+        pub fn get_tree(self, tree_path: &str) -> eyre::Result<Self> {
+            let mut tree = self;
+            let parts = tree_path.split("/");
+            for path in parts {
+                tree = tree.trees.remove(path).ok_or(eyre!("Failed to find tree {tree_path}"))?
+            }
+
+            Ok(tree)
         }
 
         fn populate_tree(&mut self, tree_path: &str) -> &mut Self {
@@ -189,9 +206,9 @@ mod test {
     use speculoos::prelude::*;
 
     #[test]
-    fn should_get_tree() -> eyre::Result<()> {
+    fn should_get_tree_root() -> eyre::Result<()> {
         let repo = git_repository::discover(".")?;
-        let tree = traverse(&repo);
+        let tree = traverse(repo.path(), None)?;
         let crates = tree.trees.get("crates").unwrap();
 
         let blobs_in_root: Vec<String> = tree
@@ -212,6 +229,28 @@ mod test {
             &"ruisseau-api".to_string(),
             &"ruisseau-git".to_string(),
             &"ruisseau-git-server".to_string(),
+        ]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_get_tree() -> eyre::Result<()> {
+        let repo = git_repository::discover(".")?;
+        let tree = traverse(repo.path(), Some("crates/ruisseau-git"))?;
+
+        let blobs_in_root: Vec<String> = tree
+            .blobs
+            .iter()
+            .map(|blob| blob.filename.to_string())
+            .collect();
+
+        assert_that!(blobs_in_root).contains_all_of(&[
+            &"Cargo.toml".to_string(),
+        ]);
+
+        assert_that!(tree.trees.keys()).contains_all_of(&[
+            &"src".to_string(),
         ]);
 
         Ok(())

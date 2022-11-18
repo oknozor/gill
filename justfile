@@ -16,7 +16,7 @@ build: build-setup
     && cargo sqlx prepare \
     && CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
     cross build --package ruisseau-git-server --target x86_64-unknown-linux-musl --release
-    docker build -t fserver:alpine -f Dockerfile .
+    docker build --no-cache -t fserver:alpine -f Dockerfile .
 
 run: build
     docker-compose down

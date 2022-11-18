@@ -12,8 +12,8 @@ POST http://localhost:3000/users
 Content-Type: application/json
 
 {
-  "username": "Johny",
-  "email": "johny.begood@rock.it"
+  "username": "okno",
+  "email": "paul.delafosse@protonmail.com"
 }
 
 ### Create ssh key

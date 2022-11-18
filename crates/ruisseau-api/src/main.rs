@@ -11,7 +11,9 @@ use tracing_subscriber::util::SubscriberInitExt;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    println!("it gets env");
     dotenvy::dotenv().ok();
+    println!("Ho no");
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
@@ -30,9 +32,11 @@ async fn main() -> eyre::Result<()> {
         .await
         .expect("can connect to database");
 
+    println!("it migrates");
     sqlx::migrate!().run(&pool).await?;
+    println!("Oh no");
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     serve(pool, addr).await?;
 
     Ok(())
@@ -41,19 +45,21 @@ async fn main() -> eyre::Result<()> {
 pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
     let mut api = OpenApi {
         info: Info {
-            description: Some("Legit Api".to_string()),
+            description: Some("Ruisseau Api".to_string()),
             ..Info::default()
         },
         ..OpenApi::default()
     };
 
+    println!("it serve");
     axum::Server::bind(&addr)
         .serve(
             route::app()
                 .nest("/docs", route::docs_router())
                 .finish_api(&mut api)
                 .layer(Extension(api))
-                .route("/repo", get(app::repositories_pages::list))
+                .route("/repo", get(app::repositories_view::list))
+                .route("/blob/:owner/:repository/:tree", get(app::tree_view::tree))
                 .layer(Extension(db))
                 .into_make_service(),
         )

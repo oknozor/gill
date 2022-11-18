@@ -4,7 +4,8 @@ MAINTAINER Paul Delafosse "paul.delafosse@protonmail.com"
 RUN apk add --no-cache \
   openssh \
   bash \
-  git
+  git \
+  curl
 
 RUN ssh-keygen -A
 
@@ -18,12 +19,13 @@ RUN  adduser -D -s /bin/bash git \
 
 COPY docker/sshd_config /etc/ssh/sshd_config
 EXPOSE 22
+EXPOSE 3000
 
 WORKDIR /home/git
 RUN mkdir bin
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
-COPY .env ./.env
+RUN echo "DATABASE_URL=postgres://ruisseau:ruisseau@postgres/ruisseau" > .env
 COPY config.toml ./config.toml
 COPY crates/ruisseau-api/migrations ./migrations
 COPY docker/entrypoint.sh ./entrypoint.sh
@@ -34,4 +36,4 @@ RUN chown -R git:git ./migrations
 RUN chown git:git ./config.toml
 RUN chown -R git:git ./bin/ruisseau-api
 
- CMD ["./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

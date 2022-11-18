@@ -11,7 +11,7 @@ sqlx migrate run
 ```
 
 ```sql
-CREATE role ruisseau WITH PASSWORD ruisseau;
+CREATE role ruisseau WITH PASSWORD 'ruisseau';
 ALTER ROLE ruisseau WITH LOGIN;
 CREATE DATABASE ruisseau;
 GRANT ALL on database ruisseau to ruisseau;

@@ -3,7 +3,11 @@ use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::{Html, IntoResponse};
 
-struct HtmlTemplate<T>(T);
+pub mod repositories_view;
+pub mod blob_view;
+pub mod tree_view;
+
+pub struct HtmlTemplate<T>(T);
 
 impl<T> IntoResponse for HtmlTemplate<T>
 where
@@ -20,5 +24,3 @@ where
         }
     }
 }
-
-pub mod repositories_pages;
