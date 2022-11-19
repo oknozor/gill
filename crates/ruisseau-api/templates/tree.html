@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ruisseau</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css"/>
+    <link rel="stylesheet" type="text/css" href="/assets/css/fork-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/assets/css/tailwind.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/navigation.js"></script>
+    <script src="/assets/js/tree-links.js"></script>
+    <script></script>
+</head>
+<body>
+<div class="text-1xl underline rounded-sm, bg-slate-300" id="navigation"></div>
+<script>navigation()</script>
+
+<div id="tree-list" class="px-56">
+    <ul class="border border-slate-200 divide-y divide-slate-200">
+        {% for dir in tree.trees %}
+        <li class="px-6 py-4 border-x">
+            <i class="fa fa-folder" aria-hidden="true"></i>
+            <a id="{{dir.1.filename}}">{{dir.1.filename}}</a>
+        </li>
+        <script>dirLink("{{dir.1.filename}}"); </script>
+        {% endfor %}
+        {% for blob in tree.blobs %}
+        <li class="px-6 py-4 border-x">
+            <i class="fa fa-file-code-o" aria-hidden="true"></i>
+            <a id="{{blob.filename}}">{{blob.filename}}</a>
+            <script>blobLink("{{blob.filename}}"); </script>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{%- match readme -%}
+{%- when Some with (readme) -%}
+<div class="readme">{{- readme|safe -}}</div>
+{%- when None -%}
+{%- endmatch -%}
+</body>
+</html>

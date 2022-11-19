@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM docker.io/alpine:3.4
 MAINTAINER Paul Delafosse "paul.delafosse@protonmail.com"
 
 RUN apk add --no-cache \
@@ -7,6 +7,7 @@ RUN apk add --no-cache \
   git \
   curl
 
+# Setup sshd
 RUN ssh-keygen -A
 
 RUN  adduser -D -s /bin/bash git \
@@ -21,15 +22,16 @@ COPY docker/sshd_config /etc/ssh/sshd_config
 EXPOSE 22
 EXPOSE 3000
 
+# Prepare workdir
 WORKDIR /home/git
 RUN mkdir bin
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
-RUN echo "DATABASE_URL=postgres://ruisseau:ruisseau@postgres/ruisseau" > .env
+RUN echo "DATABASE_URL=postgres://postgres:postgres@postgres/ruisseau" > .env
 COPY config.toml ./config.toml
 COPY crates/ruisseau-api/migrations ./migrations
 COPY docker/entrypoint.sh ./entrypoint.sh
-COPY docker/gix ./bin/gix
+COPY docker/entrypoint-debug.sh ./entrypoint-debug.sh
 
 RUN chown git:git ./.env
 RUN chown -R git:git ./migrations

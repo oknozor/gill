@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ruisseau</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/assets/css/vs.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/assets/css/tailwind.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/highlight.min.js"></script>
+    <script src="/assets/js/navigation.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+
+
+<div class="text-1xl underline" id="navigation">
+    <label for="branches">Branch: </label>
+    <select name="branches" id="branches" onchange="changeBranch(this)">
+        {%- for branch in branches -%}
+        <option value="{{branch}}">{{branch}}</option>
+        {%- endfor -%}
+        <script defer>setCurrentBranchSelected("{{current_branch}}")</script>
+    </select>
+</div>
+<script>navigation()</script>
+{% block content %}{% endblock %}
+</body>
+</html>
+
+

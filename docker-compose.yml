@@ -6,56 +6,53 @@ services:
       - postgres
     restart: always
     container_name: ruisseau
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres/ruisseau
+      KEYCLOAK_URL: https://keycloak.cloud.hoohoot.org
     ports:
-      - "2222:22"
       - "3000:3000"
-    networks:
-      - local-dev
+      - "2222:22"
+    volumes:
+      - ./docker/rbin:/home/git/bin
+      - ./crates/ruisseau-api/assets:/home/git/assets
+    entrypoint: /home/git/entrypoint-debug.sh
 
 
   postgres:
-    image: postgres:13.2
+    image: docker.io/postgres:13.2
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ruisseau
-      POSTGRES_USER: ruisseau
-      POSTGRES_PASSWORD: ruisseau
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
     ports:
       - "5432:5432"
-    networks:
-      - local-dev
-
-  keycloakdb:
-    image: postgres:13.2
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: "keycloak"
-      POSTGRES_USER: "keycloak"
-      POSTGRES_PASSWORD: "keycloak"
-    networks:
-      - local-dev
+    volumes:
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak:
-    image: jboss/keycloak:latest
+    image: docker.io/jboss/keycloak:latest
     restart: unless-stopped
     depends_on:
-      - keycloakdb
+      - postgres
     container_name: local_keycloak
     environment:
       DB_VENDOR: postgres
-      DB_ADDR: keycloakdb
+      DB_ADDR: postgres
       DB_DATABASE: "keycloak"
-      DB_USER: "keycloak"
-      DB_PASSWORD: "keycloak"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgres"
       KEYCLOAK_IMPORT: /tmp/realm-export.json
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    ports:
-      - "8080:8080"
+      PROXY_ADDRESS_FORWARDING: true
     volumes:
-      - ./../docker/realm-export.json:/tmp/realm-export.json
-    networks:
-      - local-dev
+      - ./docker/realm-export.json:/tmp/realm-export.json
+      - ./db-data/:/var/lib/postgresql/data/
 
-networks:
-  local-dev:
+  nginx:
+    image: nginx:1
+    container_name: nginx
+    restart: on-failure
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"

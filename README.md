@@ -61,8 +61,8 @@ docker exec local_keycloak \
   - [ ] `post-receive` notification. 
 
 ### Front end
-
-- [ ] Browse repositories by user
+- [ ] Browse code with syntax highlight (find an alternative to hljs wich does not support line numbers)
+- [x] Browse repositories by user
 - [ ] Browse repositories by org
 - [ ] Search repository
 

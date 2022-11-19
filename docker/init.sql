@@ -1,0 +1,5 @@
+CREATE DATABASE keycloak;
+CREATE DATABASE ruisseau;
+GRANT ALL PRIVILEGES ON DATABASE ruisseau TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE keycloak TO postgres;
+

@@ -9,6 +9,7 @@ use axum::Json;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use crate::SETTINGS;
 
 const PAGE_SIZE: i64 = 20;
 
@@ -46,7 +47,7 @@ pub async fn init(
     // TODO: handle database error
     Repository::create(user.id, &repository, &pool).await?;
     #[cfg(not(feature = "integration"))]
-    ruisseau_git::repository::init_bare(&user.username, &repository.name)?;
+    ruisseau_git::repository::init_bare(&SETTINGS.repo_dir, &user.username, &repository.name)?;
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
 

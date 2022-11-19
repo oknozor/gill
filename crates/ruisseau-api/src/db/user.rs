@@ -5,7 +5,7 @@ impl User {
     pub async fn create(user: CreateUser, pool: &PgPool) -> sqlx::Result<()> {
         let username = user.username;
         let email = user.email;
-        sqlx::query!(
+        let result = sqlx::query!(
             // language=PostgreSQL
             r#"
             insert into "users"(username, email)
@@ -14,8 +14,10 @@ impl User {
             username,
             email
         )
-        .execute(pool)
-        .await?;
+            .execute(pool)
+            .await?;
+
+        println!("{:?}", result);
 
         Ok(())
     }
@@ -25,9 +27,9 @@ impl User {
             User,
             // language=PostgreSQL
             r#"
-            select * from users
-            where email =  ($1)
-        "#,
+            select id, username, email from users
+            where email = $1
+            "#,
             email,
         )
         .fetch_one(pool)

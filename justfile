@@ -20,6 +20,18 @@ build: build-setup
 
 run: build
     docker-compose down
-    docker-compose up
+    docker-compose up -d
     xdg-open http://localhost:8080
 
+rerun:
+    cd crates/ruisseau-api \
+    && sqlx migrate run \
+    && cargo sqlx prepare \
+    && CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
+    cross build --package ruisseau-git-server --target x86_64-unknown-linux-musl --release
+    cp target/x86_64-unknown-linux-musl/release/ruisseau-git-server docker/rbin/ruisseau-git-server
+    cp target/x86_64-unknown-linux-musl/release/ruisseau-api docker/rbin/ruisseau-api
+    docker-compose exec ruisseau ./entrypoint.sh
+
+css_live:
+    cd crates/ruisseau-api && tailwindcss -i assets/css/style.css -o assets/css/tailwind.css --watch

@@ -12,5 +12,5 @@ pub fn append_ssh_key(ssh_key: &str) -> io::Result<()> {
         .append(true) // This is needed to append to file
         .open("/home/git/.ssh/authorized_keys")?;
 
-    write!(file, "command=\"ruisseau-git-server\" {ssh_key}")
+    write!(file, "command=\"./bin/ruisseau-git-server\" {ssh_key}")
 }

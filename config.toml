@@ -1,1 +1,2 @@
-user_info_url = "http://local-dev:8080/auth/realms/ruisseau/protocol/openid-connect/userinfo"
+user_info_url = "https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo"
+repo_dir = "/home/git/"

@@ -1,12 +1,15 @@
 use git_repository::bstr::BString;
-use git_repository::{ObjectId, Repository};
+use git_repository::{ObjectId};
 use std::collections::HashMap;
 use std::path::Path;
+use crate::traversal::imp::{ref_to_tree};
 
 /// Traverse the whole repository and return a [`TreeMap`].
-pub fn traverse<P: AsRef<Path>>(repo: P, path: Option<&str>) -> eyre::Result<TreeMap> {
+pub fn traverse<P: AsRef<Path>>(repo: P, branch: Option<&str>, path: Option<&str>) -> eyre::Result<TreeMap> {
     let repo = git_repository::open(repo.as_ref())?;
-    let tree = imp::treeish_to_tree(None, &repo).unwrap();
+    let reference = branch.map(|name| format!("heads/{name}"));
+    let reference = reference.as_deref();
+    let tree = ref_to_tree(reference, &repo)?;
     let mut delegate = imp::Traversal::default();
     tree.traverse().breadthfirst(&mut delegate).unwrap();
 
@@ -19,7 +22,7 @@ pub fn traverse<P: AsRef<Path>>(repo: P, path: Option<&str>) -> eyre::Result<Tre
 /// A Graph representation of a given tree
 #[derive(Default, Debug)]
 pub struct TreeMap {
-    /// The file name of this tree
+    /// The file name of this treeM
     pub filename: String,
     /// blobs in this tree
     pub blobs: Vec<BlobInfo>,
@@ -36,13 +39,11 @@ pub struct BlobInfo {
 
 impl BlobInfo {
     /// Returns this blob content
-    pub fn content(
+    pub fn content<P: AsRef<Path>>(
         &self,
-        repo: &Repository,
-    ) -> Result<
-        String,
-        git_repository::odb::find::existing::Error<git_repository::odb::store::find::Error>,
-    > {
+        repo_path: P,
+    ) -> eyre::Result<String> {
+        let repo = git_repository::open(repo_path.as_ref())?;
         let object = repo.find_object(self.oid)?;
         let content = String::from_utf8_lossy(&object.data);
         Ok(content.to_string())
@@ -53,7 +54,6 @@ mod imp {
     use crate::traversal::{BlobInfo, TreeMap};
     use git_repository::bstr::{BStr, BString, ByteSlice, ByteVec};
     use git_repository::objs::tree::EntryRef;
-    use git_repository::prelude::ObjectIdExt;
     use git_repository::traverse::tree::visit::Action;
     use git_repository::traverse::tree::Visit;
     use git_repository::{ObjectId, Tree};
@@ -62,15 +62,19 @@ mod imp {
     use std::fmt::Formatter;
     use eyre::eyre;
 
-    pub fn treeish_to_tree<'repo>(
-        treeish: Option<&str>,
+    pub fn ref_to_tree<'repo>(
+        reference: Option<&str>,
         repo: &'repo git_repository::Repository,
     ) -> eyre::Result<Tree<'repo>> {
-        Ok(match treeish {
-            Some(hex) => ObjectId::from_hex(hex.as_bytes())
-                .map(|id| id.attach(repo))?
-                .object()?
-                .try_into_tree()?,
+        Ok(match reference {
+            Some(reference) => {
+                repo
+                    .find_reference(reference)?
+                    .peel_to_id_in_place()?
+                    .object()?
+                    .try_into_commit()?
+                    .tree()?
+            },
             None => repo.head()?.peel_to_commit_in_place()?.tree()?,
         })
     }
@@ -208,7 +212,7 @@ mod test {
     #[test]
     fn should_get_tree_root() -> eyre::Result<()> {
         let repo = git_repository::discover(".")?;
-        let tree = traverse(repo.path(), None)?;
+        let tree = traverse(repo.path(), None, None)?;
         let crates = tree.trees.get("crates").unwrap();
 
         let blobs_in_root: Vec<String> = tree
@@ -237,7 +241,7 @@ mod test {
     #[test]
     fn should_get_tree() -> eyre::Result<()> {
         let repo = git_repository::discover(".")?;
-        let tree = traverse(repo.path(), Some("crates/ruisseau-git"))?;
+        let tree = traverse(repo.path(), Some("main"), Some("crates/ruisseau-git"))?;
 
         let blobs_in_root: Vec<String> = tree
             .blobs
