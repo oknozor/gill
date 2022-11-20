@@ -1,12 +1,12 @@
+use crate::error::AppError;
+use crate::view::HtmlTemplate;
+use crate::SETTINGS;
+use askama::Template;
+use axum::extract::Path;
+use pulldown_cmark::{html, Options, Parser};
+use ruisseau_git::traversal::{traverse, TreeMap};
 use std::env;
 use std::path::PathBuf;
-use axum::extract::Path;
-use ruisseau_git::traversal::{traverse, TreeMap};
-use askama::Template;
-use pulldown_cmark::{html, Options, Parser};
-use crate::view::HtmlTemplate;
-use crate::error::AppError;
-use crate::SETTINGS;
 
 #[derive(Template)]
 #[template(path = "tree.html")]
@@ -17,10 +17,10 @@ pub struct GitTreeTemplate {
     current_branch: String,
 }
 
-
 pub async fn tree(
     Path((owner, repository, branch)): Path<(String, String, String)>,
-    Path(path): Path<Vec<String>>) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+    Path(path): Path<Vec<String>>,
+) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
     let tree = path[3..].join("/");
     let tree = if tree.is_empty() {
         None
@@ -39,11 +39,18 @@ pub async fn tree(
     let tree = traverse(&repo_path, Some(&branch), tree)?;
     let readme = get_readme(&tree, &repo_path);
     let branches = ruisseau_git::repository::list_branch(&SETTINGS.repo_dir, &owner, &repository)?;
-    let template = GitTreeTemplate { tree, readme, branches, current_branch: branch };
+    let template = GitTreeTemplate {
+        tree,
+        readme,
+        branches,
+        current_branch: branch,
+    };
     Ok(HtmlTemplate(template))
 }
 
-pub async fn tree_root(Path((owner, repository, branch)): Path<(String, String, String)>) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+pub async fn tree_root(
+    Path((owner, repository, branch)): Path<(String, String, String)>,
+) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
     let repo_path = format!("{owner}/{repository}.git");
 
     if !PathBuf::from(&repo_path).exists() {
@@ -55,12 +62,18 @@ pub async fn tree_root(Path((owner, repository, branch)): Path<(String, String, 
     let tree = traverse(&repo_path, Some(&branch), None)?;
     let readme = get_readme(&tree, &repo_path);
     let branches = ruisseau_git::repository::list_branch(&SETTINGS.repo_dir, &owner, &repository)?;
-    let template = GitTreeTemplate { tree, readme, branches, current_branch: branch };
+    let template = GitTreeTemplate {
+        tree,
+        readme,
+        branches,
+        current_branch: branch,
+    };
     Ok(HtmlTemplate(template))
 }
 
 fn get_readme(tree: &TreeMap, repo_path: &str) -> Option<String> {
-    tree.blobs.iter()
+    tree.blobs
+        .iter()
         .find(|blob| &blob.filename.to_string() == "README.md")
         .and_then(|blob| blob.content(repo_path).ok())
         .map(|readme| {

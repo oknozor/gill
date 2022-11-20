@@ -1,14 +1,14 @@
-use std::io;
 use aide::openapi::{Info, OpenApi};
-use axum::routing::get;
-use axum::{Extension, Router};
-use ruisseau_api::{view, api, SETTINGS};
-use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
-use std::net::SocketAddr;
-use std::time::Duration;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::routing::get;
+use axum::{Extension, Router};
+use ruisseau_api::{api, view, SETTINGS};
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
+use std::io;
+use std::net::SocketAddr;
+use std::time::Duration;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::layer::SubscriberExt;
@@ -19,8 +19,9 @@ async fn main() -> eyre::Result<()> {
     dotenvy::dotenv().ok();
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "ruisseau_git=debug,ruisseau_api=debug,tower_http=debug".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| {
+                "ruisseau_git=debug,ruisseau_api=debug,tower_http=debug".into()
+            }),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -80,4 +81,3 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
 async fn handle_error(_err: io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
-

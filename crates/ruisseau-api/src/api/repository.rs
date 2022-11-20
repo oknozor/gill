@@ -1,6 +1,7 @@
-use crate::error::AppError;
 use crate::api::user::User;
 use crate::api::Pagination;
+use crate::error::AppError;
+use crate::SETTINGS;
 use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -9,7 +10,6 @@ use axum::Json;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-use crate::SETTINGS;
 
 const PAGE_SIZE: i64 = 20;
 

@@ -15,15 +15,12 @@ pub fn init_bare(base_path: &PathBuf, namespace: &str, name: &str) -> Result<Rep
 
 pub fn list_branch(base_path: &PathBuf, namespace: &str, name: &str) -> eyre::Result<Vec<String>> {
     let name = format!("{name}.git");
-    let path = PathBuf::from(base_path)
-        .join(namespace)
-        .join(name);
+    let path = PathBuf::from(base_path).join(namespace).join(name);
 
     println!("{:?}", path);
 
     private::list_branches(path)
 }
-
 
 mod private {
     use git_repository::init::Error;
@@ -45,20 +42,19 @@ mod private {
             if let Ok(branch) = branch {
                 branches.push(branch);
             }
-        };
+        }
 
         Ok(branches)
     }
 
-
     #[cfg(test)]
     mod test {
-        use std::env;
         use super::init_bare;
+        use crate::repository::private::list_branches;
         use sealed_test::prelude::*;
         use speculoos::prelude::*;
+        use std::env;
         use std::path::PathBuf;
-        use crate::repository::private::list_branches;
 
         #[sealed_test]
         fn should_init_bare() -> eyre::Result<()> {
@@ -77,10 +73,7 @@ mod private {
             let branches = list_branches(current);
             assert_that!(branches)
                 .is_ok()
-                .contains_all_of(&[
-                    &"main".to_string(),
-                    &"feat-test".to_string(),
-                ]);
+                .contains_all_of(&[&"main".to_string(), &"feat-test".to_string()]);
 
             Ok(())
         }

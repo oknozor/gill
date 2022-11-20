@@ -2,12 +2,12 @@ use askama::Template;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::{Html, IntoResponse};
-use axum::{Extension, Router, RouterService};
 use axum::routing::{get, IntoMakeService};
+use axum::{Extension, Router, RouterService};
 use sqlx::PgPool;
 
-pub mod repositories;
 pub mod blob;
+pub mod repositories;
 pub mod tree;
 
 pub struct HtmlTemplate<T>(T);
@@ -21,8 +21,8 @@ pub fn view_router() -> Router {
 }
 
 impl<T> IntoResponse for HtmlTemplate<T>
-    where
-        T: Template,
+where
+    T: Template,
 {
     fn into_response(self) -> Response {
         match self.0.render() {

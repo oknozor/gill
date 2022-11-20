@@ -1,11 +1,15 @@
+use crate::traversal::imp::ref_to_tree;
 use git_repository::bstr::BString;
-use git_repository::{ObjectId};
+use git_repository::ObjectId;
 use std::collections::HashMap;
 use std::path::Path;
-use crate::traversal::imp::{ref_to_tree};
 
 /// Traverse the whole repository and return a [`TreeMap`].
-pub fn traverse<P: AsRef<Path>>(repo: P, branch: Option<&str>, path: Option<&str>) -> eyre::Result<TreeMap> {
+pub fn traverse<P: AsRef<Path>>(
+    repo: P,
+    branch: Option<&str>,
+    path: Option<&str>,
+) -> eyre::Result<TreeMap> {
     let repo = git_repository::open(repo.as_ref())?;
     let reference = branch.map(|name| format!("heads/{name}"));
     let reference = reference.as_deref();
@@ -39,10 +43,7 @@ pub struct BlobInfo {
 
 impl BlobInfo {
     /// Returns this blob content
-    pub fn content<P: AsRef<Path>>(
-        &self,
-        repo_path: P,
-    ) -> eyre::Result<String> {
+    pub fn content<P: AsRef<Path>>(&self, repo_path: P) -> eyre::Result<String> {
         let repo = git_repository::open(repo_path.as_ref())?;
         let object = repo.find_object(self.oid)?;
         let content = String::from_utf8_lossy(&object.data);
@@ -52,6 +53,7 @@ impl BlobInfo {
 
 mod imp {
     use crate::traversal::{BlobInfo, TreeMap};
+    use eyre::eyre;
     use git_repository::bstr::{BStr, BString, ByteSlice, ByteVec};
     use git_repository::objs::tree::EntryRef;
     use git_repository::traverse::tree::visit::Action;
@@ -60,21 +62,18 @@ mod imp {
     use std::collections::VecDeque;
     use std::fmt;
     use std::fmt::Formatter;
-    use eyre::eyre;
 
     pub fn ref_to_tree<'repo>(
         reference: Option<&str>,
         repo: &'repo git_repository::Repository,
     ) -> eyre::Result<Tree<'repo>> {
         Ok(match reference {
-            Some(reference) => {
-                repo
-                    .find_reference(reference)?
-                    .peel_to_id_in_place()?
-                    .object()?
-                    .try_into_commit()?
-                    .tree()?
-            },
+            Some(reference) => repo
+                .find_reference(reference)?
+                .peel_to_id_in_place()?
+                .object()?
+                .try_into_commit()?
+                .tree()?,
             None => repo.head()?.peel_to_commit_in_place()?.tree()?,
         })
     }
@@ -105,7 +104,10 @@ mod imp {
             let mut tree = self;
             let parts = tree_path.split("/");
             for path in parts {
-                tree = tree.trees.remove(path).ok_or(eyre!("Failed to find tree {tree_path}"))?
+                tree = tree
+                    .trees
+                    .remove(path)
+                    .ok_or(eyre!("Failed to find tree {tree_path}"))?
             }
 
             Ok(tree)
@@ -249,13 +251,9 @@ mod test {
             .map(|blob| blob.filename.to_string())
             .collect();
 
-        assert_that!(blobs_in_root).contains_all_of(&[
-            &"Cargo.toml".to_string(),
-        ]);
+        assert_that!(blobs_in_root).contains_all_of(&[&"Cargo.toml".to_string()]);
 
-        assert_that!(tree.trees.keys()).contains_all_of(&[
-            &"src".to_string(),
-        ]);
+        assert_that!(tree.trees.keys()).contains_all_of(&[&"src".to_string()]);
 
         Ok(())
     }

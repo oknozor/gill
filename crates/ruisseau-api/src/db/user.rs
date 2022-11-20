@@ -14,8 +14,8 @@ impl User {
             username,
             email
         )
-            .execute(pool)
-            .await?;
+        .execute(pool)
+        .await?;
 
         println!("{:?}", result);
 

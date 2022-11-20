@@ -1,5 +1,5 @@
-use crate::oauth::Oauth2User;
 use crate::api::user::User;
+use crate::oauth::Oauth2User;
 use crate::SETTINGS;
 use axum::{
     http,
@@ -36,7 +36,10 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
                 .expect("No database connection");
             match User::by_email(&current_user.email, &pool).await {
                 Err(err) => {
-                    tracing::error!("Error fetching current user '{}': {err}", current_user.email);
+                    tracing::error!(
+                        "Error fetching current user '{}': {err}",
+                        current_user.email
+                    );
                     return Err(StatusCode::INTERNAL_SERVER_ERROR);
                 }
                 Ok(user) => {
@@ -63,6 +66,5 @@ async fn user_info(bearer: &str) -> eyre::Result<Oauth2User> {
 
     tracing::debug!("UserInfo response: {value:?}");
 
-    serde_json::from_value(value)
-        .map_err(Into::into)
+    serde_json::from_value(value).map_err(Into::into)
 }

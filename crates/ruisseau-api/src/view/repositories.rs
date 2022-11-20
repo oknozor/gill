@@ -1,5 +1,5 @@
-use crate::view::HtmlTemplate;
 use crate::api::repository::{OwnedRepository, Repository};
+use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
