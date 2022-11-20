@@ -4,7 +4,7 @@ use axum::extract::Path;
 use ruisseau_git::traversal::{traverse, TreeMap};
 use askama::Template;
 use pulldown_cmark::{html, Options, Parser};
-use crate::app::HtmlTemplate;
+use crate::view::HtmlTemplate;
 use crate::error::AppError;
 use crate::SETTINGS;
 

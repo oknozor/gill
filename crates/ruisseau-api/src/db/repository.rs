@@ -1,4 +1,4 @@
-use crate::route::repository::{InitRepository, OwnedRepository, Repository};
+use crate::api::repository::{InitRepository, OwnedRepository, Repository};
 use sqlx::PgPool;
 
 impl Repository {

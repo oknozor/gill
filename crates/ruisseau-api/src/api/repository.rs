@@ -1,6 +1,6 @@
 use crate::error::AppError;
-use crate::route::user::User;
-use crate::route::Pagination;
+use crate::api::user::User;
+use crate::api::Pagination;
 use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};

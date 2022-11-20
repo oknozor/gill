@@ -50,7 +50,7 @@ where
 }
 
 pub fn service(db: PgPool) -> RouterService {
-    let router = ruisseau_api::route::app(db);
+    let router = ruisseau_api::api::app(db);
     let router = Router::from(router);
     router.into_service()
 }

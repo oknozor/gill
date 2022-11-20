@@ -1,22 +1,17 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <title>ruisseau</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css"/>
-    <link rel="stylesheet" type="text/css" href="/assets/css/fork-awesome.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/assets/css/tailwind.css"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/assets/js/navigation.js"></script>
-    <script src="/assets/js/tree-links.js"></script>
-    <script></script>
-</head>
-<body>
+{% extends "base-explore.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/assets/css/markdown.css"/>
+<link rel="stylesheet" type="text/css" href="/assets/css/fork-awesome.min.css"/>
+<script src="/assets/js/tree-links.js"></script>
+{% endblock %}
+
+
+{% block content %}
 <div class="text-1xl underline rounded-sm, bg-slate-300" id="navigation"></div>
 <script>navigation()</script>
 
-<div id="tree-list" class="px-56">
+<div class="px-56">
     <ul class="border border-slate-200 divide-y divide-slate-200">
         {% for dir in tree.trees %}
         <li class="px-6 py-4 border-x">
@@ -33,12 +28,11 @@
         </li>
         {% endfor %}
     </ul>
-</div>
 
-{%- match readme -%}
-{%- when Some with (readme) -%}
-<div class="readme">{{- readme|safe -}}</div>
-{%- when None -%}
-{%- endmatch -%}
-</body>
-</html>
+    {%- match readme -%}
+    {%- when Some with (readme) -%}
+    <div class="readme">{{- readme|safe -}}</div>
+    {%- when None -%}
+    {%- endmatch -%}
+</div>
+{% endblock %}

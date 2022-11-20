@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::env;
 use askama::Template;
 use ruisseau_git::traversal::traverse;
-use crate::app::{HtmlTemplate};
+use crate::view::{HtmlTemplate};
 use crate::error::AppError;
 use crate::SETTINGS;
 

@@ -14,10 +14,9 @@ const navigation = () => {
     for (let part of parts) {
         link = link + "/" + part;
         let label = decodeURIComponent(part);
-        linkElements.push(`<a href="${proto}//${host}/${user}/${repo}/tree/${currentBranch}/${link}">${label}</a>`);
+        linkElements.push(`<a href="${proto}//${host}/${user}/${repo}/tree/${currentBranch}${link}">${label}</a>`);
     }
 
-    console.log(parts);
     if (currentPage) {
         linkElements.push(`<span class="font-bold">${currentPage}</span>`);
     }
@@ -38,12 +37,10 @@ const changeBranch = (branch) => {
     parts.shift();
     let tree = parts.join("/");
     let branchPath = encodeURIComponent(branch.value);
-    let href = `${proto}//${host}/${user}/${repo}/${blobOrTree}/${branchPath}/${tree}`;
-    window.location.href = href
+    window.location.href = `${proto}//${host}/${user}/${repo}/${blobOrTree}/${branchPath}/${tree}`
 }
 
 const setCurrentBranchSelected = (branch) => {
-    console.log(branch);
     let select = document.getElementById("branches");
     select.value = branch;
 }

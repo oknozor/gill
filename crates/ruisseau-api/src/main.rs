@@ -2,7 +2,7 @@ use std::io;
 use aide::openapi::{Info, OpenApi};
 use axum::routing::get;
 use axum::{Extension, Router};
-use ruisseau_api::{app, route, SETTINGS};
+use ruisseau_api::{view, api, SETTINGS};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::SocketAddr;
@@ -62,16 +62,13 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
 
     axum::Server::bind(&addr)
         .serve(
-            route::app()
+            api::app()
                 .nest("/assets", assets_router.into())
                 .layer(TraceLayer::new_for_http())
-                .nest("/docs", route::docs_router())
+                .nest("/docs", api::docs_router())
                 .finish_api(&mut api)
                 .layer(Extension(api))
-                .route("/repo", get(app::repositories_view::list))
-                .route("/:owner/:repository/tree/:branch/*tree", get(app::tree_view::tree))
-                .route("/:owner/:repository/tree/:branch", get(app::tree_view::tree_root))
-                .route("/:owner/:repository/blob/:branch/*blob", get(app::blob_view::blob))
+                .nest("/", view::view_router())
                 .layer(Extension(db))
                 .into_make_service(),
         )

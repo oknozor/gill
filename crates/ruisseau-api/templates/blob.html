@@ -1,29 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <title>ruisseau</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/assets/css/vs.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/assets/css/tailwind.css"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/assets/js/highlight.min.js"></script>
-    <script src="/assets/js/navigation.js"></script>
-    <script>hljs.highlightAll();</script>
-</head>
-<body>
+{% extends "base-explore.html" %}
 
-<label for="branches">Branch: </label>
-<select name="branches" id="branches" onchange="changeBranch(this)">
-    {%- for branch in branches -%}
-        <option value="{{branch}}">{{branch}}</option>
-    {%- endfor -%}
-    <script defer>setCurrentBranchSelected("{{current_branch}}")</script>
-</select>
+{% block head %}
+<script src="/assets/js/highlight.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/assets/css/vs.min.css"/>
+<script>hljs.highlightAll();</script>
+{% endblock %}
 
-<div class="text-1xl underline" id="navigation"></div>
-<script>navigation()</script>
-
+{% block content %}
 <div id="code-container" class="px-56">
     <pre class="border-2 px-10">
         {%- match language -%}
@@ -38,7 +21,6 @@
             {%- endmatch -%}
     </pre>
 </div>
-</body>
-</html>
+{% endblock %}
 
 

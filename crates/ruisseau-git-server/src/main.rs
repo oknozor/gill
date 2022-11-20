@@ -17,9 +17,7 @@ fn main() -> eyre::Result<()> {
 
     match verb.as_str() {
         "git-upload-pack" | "git-receive-pack" => {
-            writeln!(log_file, "command={cmd}, args={repo_path}")?;
-
-            let output = Command::new(verb)
+            Command::new(verb)
                 .current_dir("/home/git")
                 .env("HOME", "/home/git")
                 .stdout(Stdio::inherit())
@@ -27,10 +25,6 @@ fn main() -> eyre::Result<()> {
                 .stderr(Stdio::inherit())
                 .arg(repo_path)
                 .output()?;
-
-            let output = String::from_utf8_lossy(&output.stdout);
-
-            writeln!(log_file, "{output}")?;
         }
 
         _ => writeln!(log_file, "unwknown command: {cmd}")?,

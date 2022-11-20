@@ -1,4 +1,4 @@
-use crate::route::user::{CreateUser, User};
+use crate::api::user::{CreateUser, User};
 use sqlx::PgPool;
 
 impl User {

@@ -1,7 +1,7 @@
 use axum::http::header::CONTENT_TYPE;
 use axum::http::Request;
 use axum::http::StatusCode;
-use ruisseau_api::route::user::User;
+use ruisseau_api::api::user::User;
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;

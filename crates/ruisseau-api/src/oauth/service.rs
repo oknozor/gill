@@ -1,5 +1,5 @@
 use crate::oauth::Oauth2User;
-use crate::route::user::User;
+use crate::api::user::User;
 use crate::SETTINGS;
 use axum::{
     http,
