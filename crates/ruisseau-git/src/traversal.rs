@@ -102,7 +102,7 @@ mod imp {
 
         pub fn get_tree(self, tree_path: &str) -> eyre::Result<Self> {
             let mut tree = self;
-            let parts = tree_path.split("/");
+            let parts = tree_path.split('/');
             for path in parts {
                 tree = tree
                     .trees
@@ -175,7 +175,7 @@ mod imp {
 
         fn visit_tree(&mut self, _entry: &EntryRef<'_>) -> Action {
             let path = self.path.to_string();
-            let parts = path.split("/");
+            let parts = path.split('/');
             let mut current = &mut self.tree_root;
             for tree_path in parts {
                 current = current.populate_tree(tree_path);
@@ -186,7 +186,7 @@ mod imp {
 
         fn visit_nontree(&mut self, entry: &EntryRef<'_>) -> Action {
             let path = self.path.to_string();
-            let mut parts = path.split("/").peekable();
+            let mut parts = path.split('/').peekable();
             let mut current = &mut self.tree_root;
 
             while let Some(tree_path) = parts.next() {

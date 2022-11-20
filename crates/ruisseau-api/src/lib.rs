@@ -8,4 +8,4 @@ pub mod oauth;
 pub mod settings;
 pub mod view;
 
-pub const SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
+pub static SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));

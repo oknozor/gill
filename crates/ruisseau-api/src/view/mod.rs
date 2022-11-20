@@ -2,9 +2,8 @@ use askama::Template;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::{Html, IntoResponse};
-use axum::routing::{get, IntoMakeService};
-use axum::{Extension, Router, RouterService};
-use sqlx::PgPool;
+use axum::routing::get;
+use axum::Router;
 
 pub mod blob;
 pub mod repositories;

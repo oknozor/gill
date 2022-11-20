@@ -21,7 +21,7 @@ pub async fn blob(
     Path(path): Path<Vec<String>>,
 ) -> Result<HtmlTemplate<GitBLobTemplate>, AppError> {
     let path = path.last().unwrap();
-    let (tree, blob_name) = match path.rsplit_once("/") {
+    let (tree, blob_name) = match path.rsplit_once('/') {
         None => (None, path.as_str()),
         Some((tree, blob_name)) => {
             if !tree.is_empty() {
@@ -43,10 +43,10 @@ pub async fn blob(
     let blob = tree
         .blobs
         .iter()
-        .find(|blob| &blob.filename.to_string() == &blob_name)
+        .find(|blob| blob.filename == blob_name)
         .unwrap();
     let blob = blob.content(&repo_path)?;
-    let language = get_blob_language(&blob_name);
+    let language = get_blob_language(blob_name);
     let branches = ruisseau_git::repository::list_branch(&SETTINGS.repo_dir, &owner, &repository)?;
     println!("{:?}", branches);
     let template = GitBLobTemplate {
@@ -60,6 +60,6 @@ pub async fn blob(
 
 pub fn get_blob_language(blob_name: &str) -> Option<String> {
     blob_name
-        .rsplit_once(".")
+        .rsplit_once('.')
         .map(|(_, extension)| extension.to_string())
 }

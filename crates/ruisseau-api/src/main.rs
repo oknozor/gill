@@ -1,7 +1,7 @@
 use aide::openapi::{Info, OpenApi};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::routing::get;
+
 use axum::{Extension, Router};
 use ruisseau_api::{api, view, SETTINGS};
 use sqlx::postgres::PgPoolOptions;

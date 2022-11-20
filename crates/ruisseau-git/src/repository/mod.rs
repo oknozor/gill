@@ -1,9 +1,9 @@
 use git_repository::init::Error;
 use git_repository::Repository;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-pub fn init_bare(base_path: &PathBuf, namespace: &str, name: &str) -> Result<Repository, Error> {
+pub fn init_bare(base_path: &Path, namespace: &str, name: &str) -> Result<Repository, Error> {
     let path = base_path.join(namespace);
 
     if !path.exists() {

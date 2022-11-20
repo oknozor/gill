@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 use serde_json::Value;
 use sqlx::PgPool;
 
-static CLIENT: Lazy<reqwest::Client> = Lazy::new(|| reqwest::Client::new());
+static CLIENT: Lazy<reqwest::Client> = Lazy::new(reqwest::Client::new);
 
 pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
     let auth_header = req
@@ -34,13 +34,13 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
                 .extensions()
                 .get::<PgPool>()
                 .expect("No database connection");
-            match User::by_email(&current_user.email, &pool).await {
+            match User::by_email(&current_user.email, pool).await {
                 Err(err) => {
                     tracing::error!(
                         "Error fetching current user '{}': {err}",
                         current_user.email
                     );
-                    return Err(StatusCode::INTERNAL_SERVER_ERROR);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
                 }
                 Ok(user) => {
                     req.extensions_mut().insert(user);
