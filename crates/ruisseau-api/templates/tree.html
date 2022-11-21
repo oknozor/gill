@@ -2,7 +2,6 @@
 
 {% block head %}
 <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css"/>
-<link rel="stylesheet" type="text/css" href="/assets/css/fork-awesome.min.css"/>
 <script src="/assets/js/tree-links.js"></script>
 {% endblock %}
 
@@ -15,14 +14,14 @@
     <ul class="border border-slate-200 divide-y divide-slate-200">
         {% for dir in tree.trees %}
         <li class="px-6 py-4 border-x">
-            <i class="fa fa-folder" aria-hidden="true"></i>
+            <i class="text-xl ti ti-folder"></i>
             <a id="{{dir.1.filename}}">{{dir.1.filename}}</a>
         </li>
         <script>dirLink("{{dir.1.filename}}"); </script>
         {% endfor %}
         {% for blob in tree.blobs %}
         <li class="px-6 py-4 border-x">
-            <i class="fa fa-file-code-o" aria-hidden="true"></i>
+            <i class="text-xl ti ti-file-code"></i>
             <a id="{{blob.filename}}">{{blob.filename}}</a>
             <script>blobLink("{{blob.filename}}"); </script>
         </li>
