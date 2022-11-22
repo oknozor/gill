@@ -1,2 +1,12 @@
 [workspace]
 members = ["crates/*"]
+
+[workspace.dependencies]
+tokio = { version = "1.21.2", features = ["full"] }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "any", "postgres", "offline"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = "0.1"
+once_cell = "1.16.0"
+serde = { version = "1.0.147", features = ["derive"] }
+eyre = "0.6.8"
+speculoos = "0.10.0"

@@ -39,7 +39,6 @@ async fn main() -> eyre::Result<()> {
         .expect("can connect to database");
 
     tracing::debug!("Running database migrations");
-    sqlx::migrate!().run(&pool).await?;
 
     tracing::debug!("Loading config: {:?}", *SETTINGS);
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));

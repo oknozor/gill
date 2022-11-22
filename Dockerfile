@@ -25,17 +25,17 @@ EXPOSE 3000
 # Prepare workdir
 WORKDIR /home/git
 RUN mkdir bin
+
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
 RUN echo "DATABASE_URL=postgres://postgres:postgres@postgres/ruisseau" > .env
 COPY config.toml ./config.toml
-COPY crates/ruisseau-api/migrations ./migrations
+COPY crates/ruisseau-db/migrations ./migrations
 COPY docker/entrypoint.sh ./entrypoint.sh
 COPY docker/entrypoint-debug.sh ./entrypoint-debug.sh
+COPY docker/githooks ./hooks
+COPY docker/gitconfig ./gitconfig
 
-RUN chown git:git ./.env
-RUN chown -R git:git ./migrations
-RUN chown git:git ./config.toml
-RUN chown -R git:git ./bin/ruisseau-api
+RUN chown -R git:git ./
 
 ENTRYPOINT ["./entrypoint.sh"]

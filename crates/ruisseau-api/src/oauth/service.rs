@@ -1,4 +1,3 @@
-use crate::api::user::User;
 use crate::oauth::Oauth2User;
 use crate::SETTINGS;
 use axum::{
@@ -8,6 +7,7 @@ use axum::{
     response::Response,
 };
 use once_cell::sync::Lazy;
+use ruisseau_db::user::User;
 use serde_json::Value;
 use sqlx::PgPool;
 

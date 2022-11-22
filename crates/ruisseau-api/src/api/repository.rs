@@ -1,5 +1,3 @@
-use crate::api::user::User;
-use crate::api::Pagination;
 use crate::error::AppError;
 use crate::SETTINGS;
 use axum::extract::Query;
@@ -7,37 +5,12 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Extension;
 use axum::Json;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use ruisseau_db::pagination::Pagination;
+use ruisseau_db::repository::{InitRepository, OwnedRepository, Repository};
+use ruisseau_db::user::User;
 use sqlx::PgPool;
 
 const PAGE_SIZE: i64 = 20;
-
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug)]
-pub struct Repository {
-    pub id: i32,
-    pub name: String,
-    pub owner_id: i32,
-}
-
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug)]
-pub struct OwnedRepository {
-    pub id: i32,
-    pub owner_id: i32,
-    pub name: String,
-    pub owner_name: String,
-}
-
-impl OwnedRepository {
-    pub fn full_path(&self) -> String {
-        format!("{}/{}", self.owner_name, self.name)
-    }
-}
-
-#[derive(Deserialize, JsonSchema)]
-pub struct InitRepository {
-    pub name: String,
-}
 
 pub async fn init(
     Extension(pool): Extension<PgPool>,

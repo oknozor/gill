@@ -3,27 +3,11 @@ use aide::axum::routing::{get, post};
 use aide::axum::ApiRouter;
 use aide::redoc::Redoc;
 use axum::middleware;
-use schemars::JsonSchema;
-use serde::Deserialize;
-use std::num::NonZeroI64;
 use tower_http::trace::TraceLayer;
 
 pub mod openapi;
 pub mod repository;
 pub mod user;
-
-#[derive(Deserialize, JsonSchema)]
-pub struct Pagination {
-    page: NonZeroI64,
-}
-
-impl Default for Pagination {
-    fn default() -> Self {
-        Self {
-            page: NonZeroI64::new(1).unwrap(),
-        }
-    }
-}
 
 pub fn app() -> ApiRouter {
     let public = ApiRouter::new()

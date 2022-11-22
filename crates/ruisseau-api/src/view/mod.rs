@@ -5,18 +5,17 @@ use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum::Router;
 
-pub mod blob;
+pub mod login;
 pub mod repositories;
-pub mod tree;
+pub mod repository;
 
 pub struct HtmlTemplate<T>(T);
 
 pub fn view_router() -> Router {
     Router::new()
+        .nest("/", repository::routes())
         .route("/repo", get(repositories::list))
-        .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
-        .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
-        .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
+        .route("/login/callback", get(login::callback))
 }
 
 impl<T> IntoResponse for HtmlTemplate<T>

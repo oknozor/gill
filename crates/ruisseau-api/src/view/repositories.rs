@@ -1,8 +1,8 @@
-use crate::api::repository::{OwnedRepository, Repository};
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
+use ruisseau_db::repository::{OwnedRepository, Repository};
 use sqlx::PgPool;
 
 #[derive(Template)]

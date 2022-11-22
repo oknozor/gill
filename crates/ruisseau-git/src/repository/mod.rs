@@ -10,19 +10,16 @@ pub fn init_bare(base_path: &Path, namespace: &str, name: &str) -> Result<Reposi
         fs::create_dir(&path).expect("Failed to create dir");
     }
 
-    private::init_bare(path, name)
+    imp::init_bare(path, name)
 }
 
 pub fn list_branch(base_path: &PathBuf, namespace: &str, name: &str) -> eyre::Result<Vec<String>> {
     let name = format!("{name}.git");
     let path = PathBuf::from(base_path).join(namespace).join(name);
-
-    println!("{:?}", path);
-
-    private::list_branches(path)
+    imp::list_branches(path)
 }
 
-mod private {
+mod imp {
     use git_repository::init::Error;
     use git_repository::Repository;
     use std::path::PathBuf;
@@ -39,8 +36,9 @@ mod private {
         let mut branches = vec![];
         for branch in refs.local_branches()? {
             let branch = branch.map(|branch| branch.name().shorten().to_string());
-            if let Ok(branch) = branch {
-                branches.push(branch);
+            match branch {
+                Ok(branch) => branches.push(branch),
+                Err(e) => tracing::error!("Failed to list branch: {e}"),
             }
         }
 
@@ -50,7 +48,7 @@ mod private {
     #[cfg(test)]
     mod test {
         use super::init_bare;
-        use crate::repository::private::list_branches;
+        use crate::repository::imp::list_branches;
         use sealed_test::prelude::*;
         use speculoos::prelude::*;
         use std::env;

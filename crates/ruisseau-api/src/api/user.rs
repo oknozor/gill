@@ -2,27 +2,8 @@ use crate::error::AppError;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use ruisseau_db::user::{CreateSSHKey, CreateUser, User};
 use sqlx::PgPool;
-
-#[derive(Deserialize, Serialize, JsonSchema)]
-pub struct CreateSSHKey {
-    key: String,
-}
-
-#[derive(Deserialize, Serialize, JsonSchema)]
-pub struct CreateUser {
-    pub username: String,
-    pub email: String,
-}
-
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug)]
-pub struct User {
-    pub id: i32,
-    pub username: String,
-    pub email: String,
-}
 
 pub async fn create(
     pool: Extension<PgPool>,

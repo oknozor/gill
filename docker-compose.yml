@@ -14,6 +14,7 @@ services:
       - "2222:22"
     volumes:
       - ./docker/rbin:/home/git/bin
+      - ./docker/githooks:/home/git/hooks
       - ./crates/ruisseau-api/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
 
