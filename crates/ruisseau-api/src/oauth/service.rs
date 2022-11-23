@@ -14,6 +14,7 @@ use sqlx::PgPool;
 static CLIENT: Lazy<reqwest::Client> = Lazy::new(reqwest::Client::new);
 
 pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+    tracing::debug!("Authenticating user for rest API, (Mandatory)");
     let auth_header = req
         .headers()
         .get(http::header::AUTHORIZATION)
@@ -30,10 +31,10 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
 
     match user_info(auth_header).await {
         Ok(current_user) => {
-            let pool = req
-                .extensions()
-                .get::<PgPool>()
-                .expect("No database connection");
+            let Some(pool) = req.extensions().get::<PgPool>() else {
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            };
+
             match User::by_email(&current_user.email, pool).await {
                 Err(err) => {
                     tracing::error!(
@@ -43,7 +44,7 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
                     Err(StatusCode::INTERNAL_SERVER_ERROR)
                 }
                 Ok(user) => {
-                    req.extensions_mut().insert(user);
+                    req.extensions_mut().insert(Some(user));
                     Ok(next.run(req).await)
                 }
             }

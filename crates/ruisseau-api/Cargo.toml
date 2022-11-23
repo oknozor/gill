@@ -13,17 +13,23 @@ eyre.workspace = true
 serde.workspace = true
 serde_json = "1.0.87"
 
-axum = { version = "0.6.0-rc.4", features = ["json", "headers", "macros"] }
-axum-macros = "0.3.0-rc.2"
-ruisseau-git = { path = "../ruisseau-git" }
-tower-http = { version = "0.3.0", features = ["trace", "fs"] }
-aide = { version = "0.7.1", features = ["axum", "redoc", "macros", "axum-extra-query"] }
-dotenvy = "0.15.6"
-reqwest = { version = "0.11.12", features = ["json", "native-tls-vendored"] }
-config = "0.13.2"
-askama = "0.11"
-pulldown-cmark = "0.9.2"
 ruisseau-db = { path = "../ruisseau-db" }
+ruisseau-git = { path = "../ruisseau-git" }
+
+axum = { version = "0.6.0-rc.5", features = ["json", "headers", "macros"] }
+axum-macros = "0.3.0-rc.3"
+tower-http = { version = "0.3.4", features = ["trace", "fs"] }
+reqwest = { version = "0.11.12", features = ["json", "native-tls-vendored"] }
+headers = "0.3"
+oauth2 = "4.1"
+async-session = "3.0.0"
+http = "0.2"
+
+aide = { version = "0.8.0-rc.1", features = ["axum", "redoc", "macros", "axum-extra-query"] }
+dotenvy = "0.15.6"
+askama = "0.11"
+config = "0.13.2"
+pulldown-cmark = "0.9.2"
 
 [features]
 default = []

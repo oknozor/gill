@@ -1,21 +1,27 @@
+use crate::oauth;
+use crate::oauth::AppState;
 use askama::Template;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::{Html, IntoResponse};
 use axum::routing::get;
-use axum::Router;
+use axum::{Router, RouterService};
 
-pub mod login;
+pub mod index;
 pub mod repositories;
 pub mod repository;
 
 pub struct HtmlTemplate<T>(T);
 
-pub fn view_router() -> Router {
+pub fn view_router(app_state: AppState) -> RouterService {
     Router::new()
-        .nest("/", repository::routes())
+        .merge(repository::routes())
+        .route("/", get(index::index))
+        .route("/auth/ruisseau", get(oauth::openid_auth))
+        .route("/auth/authorized", get(oauth::login_authorized))
+        .route("/logout", get(oauth::logout))
         .route("/repo", get(repositories::list))
-        .route("/login/callback", get(login::callback))
+        .with_state(app_state)
 }
 
 impl<T> IntoResponse for HtmlTemplate<T>

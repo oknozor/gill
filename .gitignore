@@ -3,3 +3,4 @@
 /Cargo.lock
 sqlx-data.json
 db-data/
+docker/rbin/

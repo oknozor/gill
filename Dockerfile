@@ -28,6 +28,8 @@ RUN mkdir bin
 
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
 COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
+COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/post-receive-hook
+
 RUN echo "DATABASE_URL=postgres://postgres:postgres@postgres/ruisseau" > .env
 COPY config.toml ./config.toml
 COPY crates/ruisseau-db/migrations ./migrations
