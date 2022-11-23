@@ -58,6 +58,23 @@ impl User {
         Ok(user)
     }
 
+    pub async fn by_user_name(username: &str, pool: &PgPool) -> sqlx::Result<User> {
+        let user = sqlx::query_as!(
+            User,
+            // language=PostgreSQL
+            r#"
+            select id, username, email from users
+            where username = $1
+            "#,
+            username,
+        )
+            .fetch_one(pool)
+            .await?;
+
+        Ok(user)
+    }
+
+
     pub async fn add_ssh_key(user_id: i32, ssh_key: &str, pool: &PgPool) -> sqlx::Result<()> {
         sqlx::query!(
             // language=PostgreSQL
@@ -79,6 +96,7 @@ impl User {
         repo_name: &str,
         db: &PgPool,
     ) -> sqlx::Result<Repository> {
+        /// FIXME: add a test
         let repository = sqlx::query_as!(
             Repository,
             // language=PostgreSQL
@@ -94,4 +112,24 @@ impl User {
 
         Ok(repository)
     }
+
+    pub async fn list_repositories(
+        self,
+        db: &PgPool,
+    ) -> sqlx::Result<Vec<Repository>> {
+        /// FIXME: add a test
+        let repository = sqlx::query_as!(
+            Repository,
+            // language=PostgreSQL
+            r#"
+            select users.id, name, owner_id from users
+            join repository r on users.id = r.owner_id
+            "#,
+        )
+            .fetch_all(db)
+            .await?;
+
+        Ok(repository)
+    }
+
 }

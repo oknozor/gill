@@ -23,11 +23,12 @@ run: build
     docker-compose exec ruisseau -d ./entrypoint.sh
 
 reload:
+    docker-compose exec ruisseau "pkill" "ruisseau-api" || true
+    cargo sqlx prepare --merged
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
     cp target/x86_64-unknown-linux-musl/release/ruisseau-git-server docker/rbin/ruisseau-git-server
     cp target/x86_64-unknown-linux-musl/release/ruisseau-api docker/rbin/post-receive-hook
     cp target/x86_64-unknown-linux-musl/release/ruisseau-api docker/rbin/ruisseau-api
-    docker-compose exec ruisseau "pkill" "ruisseau-api" || true
     docker-compose exec ruisseau ./entrypoint.sh
 
 

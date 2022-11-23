@@ -1,25 +1,20 @@
 {% extends "base-explore.html" %}
 
 {% block head %}
-<script src="/assets/js/highlight.min.js"></script>
+<script src="/assets/js/code-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="/assets/css/vs.min.css"/>
-<script>hljs.highlightAll();</script>
 {% endblock %}
 
 {% block content %}
-<div id="code-container" class="px-56">
-    <pre class="border-2 px-10">
-        {%- match language -%}
-            {%- when Some with (lang) -%}
-                <code class="language-{{lang}}">
-                    {{- blob -}}
-                </code>
-            {%- when None -%}
-                <code>
-                    {{- blob -}}
-                </code>
+<div id="code-container">
+    <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
+        {%- match blob -%}
+            {%- when Highlighted with (blob) -%}
+                {{- blob|safe -}}
+            {%- when PlainText with (blob) -%}
+                {{- blob|safe -}}
             {%- endmatch -%}
-    </pre>
+    </div>
 </div>
 {% endblock %}
 

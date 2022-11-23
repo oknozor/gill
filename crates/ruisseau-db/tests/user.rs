@@ -28,6 +28,17 @@ async fn should_get_user_by_email(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("base"))]
+async fn should_get_user_by_username(db: PgPool) {
+    let alice = User::by_user_name("alice", &db).await;
+
+    assert_that!(alice).is_ok().is_equal_to(User {
+        id: ALICE_ID,
+        username: "alice".to_string(),
+        email: "alice@wonder.land".to_string(),
+    });
+}
+
+#[sqlx::test(fixtures("base"))]
 async fn should_add_ssh_key(db: PgPool) {
     let res = User::add_ssh_key(ALICE_ID, "my-ssh-key", &db).await;
 

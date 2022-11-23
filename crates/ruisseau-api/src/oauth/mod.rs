@@ -14,6 +14,8 @@ use oauth2::{
     ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
+use syntect::highlighting::{Theme, ThemeSet};
+use syntect::parsing::SyntaxSet;
 
 #[cfg(not(feature = "integration"))]
 pub mod service;
@@ -30,6 +32,9 @@ static COOKIE_NAME: &str = "RUISSEAU_SESSION";
 pub struct AppState {
     pub store: MemoryStore,
     pub oauth_client: BasicClient,
+    /// Fixme: Make those static
+    pub syntax_set: SyntaxSet,
+    pub theme: Theme,
 }
 
 impl FromRef<AppState> for MemoryStore {
@@ -41,6 +46,18 @@ impl FromRef<AppState> for MemoryStore {
 impl FromRef<AppState> for BasicClient {
     fn from_ref(state: &AppState) -> Self {
         state.oauth_client.clone()
+    }
+}
+
+impl FromRef<AppState> for SyntaxSet {
+    fn from_ref(state: &AppState) -> Self {
+        state.syntax_set.clone()
+    }
+}
+
+impl FromRef<AppState> for Theme {
+    fn from_ref(state: &AppState) -> Self {
+        state.theme.clone()
     }
 }
 

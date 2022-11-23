@@ -17,6 +17,7 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use ruisseau_api::syntax::{load_syntax, load_theme};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -65,19 +66,24 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
     /// FIXME: not suitable for production replace with redis maybe
     let store = MemoryStore::new();
     let oauth_client = oauth_client();
+    let syntax_set = load_syntax();
+    let theme = load_theme();
     let app_state = AppState {
         store,
         oauth_client,
+        syntax_set,
+        theme
     };
+
 
     axum::Server::bind(&addr)
         .serve(
             ApiRouter::new()
-                .nest("/api/v1", rest_api())
-                .nest("/docs", api::docs_router())
+                .nest("/api/v1/", rest_api())
+                .nest("/docs/", api::docs_router())
                 .finish_api(&mut api)
                 .layer(Extension(api))
-                .nest_service("/assets", serve_dir)
+                .nest_service("/assets/", serve_dir)
                 .nest_service("/", view::view_router(app_state))
                 .layer(TraceLayer::new_for_http())
                 .layer(Extension(db))

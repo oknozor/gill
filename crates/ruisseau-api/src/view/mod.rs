@@ -17,10 +17,10 @@ pub fn view_router(app_state: AppState) -> RouterService {
     Router::new()
         .merge(repository::routes())
         .route("/", get(index::index))
-        .route("/auth/ruisseau", get(oauth::openid_auth))
-        .route("/auth/authorized", get(oauth::login_authorized))
-        .route("/logout", get(oauth::logout))
-        .route("/repo", get(repositories::list))
+        .route("/auth/ruisseau/", get(oauth::openid_auth))
+        .route("/auth/authorized/", get(oauth::login_authorized))
+        .route("/logout/", get(oauth::logout))
+        .route("/repo/", get(repositories::list))
         .with_state(app_state)
 }
 

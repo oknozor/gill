@@ -8,5 +8,10 @@ module.exports = {
     require('@tailwindcss/forms'),
     require('@tailwindcss/line-clamp'),
     require('@tailwindcss/aspect-ratio'),
-  ]
+  ],
+  theme: {
+    fontFamily: {
+      'body': ['"Open Sans"'],
+    }
+  }
 }

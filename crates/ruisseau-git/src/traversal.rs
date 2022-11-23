@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 /// Traverse the whole repository and return a [`TreeMap`].
-pub fn traverse<P: AsRef<Path>>(
+pub fn get_tree_for_path<P: AsRef<Path>>(
     repo: P,
     branch: Option<&str>,
     path: Option<&str>,
@@ -208,13 +208,13 @@ mod imp {
 
 #[cfg(test)]
 mod test {
-    use crate::traversal::traverse;
+    use crate::traversal::get_tree_for_path;
     use speculoos::prelude::*;
 
     #[test]
     fn should_get_tree_root() -> eyre::Result<()> {
         let repo = git_repository::discover(".")?;
-        let tree = traverse(repo.path(), None, None)?;
+        let tree = get_tree_for_path(repo.path(), None, None)?;
         let crates = tree.trees.get("crates").unwrap();
 
         let blobs_in_root: Vec<String> = tree
@@ -243,7 +243,7 @@ mod test {
     #[test]
     fn should_get_tree() -> eyre::Result<()> {
         let repo = git_repository::discover(".")?;
-        let tree = traverse(repo.path(), Some("main"), Some("crates/ruisseau-git"))?;
+        let tree = get_tree_for_path(repo.path(), Some("main"), Some("crates/ruisseau-git"))?;
 
         let blobs_in_root: Vec<String> = tree
             .blobs
