@@ -5,7 +5,7 @@ use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::{Html, IntoResponse};
 use axum::routing::get;
-use axum::{Router, RouterService};
+use axum::Router;
 
 pub mod index;
 pub mod repositories;
@@ -13,7 +13,7 @@ pub mod repository;
 
 pub struct HtmlTemplate<T>(T);
 
-pub fn view_router(app_state: AppState) -> RouterService {
+pub fn view_router(app_state: AppState) -> Router {
     Router::new()
         .merge(repository::routes())
         .route("/", get(index::index))

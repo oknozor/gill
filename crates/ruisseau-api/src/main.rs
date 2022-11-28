@@ -1,10 +1,8 @@
-use aide::openapi::{Info, OpenApi};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 
-use aide::axum::ApiRouter;
 use async_session::MemoryStore;
-use axum::Extension;
+use axum::{Extension, Router};
 use ruisseau_api::api::rest_api;
 use ruisseau_api::oauth::{oauth_client, AppState};
 use ruisseau_api::{api, view, SETTINGS};
@@ -54,14 +52,6 @@ async fn main() -> eyre::Result<()> {
 }
 
 pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
-    let mut api = OpenApi {
-        info: Info {
-            description: Some("Ruisseau Api".to_string()),
-            ..Info::default()
-        },
-        ..OpenApi::default()
-    };
-
     let serve_dir = axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error);
     /// FIXME: not suitable for production replace with redis maybe
     let store = MemoryStore::new();
@@ -78,11 +68,8 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
 
     axum::Server::bind(&addr)
         .serve(
-            ApiRouter::new()
+            Router::new()
                 .nest("/api/v1/", rest_api())
-                .nest("/docs/", api::docs_router())
-                .finish_api(&mut api)
-                .layer(Extension(api))
                 .nest_service("/assets/", serve_dir)
                 .nest_service("/", view::view_router(app_state))
                 .layer(TraceLayer::new_for_http())
