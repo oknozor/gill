@@ -5,7 +5,7 @@ use std::time::Duration;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-#[tokio::main]
+#[actix_rt::main]
 async fn main() -> Result<(), error::Error> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(

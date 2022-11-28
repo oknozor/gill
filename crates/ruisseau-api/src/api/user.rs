@@ -19,15 +19,16 @@ pub async fn create(
     Json(user): Json<CreateUserDto>,
 ) -> Result<Response, AppError> {
     let keys = generate_actor_keypair()?;
+    println!("{:?}", SETTINGS);
     let user = CreateUser {
         username: user.username.clone(),
         email: user.email,
         private_key: Some(keys.private_key),
         public_key: keys.public_key,
-        followers_url: format!("{}/{}/followers/", SETTINGS.domain, user.username),
-        outbox_url: format!("{}/{}/outbox/", SETTINGS.domain, user.username),
-        inbox_url: format!("{}/{}/inbox/", SETTINGS.domain, user.username),
-        activity_pub_id: format!("{}/{}/", SETTINGS.domain, user.username),
+        followers_url: format!("http://{}/{}/followers/", SETTINGS.domain, user.username),
+        outbox_url: format!("http://{}/{}/outbox/", SETTINGS.domain, user.username),
+        inbox_url: format!("http://{}/{}/inbox/", SETTINGS.domain, user.username),
+        activity_pub_id: format!("http://{}/{}/", SETTINGS.domain, user.username),
         domain: SETTINGS.domain.clone(),
         is_local: true,
     };
