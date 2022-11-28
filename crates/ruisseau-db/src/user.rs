@@ -12,32 +12,63 @@ pub struct CreateSSHKey {
 pub struct CreateUser {
     pub username: String,
     pub email: String,
+    pub private_key: Option<String>,
+    pub public_key: String,
+    pub is_local: bool,
+    pub activity_pub_id: String,
+    pub followers_url: String,
+    pub outbox_url: String,
+    pub inbox_url: String,
+    pub domain: String,
 }
 
+// Note that field ordering here should match the database schema
 #[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug)]
 pub struct User {
     pub id: i32,
     pub username: String,
+    pub domain: String,
     pub email: String,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub activity_pub_id: String,
+    pub inbox_url: String,
+    pub outbox_url: String,
+    pub followers_url: String,
+    pub is_local: bool,
 }
 
 impl User {
     pub async fn create(user: CreateUser, pool: &PgPool) -> sqlx::Result<()> {
-        let username = user.username;
-        let email = user.email;
-        let result = sqlx::query!(
+        sqlx::query!(
             // language=PostgreSQL
             r#"
-            insert into "users"(username, email)
-            values ($1, $2)
+            insert into "users"(
+                                username,
+                                email,
+                                domain,
+                                inbox_url,
+                                outbox_url,
+                                followers_url,
+                                private_key,
+                                public_key,
+                                is_local,
+                                activity_pub_id)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         "#,
-            username,
-            email
+            user.username,
+            user.email,
+            user.domain,
+            user.inbox_url,
+            user.outbox_url,
+            user.followers_url,
+            user.private_key,
+            user.public_key,
+            user.is_local,
+            user.activity_pub_id,
         )
         .execute(pool)
         .await?;
-
-        println!("{:?}", result);
 
         Ok(())
     }
@@ -47,10 +78,26 @@ impl User {
             User,
             // language=PostgreSQL
             r#"
-            select id, username, email from users
+            select * from users
             where email = $1
             "#,
-            email,
+            Some(email),
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(user)
+    }
+
+    pub async fn by_activity_pub_id(activity_pub_id: &str, pool: &PgPool) -> sqlx::Result<User> {
+        let user = sqlx::query_as!(
+            User,
+            // language=PostgreSQL
+            r#"
+            select * from users
+            where activity_pub_id = $1
+            "#,
+            activity_pub_id,
         )
         .fetch_one(pool)
         .await?;
@@ -63,17 +110,16 @@ impl User {
             User,
             // language=PostgreSQL
             r#"
-            select id, username, email from users
+            select * from users
             where username = $1
             "#,
             username,
         )
-            .fetch_one(pool)
-            .await?;
+        .fetch_one(pool)
+        .await?;
 
         Ok(user)
     }
-
 
     pub async fn add_ssh_key(user_id: i32, ssh_key: &str, pool: &PgPool) -> sqlx::Result<()> {
         sqlx::query!(
@@ -113,10 +159,7 @@ impl User {
         Ok(repository)
     }
 
-    pub async fn list_repositories(
-        self,
-        db: &PgPool,
-    ) -> sqlx::Result<Vec<Repository>> {
+    pub async fn list_repositories(self, db: &PgPool) -> sqlx::Result<Vec<Repository>> {
         /// FIXME: add a test
         let repository = sqlx::query_as!(
             Repository,
@@ -126,10 +169,9 @@ impl User {
             join repository r on users.id = r.owner_id
             "#,
         )
-            .fetch_all(db)
-            .await?;
+        .fetch_all(db)
+        .await?;
 
         Ok(repository)
     }
-
 }

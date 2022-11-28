@@ -1,5 +1,9 @@
 use crate::oauth;
-use axum::{middleware, Router, routing::{get, post}};
+use axum::{
+    middleware,
+    routing::{get, post},
+    Router,
+};
 
 pub mod repository;
 pub mod user;

@@ -5,7 +5,8 @@ use async_session::MemoryStore;
 use axum::{Extension, Router};
 use ruisseau_api::api::rest_api;
 use ruisseau_api::oauth::{oauth_client, AppState};
-use ruisseau_api::{api, view, SETTINGS};
+use ruisseau_api::syntax::{load_syntax, load_theme};
+use ruisseau_api::{view, SETTINGS};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::io;
@@ -15,7 +16,6 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use ruisseau_api::syntax::{load_syntax, load_theme};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -62,9 +62,8 @@ pub async fn serve(db: PgPool, addr: SocketAddr) -> eyre::Result<()> {
         store,
         oauth_client,
         syntax_set,
-        theme
+        theme,
     };
-
 
     axum::Server::bind(&addr)
         .serve(

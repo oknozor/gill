@@ -1,6 +1,6 @@
-use std::fmt::Formatter;
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
+use crate::view::repository::BranchDto;
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::Path;
@@ -9,7 +9,7 @@ use eyre::eyre;
 use ruisseau_db::user::User;
 use ruisseau_git::traversal::TreeMap;
 use sqlx::PgPool;
-use crate::view::repository::BranchDto;
+use std::fmt::Formatter;
 
 #[derive(Template, Debug)]
 #[template(path = "repository/tree.html")]
@@ -67,17 +67,17 @@ pub async fn root(
 mod imp {
     use super::GitTreeTemplate;
     use crate::error::AppError;
+    use crate::view::repository::tree::BranchDto;
     use crate::view::HtmlTemplate;
     use crate::SETTINGS;
     use pulldown_cmark::{html, Options, Parser};
+    use ruisseau_db::repository::Repository;
     use ruisseau_db::user::User;
     use ruisseau_git::repository;
     use ruisseau_git::traversal::{get_tree_for_path, TreeMap};
     use sqlx::PgPool;
     use std::env;
     use std::path::PathBuf;
-    use ruisseau_db::repository::Repository;
-    use crate::view::repository::tree::BranchDto;
 
     pub(crate) async fn get_tree_root(
         owner: &str,
@@ -97,7 +97,8 @@ mod imp {
         let user = User::by_user_name(owner, db).await?;
         let repo = user.get_repository_by_name(repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
-        let branches = branches.into_iter()
+        let branches = branches
+            .into_iter()
             .map(|branch| BranchDto {
                 name: branch.name,
                 is_default: branch.is_default,
@@ -109,7 +110,7 @@ mod imp {
             tree,
             readme,
             branches,
-            current_branch
+            current_branch,
         };
 
         Ok(HtmlTemplate(template))
@@ -134,7 +135,8 @@ mod imp {
         let user = User::by_user_name(&owner, db).await?;
         let repo = user.get_repository_by_name(&repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
-        let branches = branches.into_iter()
+        let branches = branches
+            .into_iter()
             .map(|branch| {
                 let is_current = branch.name == current_branch;
                 BranchDto {
@@ -149,7 +151,7 @@ mod imp {
             tree,
             readme,
             branches,
-            current_branch
+            current_branch,
         };
 
         Ok(HtmlTemplate(template))

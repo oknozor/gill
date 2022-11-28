@@ -1,0 +1,30 @@
+[package]
+name = "ruisseau-apub"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing-subscriber.workspace = true
+tracing.workspace = true
+ruisseau-db = { path = "../ruisseau-db" }
+thiserror.workspace = true
+serde.workspace = true
+tokio.workspace = true
+axum.workspace = true
+sqlx.workspace = true
+serde_json.workspace = true
+tower-http.workspace = true
+reqwest.workspace = true
+activitypub_federation.workspace = true
+tower = "0.4.13"
+url = "2.3.1"
+enum_delegate = "0.2.0"
+activitystreams-kinds = "0.2.1"
+async-trait = "0.1.58"
+anyhow = "1"
+uuid = "1.2.2"
+
+[dev-dependencies]
+speculoos.workspace = true
