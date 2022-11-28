@@ -6,6 +6,7 @@ use std::path::PathBuf;
 pub struct Settings {
     pub user_info_url: String,
     pub repo_dir: PathBuf,
+    pub domain: String,
 }
 
 impl Settings {

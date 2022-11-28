@@ -1,19 +1,19 @@
 use crate::error::AppError;
-use crate::view::{HtmlTemplate, repository};
+use crate::syntax::highlight_blob;
+use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
+use crate::view::repository::BranchDto;
+use crate::view::{repository, HtmlTemplate};
 use askama::Template;
 use axum::extract::{Path, State};
+use axum::Extension;
+use ruisseau_db::user::User;
 use ruisseau_git::traversal::get_tree_for_path;
-use std::{env, fmt};
+use sqlx::PgPool;
 use std::fmt::Formatter;
 use std::path::PathBuf;
-use axum::Extension;
-use sqlx::PgPool;
+use std::{env, fmt};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
-use ruisseau_db::user::User;
-use crate::syntax::highlight_blob;
-use crate::view::repository::BranchDto;
-use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
 
 #[derive(Template)]
 #[template(path = "repository/blob.html")]
@@ -27,7 +27,7 @@ pub struct GitBLobTemplate {
 #[derive(Debug)]
 enum BlobDto {
     Highlighted(String),
-    PlainText(String)
+    PlainText(String),
 }
 
 impl fmt::Display for BlobDto {
@@ -80,7 +80,8 @@ pub async fn blob(
     /// TODO: factorize with tree
     let repository = user.get_repository_by_name(&repository, &db).await?;
     let branches = repository.list_branches(20, 0, &db).await?;
-    let branches = branches.into_iter()
+    let branches = branches
+        .into_iter()
         .map(|branch| {
             let is_current = branch.name == current_branch;
 

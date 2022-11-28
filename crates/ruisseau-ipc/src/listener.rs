@@ -20,8 +20,6 @@ async fn listen() -> eyre::Result<()> {
         .await
         .expect("can connect to database");
 
-    tracing::debug!("Running database migrations");
-
     let listener = UnixListener::bind(SOCKET_ADDRESS)?;
 
     loop {

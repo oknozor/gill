@@ -1,8 +1,8 @@
-use std::fmt;
-use std::fmt::Formatter;
 use crate::oauth::AppState;
 use axum::routing::get;
 use axum::Router;
+use std::fmt;
+use std::fmt::Formatter;
 
 pub mod blob;
 pub mod tree;
@@ -14,7 +14,6 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
 }
-
 
 #[derive(Debug)]
 pub struct BranchDto {

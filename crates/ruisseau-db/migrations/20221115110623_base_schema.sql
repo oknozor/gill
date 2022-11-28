@@ -1,9 +1,32 @@
--- Add migration script here
 CREATE TABLE users
 (
-    id       SERIAL PRIMARY KEY,
-    username VARCHAR(50)  NOT NULL UNIQUE,
-    email    VARCHAR(255) NOT NULL
+    id              SERIAL PRIMARY KEY,
+    username        VARCHAR(255) NOT NULL,
+    domain          VARCHAR(255) NOT NULL,
+    email           VARCHAR(255) NOT NULL,
+    public_key      TEXT         NOT NULL,
+    private_key     TEXT,
+    activity_pub_id VARCHAR(255) NOT NULL UNIQUE,
+    inbox_url       VARCHAR(255) NOT NULL UNIQUE,
+    outbox_url      VARCHAR(255) NOT NULL UNIQUE,
+    followers_url   VARCHAR(255) NOT NULL UNIQUE,
+    is_local        BOOLEAN      NOT NULL
+);
+
+CREATE TYPE activity_type AS ENUM ('sad', 'ok', 'happy');
+
+CREATE table user_activity (
+    id SERIAL PRIMARY KEY,
+    summary TEXT,
+    type activity_type,
+    local BOOLEAN NOT NULL
+);
+
+CREATE TABLE user_follow
+(
+    id SERIAL PRIMARY KEY,
+    user_id     INT REFERENCES users (id),
+    follower_id INT REFERENCES users (id)
 );
 
 CREATE TABLE organisation
