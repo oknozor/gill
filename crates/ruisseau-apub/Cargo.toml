@@ -11,13 +11,13 @@ tracing.workspace = true
 ruisseau-db = { path = "../ruisseau-db" }
 thiserror.workspace = true
 serde.workspace = true
-tokio.workspace = true
 axum.workspace = true
 sqlx.workspace = true
 serde_json.workspace = true
 tower-http.workspace = true
 reqwest.workspace = true
 activitypub_federation.workspace = true
+actix-rt = "2.7.0"
 tower = "0.4.13"
 url = "2.3.1"
 enum_delegate = "0.2.0"
