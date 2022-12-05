@@ -1,0 +1,5 @@
+FROM rust:1.65.0
+MAINTAINER Paul Delafosse "paul.delafosse@protonmail.com"
+WORKDIR /usr/src/gill_apub
+COPY target/x86_64-unknown-linux-musl/release/gill-apub ./gill-apub
+CMD ["./gill-apub"]

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% include "navigation.html" %}
+<script src="/assets/js/code-helper.js"></script>
+<link rel="stylesheet" type="text/css" href="/assets/css/vs.min.css"/>
+{% endblock %}
+
+{% block content %}
+{% include "branch.html" %}
+<div id="code-container">
+    <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
+        {%- match blob -%}
+            {%- when Highlighted with (blob) -%}
+                {{- blob|safe -}}
+            {%- when PlainText with (blob) -%}
+                {{- blob|safe -}}
+            {%- endmatch -%}
+    </div>
+</div>
+{% endblock %}
+
+

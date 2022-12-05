@@ -1,4 +1,4 @@
-# Ruisseau 
+# gill 
 
 ## Dev
 
@@ -6,15 +6,15 @@
 
 ```shell
 cargo install sqlx-cli
-cd crates/ruisseau-api
+cd crates/gill-api
 sqlx migrate run
 ```
 
 ```sql
-CREATE role ruisseau WITH PASSWORD 'ruisseau';
-ALTER ROLE ruisseau WITH LOGIN;
-CREATE DATABASE ruisseau;
-GRANT ALL on database ruisseau to ruisseau;
+CREATE role gill WITH PASSWORD 'gill';
+ALTER ROLE gill WITH LOGIN;
+CREATE DATABASE gill;
+GRANT ALL on database gill to gill;
 ```
 
 ### Create keycloak admin 
@@ -58,7 +58,7 @@ docker exec local_keycloak \
 - [ ] use AuthorizedKeysCommand instead of `command=` to retrieve user ssh key from database
 - [ ] set up server side hooks
   - [ ] `pre-receive` branch protection, user permission etc.
-  - [ ] `post-receive` notification. 
+  - [x] `post-receive` notification. 
 
 ### Front end
 - [ ] Browse code with syntax highlight (find an alternative to hljs wich does not support line numbers)

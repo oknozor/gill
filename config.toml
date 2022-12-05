@@ -1,3 +1,7 @@
 user_info_url = "https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo"
 repo_dir = "/home/git/"
-domain = "localhost:3001"
+domain = "localhost:3000"
+database_host = "postgres"
+database_name = "gill"
+database_user = "postgres"
+database_password = "postgres"

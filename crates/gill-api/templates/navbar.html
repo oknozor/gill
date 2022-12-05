@@ -1,0 +1,51 @@
+<header class="pb-4">
+    <nav class="py-1 flex flex-row flex-wrap w-full items-center justify-between text-gray-200 bg-teal-700">
+        <div class="flex px-3 items-center gap-4">
+            <a
+                    href="/"
+                    class="hover:text-slate-500">
+                <i class="text-4xl ti ti-circle-dot"></i>
+            </a>
+            <label>
+                <input class=" text-slate-700 placeholder:italic placeholder:text-slate-400 block bg-white w-full border border-slate-300
+            rounded-md py-2 pl-5 pr-3 shadow-sm focus:outline-none focus:border-cyan-500 focus:ring-sky-500 focus:ring-1
+            sm:text-sm" type="text" placeholder="Search">
+            </label>
+        </div>
+
+        <div class="gap-2 flex justify-between px-3">
+            {%- match user -%}
+            {%- when Some with (user) -%}
+            <a class="px-1 hover:bg-teal-500 hover:rounded-lg flex items-center">
+                <i class="text-xl ti ti-git-branch"></i>
+                <i class="text-sm ti ti-arrow-down"></i>
+            </a>
+            <a class="px-2 hover:bg-teal-500 hover:rounded-lg flex items-center">
+                <i class="text-xl ti ti-checklist"></i>
+            </a>
+            <a class="px-1 hover:bg-teal-500 hover:rounded-lg flex items-center">
+                <i class="text-xl ti ti-circle-plus"></i>
+                <i class="text-sm ti ti-arrow-down"></i>
+            </a>
+            <a class="px-1 hover:bg-teal-500 hover:rounded-lg flex items-center">
+                <i class="text-xl ti ti-bell"></i>
+                <i class="text-sm ti ti-arrow-down"></i>
+            </a>
+            <a
+                    href="/{{user}}"
+                    class="px-2 hover:bg-teal-500 hover:rounded-lg">
+                <i class="text-xl ti ti-user"></i>
+            </a>
+            {%- when None -%}
+            <a class="px-2 hover:bg-teal-500 hover:rounded-lg"
+               href="/auth/gill"
+            >
+                <span class="font-semibold">SignIn</span>
+                <i class="text-xl ti ti-login"></i>
+            </a>
+            {%- endmatch -%}
+        </div>
+    </nav>
+</header>
+
+

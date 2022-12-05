@@ -1,0 +1,38 @@
+<div id="branch-dropdown-container" class="flex flex-row items-center gap-5">
+    <button class="order border-zinc-300 bg-zinc-200 hover:bg-slate-200 drop-shadow-md
+                      font-medium rounded-lg px-3 py-2  items-center" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false" onclick="dropDownBranches()">
+        <i class="ti ti-binary-tree-2 px-2"></i>
+        {{ current_branch }}
+        <i class="text-sm ti ti-arrow-down px-2"></i>
+    </button>
+    <div class="text-1xl underline text-blue pl-6" id="navigation">
+    </div>
+    <script>navigation("{{current_branch}}")</script>
+</div>
+<div class="relative">
+    <div id="branches-dropdown" class="
+           bg-zinc-200 left-56
+           absolute z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
+           transform transition-all duration-150 ease-out opacity-0">
+        <div class="flex flex-col divide-y divide-slate-300 text-sm">
+            <div class="flex flex-row items-center p-3">
+                <span class="text-md pr-8">Switch branches</span>
+                <i class="text-xl ti ti-x hover:drop-shadow-lg" onclick="closeDropDown()">
+                </i>
+            </div>
+            {%- for branch in branches -%}
+            <a id="branch-{{ branch.name }}" class="pl-6 pr-12 py-2 hover:bg-slate-200 flex flex-row">
+                {%- if branch.is_current -%}
+                <i class="text-sm ti ti-check px-2"></i>
+                {%- endif -%}
+                <span>{{ branch.name }} </span>
+                {%- if branch.is_default -%}
+                <span class="border rounded-full border-gray-400 p-1">default</span>
+                {%- endif -%}
+            </a>
+            <script>setBranchDropDownLink("{{ branch.name }}")</script>
+            {%- endfor -%}
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
-[submodule "crates/ruisseau-api/src/syntax_highlight/Packages"]
-	path = crates/ruisseau-api/src/syntax_highlight/Packages
+[submodule "crates/gill-api/src/syntax_highlight/Packages"]
+	path = crates/gill-api/src/syntax_highlight/Packages
 	url = https://github.com/sublimehq/Packages.git
-[submodule "crates/ruisseau-api/assets/syntax-definitions/Packages"]
-	path = crates/ruisseau-api/assets/syntax-definitions/Packages
+[submodule "crates/gill-api/assets/syntax-definitions/Packages"]
+	path = crates/gill-api/assets/syntax-definitions/Packages
 	url = https://github.com/sublimehq/Packages.git
