@@ -1,6 +1,6 @@
 {
   "id": "ruisse",
-  "realm": "ruisseau",
+  "realm": "gill",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
@@ -301,7 +301,7 @@
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
-      "ruisseau-front": [],
+      "gill-front": [],
       "broker": [
         {
           "id": "46e04135-0050-4f48-9789-52ccb1c31285",
@@ -464,13 +464,13 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/ruisseau/account/",
+      "baseUrl": "/realms/gill/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/ruisseau/account/*"
+        "/realms/gill/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -666,19 +666,19 @@
     },
     {
       "id": "170951e5-1db2-41f9-9a70-e6baf4877f19",
-      "clientId": "ruisseau-front",
-      "rootUrl": "http://ruisseau:3000",
-      "adminUrl": "http://ruisseau:3000",
+      "clientId": "gill-front",
+      "rootUrl": "http://gill:3000",
+      "adminUrl": "http://gill:3000",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "http://ruisseau:3000/*"
+        "http://gill:3000/*"
       ],
       "webOrigins": [
-        "http://ruisseau:3000/*"
+        "http://gill:3000/*"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -735,13 +735,13 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/ruisseau/console/",
+      "baseUrl": "/admin/gill/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/admin/ruisseau/console/*"
+        "/admin/gill/console/*"
       ],
       "webOrigins": [
         "+"

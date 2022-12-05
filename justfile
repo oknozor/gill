@@ -1,5 +1,7 @@
 #!/usr/bin/env just --justfile
 
+export DATABASE_URL := "postgres://postgres:postgres@localhost/gill"
+
 clean:
     docker-compose down
     cargo clean
@@ -8,29 +10,28 @@ clean:
 # this is required to build inside cross container
 migrate:
     docker-compose up postgres -d
-    sqlx migrate run --source crates/ruisseau-db/migrations
+    sqlx migrate run --source crates/gill-db/migrations
     cargo sqlx prepare --merged
 
 build: migrate
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
-    docker build --no-cache -t fserver:alpine -f Dockerfile .
+    docker build -t gill-api:latest -f Dockerfile .
+    docker build -t gill-apub:latest -f Dockerfile.apub .
     docker-compose up -d
 
-debug:
-    docker-compose exec ruisseau ./entrypoint.sh
-
 run: build
-    docker-compose exec ruisseau -d ./entrypoint.sh
+    docker-compose exec -d gill ./entrypoint.sh
 
 reload:
-    docker-compose exec ruisseau "pkill" "ruisseau-api" || true
+    docker-compose exec gill "pkill" "gill-api" || true
+    docker-compose exec gill "rm" "/tmp/gill-socket" || true
     cargo sqlx prepare --merged
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
-    cp target/x86_64-unknown-linux-musl/release/ruisseau-git-server docker/rbin/ruisseau-git-server
-    cp target/x86_64-unknown-linux-musl/release/ruisseau-api docker/rbin/post-receive-hook
-    cp target/x86_64-unknown-linux-musl/release/ruisseau-api docker/rbin/ruisseau-api
-    docker-compose exec ruisseau ./entrypoint.sh
+    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/rbin/gill-git-server
+    cp target/x86_64-unknown-linux-musl/release/post-receive docker/githooks/post-receive
+    cp target/x86_64-unknown-linux-musl/release/gill-api docker/rbin/gill-api
+    docker-compose exec gill ./entrypoint.sh
 
 
 css_live:
-    cd crates/ruisseau-api && tailwindcss -i assets/css/style.css -o assets/css/tailwind.css --watch
+    cd crates/gill-api && tailwindcss -i assets/css/style.css -o assets/css/tailwind.css --watch

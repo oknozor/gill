@@ -1,0 +1,17 @@
+INSERT INTO users (id, username, email) VALUES (0, 'alice', 'alice@wonder.land');
+INSERT INTO users (id, username, email) VALUES (1, 'okno', 'oknozor@gill.org');
+INSERT INTO repository (name, owner_id) VALUES ('gill', 1);
+INSERT INTO repository (name, owner_id) VALUES ('onagre', 1);
+INSERT INTO repository (name, owner_id) VALUES ('cocogitto', 1);
+INSERT INTO repository (name, owner_id) VALUES ('linux', 1);
+INSERT INTO repository (name, owner_id) VALUES ('postgresql', 1);
+INSERT INTO repository (name, owner_id) VALUES ('gitlab', 1);
+INSERT INTO repository (name, owner_id) VALUES ('Atalanta', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Gaëlle', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Damiana', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Lugus', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Dora', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Simon', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Knut', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Siniša', 0);
+INSERT INTO repository (name, owner_id) VALUES ('Yvonne', 0);

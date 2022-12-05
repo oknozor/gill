@@ -1,23 +1,37 @@
 version: '3.9'
 services:
-  ruisseau:
-    image: fserver:alpine
+  gill:
+    image: gill-api:latest
     depends_on:
       - postgres
     restart: always
-    container_name: ruisseau
+    container_name: gill-api
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres/ruisseau
-      KEYCLOAK_URL: https://keycloak.cloud.hoohoot.org
+      OAUTH_USER_INFO_URL: https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo
+      DOMAIN: 127.0.0.1:3000
+      DB_NAME: gill
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
     ports:
       - "3000:3000"
       - "2222:22"
     volumes:
       - ./docker/rbin:/home/git/bin
       - ./docker/githooks:/home/git/hooks
-      - ./crates/ruisseau-api/assets:/home/git/assets
+      - ./crates/gill-api/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
 
+  gill-apub:
+    image: gill-apub:latest
+    depends_on:
+      - postgres
+    restart: always
+    container_name: gill-apub
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres/gill
+    ports:
+      - "3001:3001"
 
   postgres:
     image: docker.io/postgres:13.2
@@ -25,7 +39,7 @@ services:
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "postgres"
+      POSTGRES_DB: "gill"
     ports:
       - "5432:5432"
     volumes:

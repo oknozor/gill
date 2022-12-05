@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block head %}{% endblock %}
+
+{% block content %}
+<ul>
+    {% for repo in repositories %}
+    <li>{{ repo.owner_name }}/{{ repo.name }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

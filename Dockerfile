@@ -26,17 +26,16 @@ EXPOSE 3000
 WORKDIR /home/git
 RUN mkdir bin
 
-COPY target/x86_64-unknown-linux-musl/release/ruisseau-api ./bin/ruisseau-api
-COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/ruisseau-git-server
-COPY target/x86_64-unknown-linux-musl/release/ruisseau-git-server ./bin/post-receive-hook
+COPY target/x86_64-unknown-linux-musl/release/gill-api ./bin/gill-api
+COPY target/x86_64-unknown-linux-musl/release/gill-git-server ./bin/gill-git-server
+COPY target/x86_64-unknown-linux-musl/release/post-receive /usr/share/git-core/templates/hooks/post-receive
 
-RUN echo "DATABASE_URL=postgres://postgres:postgres@postgres/ruisseau" > .env
 COPY config.toml ./config.toml
-COPY crates/ruisseau-db/migrations ./migrations
+COPY crates/gill-db/migrations ./migrations
 COPY docker/entrypoint.sh ./entrypoint.sh
 COPY docker/entrypoint-debug.sh ./entrypoint-debug.sh
 COPY docker/githooks ./hooks
-COPY docker/gitconfig ./gitconfig
+COPY docker/gitconfig ./.gitconfig
 
 RUN chown -R git:git ./
 

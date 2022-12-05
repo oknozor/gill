@@ -1,0 +1,13 @@
+[package]
+name = "gill-db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlx = { workspace = true }
+serde = { workspace = true }
+schemars = { version = "0.8.10", features = ["uuid1"] }
+
+[dev-dependencies]
+speculoos.workspace = true
+eyre.workspace = true
