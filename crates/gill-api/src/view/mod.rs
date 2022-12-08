@@ -8,11 +8,13 @@ use axum::routing::get;
 use axum::Router;
 use gill_db::user::User;
 use sqlx::PgPool;
+use crate::view::follow::follow_form;
 
 pub mod index;
 pub mod repositories;
 pub mod repository;
 pub mod user;
+pub mod follow;
 
 pub struct HtmlTemplate<T>(T);
 
@@ -27,6 +29,8 @@ pub fn router(app_state: AppState) -> Router {
         .route("/auth/authorized", get(oauth::login_authorized))
         .route("/logout/", get(oauth::logout))
         .route("/repo/", get(repositories::list))
+        .route("/follow_user", get(follow_form))
+        .route("/follow_user/", get(follow_form))
         .with_state(app_state)
 }
 
@@ -47,10 +51,13 @@ where
 }
 
 async fn get_connected_user_username(db: &PgPool, user: Option<Oauth2User>) -> Option<String> {
+    get_connected_user(db, user).await.map(|user| user.username)
+}
+
+async fn get_connected_user(db: &PgPool, user: Option<Oauth2User>) -> Option<User> {
     let email = user.map(|user| user.email);
     match email {
         Some(email) => User::by_email(&email, db).await.ok(),
         None => None,
     }
-    .map(|user| user.username)
 }

@@ -17,7 +17,7 @@ pub fn highlight_blob(
     let _css = html::css_for_theme_with_class_style(theme, ClassStyle::Spaced)?;
     let syntax = syntax_set
         .find_syntax_by_extension(extension)
-        .ok_or(anyhow!("Syntax not found for extension {extension}"))?;
+        .ok_or_else(|| anyhow!("Syntax not found for extension {extension}"))?;
 
     let html = highlighted_html_for_string(blob_content, &syntax_set, syntax, theme)?;
     Ok(html)

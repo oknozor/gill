@@ -8,19 +8,16 @@ use std::os::unix::net::UnixStream;
 use std::time::Duration;
 use tokio::net::UnixListener;
 use tracing::debug;
+use gill_settings::SETTINGS;
 
 pub struct IPCListener;
 
 impl IPCListener {
     pub async fn listen(self) -> anyhow::Result<()> {
-        let db_connection_str = "postgres://postgres:postgres@localhost/gill";
-
-        debug!("Connecting to {db_connection_str}");
-
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .idle_timeout(Duration::from_secs(3))
-            .connect(db_connection_str)
+            .connect(&SETTINGS.database_url())
             .await
             .expect("can connect to database");
 

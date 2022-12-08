@@ -1,5 +1,5 @@
 use crate::error::AppError;
-use crate::SETTINGS;
+use gill_settings::SETTINGS;
 use activitypub_federation::core::signatures::generate_actor_keypair;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -25,10 +25,10 @@ pub async fn create(
         email: user.email,
         private_key: Some(keys.private_key),
         public_key: keys.public_key,
-        followers_url: format!("http://{}/{}/followers/", SETTINGS.domain, user.username),
-        outbox_url: format!("http://{}/{}/outbox/", SETTINGS.domain, user.username),
-        inbox_url: format!("http://{}/{}/inbox/", SETTINGS.domain, user.username),
-        activity_pub_id: format!("http://{}/{}/", SETTINGS.domain, user.username),
+        followers_url: format!("http://{}/apub/{}/followers", SETTINGS.domain, user.username),
+        outbox_url: format!("http://{}/apub/{}/outbox", SETTINGS.domain, user.username),
+        inbox_url: format!("http://{}/apub/{}/inbox", SETTINGS.domain, user.username),
+        activity_pub_id: format!("http://{}/apub/users/{}", SETTINGS.domain, user.username),
         domain: SETTINGS.domain.clone(),
         is_local: true,
     };

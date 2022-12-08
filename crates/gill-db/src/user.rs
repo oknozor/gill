@@ -14,12 +14,12 @@ pub struct CreateUser {
     pub email: String,
     pub private_key: Option<String>,
     pub public_key: String,
-    pub is_local: bool,
     pub activity_pub_id: String,
-    pub followers_url: String,
     pub outbox_url: String,
     pub inbox_url: String,
     pub domain: String,
+    pub followers_url: String,
+    pub is_local: bool,
 }
 
 // Note that field ordering here should match the database schema
@@ -142,7 +142,6 @@ impl User {
         repo_name: &str,
         db: &PgPool,
     ) -> sqlx::Result<Repository> {
-        /// FIXME: add a test
         let repository = sqlx::query_as!(
             Repository,
             // language=PostgreSQL
@@ -166,7 +165,6 @@ impl User {
     }
 
     pub async fn list_repositories(self, db: &PgPool) -> sqlx::Result<Vec<Repository>> {
-        /// FIXME: add a test
         let repository = sqlx::query_as!(
             Repository,
             // language=PostgreSQL

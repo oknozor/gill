@@ -1,3 +1,4 @@
+use std::string::ParseError;
 use crate::apub::object::user::{ApubUser, Person, PersonAcceptedActivities};
 use crate::error::AppError;
 use crate::instance::{Instance, InstanceHandle};
@@ -16,9 +17,10 @@ use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method, Request};
 use std::sync::Arc;
 use tower::ServiceBuilder;
-use tower_http::trace::TraceLayer;
 use tower_http::ServiceBuilderExt;
+use tracing::debug;
 use url::Url;
+use uuid::Uuid;
 
 pub mod activities;
 pub mod object;
@@ -26,12 +28,13 @@ pub mod object;
 pub fn router(instance: Arc<Instance>) -> Router {
     Router::new()
         .route("/inbox", post(http_post_user_inbox))
-        .layer(
-            ServiceBuilder::new()
-                .map_request_body(body::boxed)
-                .layer(middleware::from_fn(verify_request_payload)),
-        )
-        .route("/objects/:user_name", get(http_get_user))
+        // FIXME: the layer seems to apply to all route
+        // .layer(
+        //     ServiceBuilder::new()
+        //         .map_request_body(body::boxed)
+        //         .layer(middleware::from_fn(verify_request_payload)),
+        // )
+        .route("/users/:user_name", get(http_get_user))
         .with_state(instance)
 }
 
@@ -40,15 +43,15 @@ async fn http_get_user(
     request: Request<Body>,
 ) -> Result<ApubJson<WithContext<Person>>, AppError> {
     let hostname: String = data.local_instance.hostname().to_string();
-    let request_url = format!("http://{}{}", hostname, &request.uri());
+    let request_url = format!("http://{}/apub{}", hostname, &request.uri());
     let url = Url::parse(&request_url).expect("Failed to parse url");
     let user = ObjectId::<ApubUser>::new(url)
         .dereference_local(&data)
         .await?
         .into_apub(&data)
-        .await?;
+        .await;
 
-    Ok(ApubJson(WithContext::new_default(user)))
+    Ok(ApubJson(WithContext::new_default(user?)))
 }
 
 async fn http_post_user_inbox(
@@ -70,3 +73,4 @@ async fn http_post_user_inbox(
     )
     .await
 }
+

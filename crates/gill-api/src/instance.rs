@@ -1,38 +1,38 @@
-use crate::apub::object::user::{ApubUser, Person, PersonAcceptedActivities};
+
 use crate::error::AppError;
 use crate::oauth::{oauth_client, AppState};
 use crate::{api, apub, view};
-use activitypub_federation::core::axum::{
-    inbox::receive_activity, json::ApubJson, verify_request_payload, DigestVerified,
-};
-use activitypub_federation::data::Data;
-use activitypub_federation::deser::context::WithContext;
-use activitypub_federation::traits::ApubObject;
+
+
+
+
 use activitypub_federation::{
-    core::object_id::ObjectId, InstanceSettings, LocalInstance, UrlVerifier,
+    InstanceSettings, LocalInstance, UrlVerifier,
 };
 use async_session::MemoryStore;
 use axum::async_trait;
-use axum::body::Body;
-use axum::extract::{OriginalUri, State};
-use axum::headers::HeaderMap;
-use axum::http::{Method, Request};
+
+
+
+
 use axum::response::IntoResponse;
-use axum::routing::get;
-use axum::routing::post;
-use axum::{body, middleware, Extension, Json, Router};
+
+
+use axum::{Extension, Router};
 use gill_ipc::listener::IPCListener;
 use http::StatusCode;
 use reqwest::Client;
 use sqlx::PgPool;
 use std::io;
-use std::net::ToSocketAddrs;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
-use tower::ServiceBuilder;
+
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
-use tower_http::ServiceBuilderExt;
+
+
 use url::Url;
+use gill_settings::SETTINGS;
 
 use crate::syntax::{load_syntax, load_theme};
 
@@ -82,7 +82,6 @@ impl Instance {
     }
 
     pub async fn listen(instance: &InstanceHandle) -> anyhow::Result<()> {
-        let hostname = instance.local_instance.hostname();
         let instance = instance.clone();
         let serve_dir =
             axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error);
@@ -96,6 +95,7 @@ impl Instance {
             oauth_client,
             syntax_set,
             theme,
+            instance: instance.clone()
         };
 
         let app = Router::new()
@@ -107,12 +107,7 @@ impl Instance {
             .layer(Extension(db))
             .into_make_service();
 
-        // run it
-        let addr = hostname
-            .to_socket_addrs()?
-            .next()
-            .expect("Failed to lookup domain name");
-
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), SETTINGS.port);
         let app = axum::Server::bind(&addr).serve(app);
 
         let ipc = IPCListener;

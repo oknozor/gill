@@ -107,7 +107,7 @@ mod imp {
                 tree = tree
                     .trees
                     .remove(path)
-                    .ok_or(anyhow!("Failed to find tree {tree_path}"))?
+                    .ok_or_else(|| anyhow!("Failed to find tree {tree_path}"))?
             }
 
             Ok(tree)

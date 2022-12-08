@@ -7,10 +7,10 @@ services:
     restart: always
     container_name: gill-api
     environment:
-      OAUTH_USER_INFO_URL: https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo
-      DOMAIN: 127.0.0.1:3000
+      DOMAIN: bore.pub:45285
       DB_NAME: gill
       DB_HOST: postgres
+      DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
     ports:
@@ -21,17 +21,6 @@ services:
       - ./docker/githooks:/home/git/hooks
       - ./crates/gill-api/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
-
-  gill-apub:
-    image: gill-apub:latest
-    depends_on:
-      - postgres
-    restart: always
-    container_name: gill-apub
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres/gill
-    ports:
-      - "3001:3001"
 
   postgres:
     image: docker.io/postgres:13.2
@@ -44,3 +33,27 @@ services:
       - "5432:5432"
     volumes:
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  gill-2:
+    image: gill-api:latest
+    depends_on:
+      - postgres
+    restart: always
+    container_name: gill-api-2
+    environment:
+      DOMAIN: bore.pub:34003
+      DB_NAME: gill_2
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "3001:3000"
+      - "2223:22"
+    volumes:
+      - ./docker/rbin:/home/git/bin
+      - ./docker/githooks:/home/git/hooks
+      - ./crates/gill-api/assets:/home/git/assets
+    entrypoint: /home/git/entrypoint-debug.sh
+    extra_hosts:
+      - "gillberrypi:192.168.0.17"
