@@ -10,6 +10,6 @@ tokio.workspace = true
 sqlx.workspace = true
 tracing.workspace = true
 serde.workspace = true
-eyre.workspace = true
+anyhow.workspace = true
 rmp-serde = "1.1.1"
 gill-db = { path = "../gill-db" }

@@ -4,6 +4,8 @@ use askama::Template;
 use axum::extract::Path;
 use axum::response::IntoResponse;
 use axum::Extension;
+use gill_db::user::User;
+use http::Response;
 use sqlx::PgPool;
 
 #[derive(Template)]
@@ -12,12 +14,22 @@ pub struct UserProfileTemplate {
     user: Option<String>,
 }
 
+#[derive(Debug)]
+pub struct RepositoryDo {
+    name: String,
+    is_default: bool,
+    is_current: bool,
+}
+
 pub async fn get_profile(
     connected_user: Option<Oauth2User>,
-    Path(_user): Path<String>,
+    Path(user): Path<String>,
     Extension(db): Extension<PgPool>,
-) -> impl IntoResponse {
+) -> Result<HtmlTemplate<UserProfileTemplate>, crate::error::AppError> {
     let username = get_connected_user_username(&db, connected_user).await;
+    let user = User::by_user_name(&user, &db).await?;
+    let repositories = user.list_repositories(&db).await?;
+
     let template = UserProfileTemplate { user: username };
-    HtmlTemplate(template)
+    Ok(HtmlTemplate(template))
 }

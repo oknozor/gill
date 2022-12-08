@@ -57,7 +57,7 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
     }
 }
 
-async fn user_info(bearer: &str) -> eyre::Result<Oauth2User> {
+async fn user_info(bearer: &str) -> anyhow::Result<Oauth2User> {
     let value: Value = CLIENT
         .get(&SETTINGS.user_info_url)
         .header("Authorization", bearer)

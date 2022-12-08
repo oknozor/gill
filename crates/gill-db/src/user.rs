@@ -147,9 +147,15 @@ impl User {
             Repository,
             // language=PostgreSQL
             r#"
-            select users.id, name, owner_id from users
-            join repository r on users.id = r.owner_id
-            where r.name = $1
+            SELECT
+                users.id,
+                name,
+                r.description,
+                r.private,
+                owner_id
+            FROM users
+            JOIN repository r ON users.id = r.owner_id
+            WHERE r.name = $1
             "#,
             repo_name,
         )
@@ -165,8 +171,14 @@ impl User {
             Repository,
             // language=PostgreSQL
             r#"
-            select users.id, name, owner_id from users
-            join repository r on users.id = r.owner_id
+            SELECT
+                users.id,
+                name,
+                r.description,
+                r.private,
+                owner_id
+            FROM users
+            JOIN repository r ON users.id = r.owner_id
             "#,
         )
         .fetch_all(db)

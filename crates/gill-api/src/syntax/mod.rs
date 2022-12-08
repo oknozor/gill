@@ -1,4 +1,4 @@
-use eyre::eyre;
+use anyhow::anyhow;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Color, Theme, ThemeSet};
@@ -12,12 +12,12 @@ pub fn highlight_blob(
     extension: &str,
     syntax_set: SyntaxSet,
     theme: &Theme,
-) -> eyre::Result<String> {
+) -> anyhow::Result<String> {
     /// FIXME: this could be cached, see https://github.com/trishume/syntect
     let _css = html::css_for_theme_with_class_style(theme, ClassStyle::Spaced)?;
     let syntax = syntax_set
         .find_syntax_by_extension(extension)
-        .ok_or(eyre!("Syntax not found for extension {extension}"))?;
+        .ok_or(anyhow!("Syntax not found for extension {extension}"))?;
 
     let html = highlighted_html_for_string(blob_content, &syntax_set, syntax, theme)?;
     Ok(html)

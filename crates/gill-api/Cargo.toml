@@ -4,23 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# We need to make the background job crate compatible with tokio runtime
+# to remove this
+actix-rt = "2.7.0"
+
 tokio.workspace = true
 sqlx.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
 once_cell.workspace = true
-eyre.workspace = true
+anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 reqwest.workspace = true
 tower-http.workspace = true
 axum.workspace = true
 axum-macros.workspace = true
+thiserror.workspace = true
+activitypub_federation.workspace = true
 
 gill-db = { path = "../gill-db" }
 gill-ipc = { path = "../gill-ipc" }
 gill-git = { path = "../gill-git" }
-activitypub_federation.workspace = true
+
+uuid = "1.2.2"
+enum_delegate = "0.2.0"
+activitystreams-kinds = "0.2.1"
+tower = "0.4.13"
+url = "2.3.1"
 
 headers = "0.3"
 oauth2 = "4.1"

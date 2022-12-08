@@ -3,7 +3,7 @@ use std::fs::OpenOptions;
 use std::io::{stdin, BufRead};
 use std::path::PathBuf;
 
-fn main() -> eyre::Result<()> {
+fn main() -> anyhow::Result<()> {
     let _log_file = OpenOptions::new()
         .create(true)
         .write(true)

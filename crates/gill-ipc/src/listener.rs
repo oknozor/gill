@@ -12,8 +12,8 @@ use tracing::debug;
 pub struct IPCListener;
 
 impl IPCListener {
-    pub async fn listen(self) -> eyre::Result<()> {
-        let db_connection_str = "postgres://postgres:postgres@postgres/gill";
+    pub async fn listen(self) -> anyhow::Result<()> {
+        let db_connection_str = "postgres://postgres:postgres@localhost/gill";
 
         debug!("Connecting to {db_connection_str}");
 
@@ -43,7 +43,7 @@ impl IPCListener {
     }
 }
 
-async fn handle_client(mut stream: UnixStream, db: &PgPool) -> eyre::Result<()> {
+async fn handle_client(mut stream: UnixStream, db: &PgPool) -> anyhow::Result<()> {
     let mut data = vec![];
     let _ = stream.read_to_end(&mut data)?;
     let message: Message = rmp_serde::from_slice(&data)?;

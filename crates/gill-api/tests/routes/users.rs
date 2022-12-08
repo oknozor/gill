@@ -10,7 +10,7 @@ use tower::ServiceExt;
 use crate::helpers::{service, RequestBuilderExt};
 
 #[sqlx::test]
-async fn create_user(db: PgPool) -> eyre::Result<()> {
+async fn create_user(db: PgPool) -> anyhow::Result<()> {
     let request = Request::post("/users")
         .header(CONTENT_TYPE, "application/json")
         .json(json! {{ "username": "okno", "email": "ok@no.org" }});
@@ -23,7 +23,7 @@ async fn create_user(db: PgPool) -> eyre::Result<()> {
 }
 
 #[sqlx::test(fixtures("base"))]
-async fn by_email(db: PgPool) -> eyre::Result<()> {
+async fn by_email(db: PgPool) -> anyhow::Result<()> {
     let user = User::by_email("alice@wonder.land", &db).await;
 
     assert_that!(user).is_ok().is_equal_to(User {

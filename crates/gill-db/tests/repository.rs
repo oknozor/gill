@@ -75,7 +75,7 @@ async fn list_branch(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("base"))]
-async fn create_default_branch(db: PgPool) -> eyre::Result<()> {
+async fn create_default_branch(db: PgPool) -> anyhow::Result<()> {
     let repository = fixtures::linux_kernel_repository();
 
     let res = repository.set_default_branch("main", &db).await;
@@ -93,7 +93,7 @@ async fn create_default_branch(db: PgPool) -> eyre::Result<()> {
 }
 
 #[sqlx::test(fixtures("base"))]
-async fn change_default_branch(db: PgPool) -> eyre::Result<()> {
+async fn change_default_branch(db: PgPool) -> anyhow::Result<()> {
     let repository = fixtures::gill_repository();
 
     let res = repository.set_default_branch("feature", &db).await;
@@ -113,7 +113,7 @@ async fn change_default_branch(db: PgPool) -> eyre::Result<()> {
 }
 
 #[sqlx::test(fixtures("base"))]
-async fn get_default_branch(db: PgPool) -> eyre::Result<()> {
+async fn get_default_branch(db: PgPool) -> anyhow::Result<()> {
     let repository = fixtures::gill_repository();
     let res = repository.get_default_branch(&db).await;
     assert_that!(res).is_some().is_equal_to(Branch {

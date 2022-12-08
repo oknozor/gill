@@ -8,7 +8,7 @@ use axum::{
 pub mod repository;
 pub mod user;
 
-pub fn rest_api() -> Router {
+pub fn router() -> Router {
     let public = Router::new()
         .route("/health", get(|| async { "Pong" }))
         .route("/health/", get(|| async { "Pong" }))

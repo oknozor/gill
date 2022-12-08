@@ -3,7 +3,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::process::{Command, Stdio};
 
-fn main() -> eyre::Result<()> {
+fn main() -> anyhow::Result<()> {
     let mut log_file = OpenOptions::new()
         .create(true)
         .write(true)

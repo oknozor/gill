@@ -9,7 +9,7 @@ pub fn get_tree_for_path<P: AsRef<Path>>(
     repo: P,
     branch: Option<&str>,
     path: Option<&str>,
-) -> eyre::Result<TreeMap> {
+) -> anyhow::Result<TreeMap> {
     let repo = git_repository::open(repo.as_ref())?;
     let reference = branch.map(|name| format!("heads/{name}"));
     let reference = reference.as_deref();
@@ -43,7 +43,7 @@ pub struct BlobInfo {
 
 impl BlobInfo {
     /// Returns this blob content
-    pub fn content<P: AsRef<Path>>(&self, repo_path: P) -> eyre::Result<String> {
+    pub fn content<P: AsRef<Path>>(&self, repo_path: P) -> anyhow::Result<String> {
         let repo = git_repository::open(repo_path.as_ref())?;
         let object = repo.find_object(self.oid)?;
         let content = String::from_utf8_lossy(&object.data);
@@ -53,7 +53,7 @@ impl BlobInfo {
 
 mod imp {
     use crate::traversal::{BlobInfo, TreeMap};
-    use eyre::eyre;
+    use anyhow::anyhow;
     use git_repository::bstr::{BStr, BString, ByteSlice, ByteVec};
     use git_repository::objs::tree::EntryRef;
     use git_repository::traverse::tree::visit::Action;
@@ -66,7 +66,7 @@ mod imp {
     pub fn ref_to_tree<'repo>(
         reference: Option<&str>,
         repo: &'repo git_repository::Repository,
-    ) -> eyre::Result<Tree<'repo>> {
+    ) -> anyhow::Result<Tree<'repo>> {
         Ok(match reference {
             Some(reference) => repo
                 .find_reference(reference)?
@@ -100,14 +100,14 @@ mod imp {
             }
         }
 
-        pub fn get_tree(self, tree_path: &str) -> eyre::Result<Self> {
+        pub fn get_tree(self, tree_path: &str) -> anyhow::Result<Self> {
             let mut tree = self;
             let parts = tree_path.split('/');
             for path in parts {
                 tree = tree
                     .trees
                     .remove(path)
-                    .ok_or(eyre!("Failed to find tree {tree_path}"))?
+                    .ok_or(anyhow!("Failed to find tree {tree_path}"))?
             }
 
             Ok(tree)
@@ -212,7 +212,7 @@ mod test {
     use speculoos::prelude::*;
 
     #[test]
-    fn should_get_tree_root() -> eyre::Result<()> {
+    fn should_get_tree_root() -> anyhow::Result<()> {
         let repo = git_repository::discover(".")?;
         let tree = get_tree_for_path(repo.path(), None, None)?;
         let crates = tree.trees.get("crates").unwrap();
@@ -241,7 +241,7 @@ mod test {
     }
 
     #[test]
-    fn should_get_tree() -> eyre::Result<()> {
+    fn should_get_tree() -> anyhow::Result<()> {
         let repo = git_repository::discover(".")?;
         let tree = get_tree_for_path(repo.path(), Some("main"), Some("crates/gill-git"))?;
 

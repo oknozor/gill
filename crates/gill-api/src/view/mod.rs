@@ -16,7 +16,7 @@ pub mod user;
 
 pub struct HtmlTemplate<T>(T);
 
-pub fn view_router(app_state: AppState) -> Router {
+pub fn router(app_state: AppState) -> Router {
     Router::new()
         .merge(repository::routes())
         .merge(user::routes())

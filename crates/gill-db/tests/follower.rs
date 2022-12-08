@@ -3,7 +3,7 @@ use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("base"))]
-async fn should_get_user_by_email(db: PgPool) -> eyre::Result<()> {
+async fn should_get_user_by_email(db: PgPool) -> anyhow::Result<()> {
     let alice = User::by_email("alice@wonder.land", &db).await?;
 
     let followers: Vec<String> = alice

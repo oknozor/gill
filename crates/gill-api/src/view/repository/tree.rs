@@ -2,10 +2,10 @@ use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::view::repository::BranchDto;
 use crate::view::{get_connected_user_username, HtmlTemplate};
+use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use eyre::eyre;
 use gill_db::user::User;
 use gill_git::traversal::TreeMap;
 use sqlx::PgPool;
@@ -72,7 +72,7 @@ pub async fn root(
     let branch = repo
         .get_default_branch(&db)
         .await
-        .ok_or(eyre!("No default branch"))?;
+        .ok_or(anyhow!("No default branch"))?;
 
     imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
 }
