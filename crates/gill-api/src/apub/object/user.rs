@@ -9,14 +9,22 @@ use activitypub_federation::{
     LocalInstance,
 };
 use activitystreams_kinds::actor::PersonType;
+use std::str::FromStr;
+
 use axum::async_trait;
-use gill_db::user::User;
+use gill_db::user::{CreateUser, User};
 use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct ApubUser(User);
+
+impl From<User> for ApubUser {
+    fn from(user: User) -> Self {
+        ApubUser(user)
+    }
+}
 
 /// List of all activities which this actor can receive.
 #[derive(Deserialize, Serialize, Debug)]
@@ -32,14 +40,18 @@ pub struct Person {
     #[serde(rename = "type")]
     kind: PersonType,
     id: ObjectId<ApubUser>,
+    email: Option<String>,
+    username: String,
+    outbox: Url,
     inbox: Url,
+    domain: String,
+    followers: Url,
     public_key: PublicKey,
 }
 
 impl ApubUser {
     pub async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
         let db = instance.database();
-
         let followers = self.0.get_followers(i64::MAX, 0, db).await?;
 
         let followers = followers
@@ -51,12 +63,26 @@ impl ApubUser {
         Ok(followers)
     }
 
+    pub async fn add_follower(
+        &self,
+        follower_id: i32,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
+        let db = instance.database();
+        self.0.add_follower(follower_id, db).await?;
+        Ok(())
+    }
+
     pub fn followers_url(&self) -> Result<Url, AppError> {
         Url::parse(&self.0.followers_url).map_err(Into::into)
     }
 
     fn activity_pub_id(&self) -> &str {
         &self.0.activity_pub_id
+    }
+
+    pub fn local_id(&self) -> i32 {
+        self.0.id
     }
 
     fn activity_pub_id_as_url(&self) -> Result<Url, AppError> {
@@ -81,6 +107,10 @@ impl ApubUser {
         let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
         let activity_id = Url::parse(&activity_id)?;
         let follow = Follow::new(follower, following, activity_id);
+        tracing::debug!(
+            "Sending follow activity to user inboc {}",
+            other.shared_inbox_or_inbox()
+        );
         self.send(
             follow,
             vec![other.shared_inbox_or_inbox()],
@@ -126,7 +156,7 @@ impl ApubObject for ApubUser {
         data: &Self::DataType,
     ) -> Result<Option<Self>, Self::Error> {
         let db = data.database();
-        let user = User::by_activity_pub_id(object_id.as_str(), db).await.ok();
+        let user = User::by_activity_pub_id(object_id.as_str(), db).await?;
         Ok(user.map(ApubUser))
     }
 
@@ -134,8 +164,13 @@ impl ApubObject for ApubUser {
         Ok(Person {
             kind: Default::default(),
             id: ObjectId::new(self.activity_pub_id_as_url()?),
-            inbox: self.inbox(),
             public_key: self.public_key()?,
+            email: self.0.email,
+            username: self.0.username,
+            outbox: Url::parse(&self.0.outbox_url)?,
+            domain: self.0.domain,
+            inbox: Url::parse(&self.0.inbox_url)?,
+            followers: Url::parse(&self.0.followers_url)?,
         })
     }
 
@@ -156,7 +191,25 @@ impl ApubObject for ApubUser {
         let db = data.database();
         let id = Url::from(apub.id);
         let user = User::by_activity_pub_id(id.as_str(), db).await?;
-        Ok(ApubUser(user))
+        if let Some(user) = user {
+            Ok(ApubUser(user))
+        } else {
+            let user = CreateUser {
+                username: apub.username,
+                email: apub.email,
+                private_key: None,
+                public_key: apub.public_key.public_key_pem,
+                activity_pub_id: id.to_string(),
+                outbox_url: apub.outbox.to_string(),
+                inbox_url: apub.inbox.to_string(),
+                domain: apub.domain,
+                followers_url: apub.followers.to_string(),
+                is_local: false,
+            };
+
+            let user = User::create(user, db).await?;
+            Ok(ApubUser(user))
+        }
     }
 }
 
@@ -165,6 +218,6 @@ impl Actor for ApubUser {
         &self.0.public_key
     }
     fn inbox(&self) -> Url {
-        self.activity_pub_id_as_url().expect("Invalid inbox url")
+        Url::from_str(&self.0.inbox_url).expect("Invalid inbox url")
     }
 }

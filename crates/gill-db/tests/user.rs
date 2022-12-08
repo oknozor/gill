@@ -10,7 +10,7 @@ const ALICE_ID: i32 = 0;
 async fn should_create_user(db: PgPool) {
     let bob = CreateUser {
         username: "Bob".to_string(),
-        email: "bob@gill.org".to_string(),
+        email: Some("bob@gill.org".to_string()),
         private_key: Some("private_key".to_string()),
         public_key: "public_key".to_string(),
         is_local: true,
@@ -34,7 +34,7 @@ async fn should_get_user_by_email(db: PgPool) {
         id: ALICE_ID,
         username: "alice".to_string(),
         domain: "myinstance.org".to_string(),
-        email: "alice@wonder.land".to_string(),
+        email: Some("alice@wonder.land".to_string()),
         public_key: "public_key".to_string(),
         private_key: Some("private_key".to_string()),
         inbox_url: "https://myinstance.org/alice/inbox/".to_string(),
@@ -53,7 +53,7 @@ async fn should_get_user_by_username(db: PgPool) {
         id: ALICE_ID,
         username: "alice".to_string(),
         domain: "myinstance.org".to_string(),
-        email: "alice@wonder.land".to_string(),
+        email: Some("alice@wonder.land".to_string()),
         public_key: "public_key".to_string(),
         private_key: Some("private_key".to_string()),
         inbox_url: "https://myinstance.org/alice/inbox/".to_string(),
@@ -68,11 +68,11 @@ async fn should_get_user_by_username(db: PgPool) {
 async fn should_get_user_by_activity_pub_id(db: PgPool) {
     let alice = User::by_activity_pub_id("https://myinstance.org/alice", &db).await;
 
-    assert_that!(alice).is_ok().is_equal_to(User {
+    assert_that!(alice).is_ok().is_equal_to(Some(User {
         id: ALICE_ID,
         username: "alice".to_string(),
         domain: "myinstance.org".to_string(),
-        email: "alice@wonder.land".to_string(),
+        email: Some("alice@wonder.land".to_string()),
         public_key: "public_key".to_string(),
         private_key: Some("private_key".to_string()),
         inbox_url: "https://myinstance.org/alice/inbox/".to_string(),
@@ -80,7 +80,7 @@ async fn should_get_user_by_activity_pub_id(db: PgPool) {
         followers_url: "https://myinstance.org/alice/followsers/".to_string(),
         activity_pub_id: "https://myinstance.org/alice".to_string(),
         is_local: true,
-    });
+    }));
 }
 
 #[sqlx::test(fixtures("base"))]

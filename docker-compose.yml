@@ -7,7 +7,7 @@ services:
     restart: always
     container_name: gill-api
     environment:
-      DOMAIN: bore.pub:45285
+      DOMAIN: bore.pub:38809
       DB_NAME: gill
       DB_HOST: postgres
       DB_PORT: 5432
@@ -16,6 +16,28 @@ services:
     ports:
       - "3000:3000"
       - "2222:22"
+    volumes:
+      - ./docker/rbin:/home/git/bin
+      - ./docker/githooks:/home/git/hooks
+      - ./crates/gill-api/assets:/home/git/assets
+    entrypoint: /home/git/entrypoint-debug.sh
+
+  gill-2:
+    image: gill-api:latest
+    depends_on:
+      - postgres
+    restart: always
+    container_name: gill-api-2
+    environment:
+      DOMAIN: bore.pub:46849
+      DB_NAME: gill_2
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "3001:3000"
+      - "2223:22"
     volumes:
       - ./docker/rbin:/home/git/bin
       - ./docker/githooks:/home/git/hooks
@@ -33,27 +55,3 @@ services:
       - "5432:5432"
     volumes:
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  gill-2:
-    image: gill-api:latest
-    depends_on:
-      - postgres
-    restart: always
-    container_name: gill-api-2
-    environment:
-      DOMAIN: bore.pub:34003
-      DB_NAME: gill_2
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-    ports:
-      - "3001:3000"
-      - "2223:22"
-    volumes:
-      - ./docker/rbin:/home/git/bin
-      - ./docker/githooks:/home/git/hooks
-      - ./crates/gill-api/assets:/home/git/assets
-    entrypoint: /home/git/entrypoint-debug.sh
-    extra_hosts:
-      - "gillberrypi:192.168.0.17"

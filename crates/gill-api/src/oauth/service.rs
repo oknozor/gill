@@ -1,5 +1,4 @@
 use crate::oauth::Oauth2User;
-use gill_settings::SETTINGS;
 use axum::{
     http,
     http::{Request, StatusCode},
@@ -7,6 +6,7 @@ use axum::{
     response::Response,
 };
 use gill_db::user::User;
+use gill_settings::SETTINGS;
 use once_cell::sync::Lazy;
 use serde_json::Value;
 use sqlx::PgPool;

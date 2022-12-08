@@ -1,27 +1,21 @@
-use activitypub_federation::core::object_id::ObjectId;
-use activitypub_federation::data::Data;
-use activitypub_federation::deser::context::WithContext;
-use activitypub_federation::{InstanceSettings, LocalInstance};
-use activitypub_federation::traits::ApubObject;
-use axum::{Extension, Form};
-use axum::extract::State;
-use sqlx::PgPool;
-use crate::apub::activities::follow::Follow;
-use crate::apub::object::user::{ApubUser, Person};
+use crate::apub::object::user::ApubUser;
+
 use crate::oauth::{AppState, Oauth2User};
-use crate::view::{get_connected_user, get_connected_user_username};
-use serde::{Deserialize};
+use crate::view::get_connected_user;
+use activitypub_federation::core::object_id::ObjectId;
+
+use anyhow::anyhow;
+use axum::extract::State;
+use axum::{Extension, Form};
+use serde::Deserialize;
+use sqlx::PgPool;
 use url::Url;
-use crate::instance::{Instance, InstanceHandle};
 
 #[derive(Deserialize, Debug)]
 pub struct FollowForm {
     pub follow: String,
 }
 
-use axum_macros::debug_handler;
-use reqwest::Client;
-use gill_db::user::User;
 use crate::error::AppError;
 
 pub async fn follow_form(
@@ -29,21 +23,40 @@ pub async fn follow_form(
     connected_user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<FollowForm>,
-) -> Result<(), AppError>{
-    let user = get_connected_user(&db, connected_user).await;
-    if let Some(user) = user {
-        let url = Url::parse(&input.follow).unwrap();
-        let instance_host = url.host_str().unwrap();
-        let instance_host = instance_host.to_string();
-        let user_to_follow = ObjectId::<ApubUser>::new(url);
-        let settings = InstanceSettings::builder()
-        .debug(true)
-        .build()?;
+) -> Result<(), AppError> {
+    let Some(user) = get_connected_user(&db, connected_user).await else {
+        return Err(AppError::from(anyhow!("Unauthorized")))
+    };
 
-        let local_instance = LocalInstance::new(instance_host, Client::default().into(), settings);
-        let user_to_follow= user_to_follow.dereference(&data.instance, &local_instance, &mut 0)
-            .await?;
-    }
+    // First attempt to parse the whole user url, then fallback to webfinger
+    let url = if let Ok(url) = Url::parse(&input.follow) {
+        url
+    } else if let Ok(Some(url)) = resolve_webfinger(&input.follow).await {
+        url
+    } else {
+        return Err(AppError::from(anyhow!("Invalid user identifier")));
+    };
+
+    let user_to_follow = ObjectId::<ApubUser>::new(url);
+    let user_to_follow = user_to_follow
+        .dereference(&data.instance, data.instance.local_instance(), &mut 0)
+        .await?;
+
+    ApubUser::from(user)
+        .follow(&user_to_follow, &data.instance)
+        .await?;
 
     Ok(())
+}
+
+async fn resolve_webfinger(webfinger: &str) -> anyhow::Result<Option<Url>> {
+    let webfinger = webfinger::resolve(webfinger, false)
+        .await
+        .expect("Web finger error");
+    Ok(webfinger
+        .links
+        .iter()
+        .find(|link| link.rel == "self")
+        .and_then(|link| link.href.as_ref())
+        .and_then(|url| Url::parse(url).ok()))
 }

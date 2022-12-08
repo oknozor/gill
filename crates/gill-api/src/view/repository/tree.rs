@@ -5,9 +5,10 @@ use crate::view::{get_connected_user_username, HtmlTemplate};
 use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
-use axum::Extension;
+use axum::{Extension, TypedHeader};
 use gill_db::user::User;
 use gill_git::traversal::TreeMap;
+use headers::ContentType;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -60,21 +61,26 @@ pub async fn tree_root(
 /// Returns the root of a tree with for a given owner and repository
 /// using the default branch
 pub async fn root(
+    TypedHeader(content_type): TypedHeader<ContentType>,
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
 ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
-    /// TODO: Add special view for (owner, maintainer, dev)
-    let connected_username = get_connected_user_username(&db, user).await;
-    let user = User::by_user_name(&owner, &db).await?;
-    let repo = user.get_repository_by_name(&repository, &db).await?;
+    if content_type == ContentType::html() {
+        let connected_username = get_connected_user_username(&db, user).await;
+        let user = User::by_user_name(&owner, &db).await?;
+        let repo = user.get_repository_by_name(&repository, &db).await?;
 
-    let branch = repo
-        .get_default_branch(&db)
-        .await
-        .ok_or_else(||anyhow!("No default branch"))?;
+        let branch = repo
+            .get_default_branch(&db)
+            .await
+            .ok_or_else(|| anyhow!("No default branch"))?;
 
-    imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
+        imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
+        // TODO
+    } else {
+        Err(AppError::from(anyhow!("oh no")))
+    }
 }
 
 mod imp {

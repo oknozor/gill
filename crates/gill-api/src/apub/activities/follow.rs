@@ -1,6 +1,7 @@
 use crate::apub::object::user::ApubUser;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
+
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::FollowType;
 use axum::async_trait;
@@ -11,17 +12,17 @@ use url::Url;
 #[serde(rename_all = "camelCase")]
 pub struct Follow {
     id: Url,
-    pub actor: ObjectId<ApubUser>,
-    pub object: ObjectId<ApubUser>,
+    pub follower: ObjectId<ApubUser>,
+    pub followed: ObjectId<ApubUser>,
     r#type: FollowType,
 }
 
 impl Follow {
-    pub fn new(actor: ObjectId<ApubUser>, object: ObjectId<ApubUser>, id: Url) -> Follow {
+    pub fn new(follower: ObjectId<ApubUser>, followed: ObjectId<ApubUser>, id: Url) -> Follow {
         Follow {
             id,
-            actor,
-            object,
+            follower,
+            followed,
             r#type: Default::default(),
         }
     }
@@ -37,7 +38,7 @@ impl ActivityHandler for Follow {
     }
 
     fn actor(&self) -> &Url {
-        self.actor.inner()
+        self.follower.inner()
     }
 
     async fn verify(
@@ -53,8 +54,15 @@ impl ActivityHandler for Follow {
         data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        println!("Got APUB Follow event");
-        println!("{:?}", self);
+        let followed = ObjectId::<ApubUser>::new(self.followed)
+            .dereference_local(data)
+            .await?;
+
+        let follower = ObjectId::<ApubUser>::new(self.follower)
+            .dereference(data, data.local_instance(), &mut 0)
+            .await?;
+
+        followed.add_follower(follower.local_id(), data).await?;
         Ok(())
     }
 }

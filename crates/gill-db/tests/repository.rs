@@ -27,6 +27,8 @@ async fn should_get_repository_by_namespace(db: PgPool) {
     assert_that!(linux).is_ok().is_equal_to(Repository {
         id: LINUX_REPO_ID,
         name: "linux".to_string(),
+        description: None,
+        private: false,
         owner_id: ALICE_ID,
     });
 }
@@ -40,12 +42,16 @@ async fn should_list_repositories(db: PgPool) {
             owner_id: 1,
             name: "gill".to_string(),
             owner_name: "okno".to_string(),
+            description: None,
+            private: false,
         },
         &OwnedRepository {
             id: LINUX_REPO_ID,
             owner_id: 0,
             name: "linux".to_string(),
             owner_name: "alice".to_string(),
+            description: None,
+            private: false,
         },
     ]);
 }
@@ -138,6 +144,8 @@ mod fixtures {
         Repository {
             id: GILL_REPO_ID,
             name: "gill".to_string(),
+            description: None,
+            private: false,
             owner_id: 1,
         }
     }
@@ -147,6 +155,8 @@ mod fixtures {
         Repository {
             id: LINUX_REPO_ID,
             name: "linux".to_string(),
+            description: None,
+            private: false,
             owner_id: 0,
         }
     }
