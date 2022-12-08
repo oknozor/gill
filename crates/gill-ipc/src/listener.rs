@@ -1,5 +1,6 @@
 use crate::{Message, SOCKET_ADDRESS};
 use gill_db::repository::Repository;
+use gill_settings::SETTINGS;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::fs;
@@ -8,7 +9,6 @@ use std::os::unix::net::UnixStream;
 use std::time::Duration;
 use tokio::net::UnixListener;
 use tracing::debug;
-use gill_settings::SETTINGS;
 
 pub struct IPCListener;
 

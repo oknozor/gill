@@ -1,4 +1,3 @@
-
 use async_session::{MemoryStore, Session, SessionStore};
 
 use axum::{
@@ -25,10 +24,10 @@ pub mod service;
 #[cfg(feature = "integration")]
 pub mod service_mock;
 
+use crate::instance::InstanceHandle;
 use gill_settings::SETTINGS;
 #[cfg(feature = "integration")]
 pub use service_mock as service;
-use crate::instance::InstanceHandle;
 
 static COOKIE_NAME: &str = "GILL_SESSION";
 

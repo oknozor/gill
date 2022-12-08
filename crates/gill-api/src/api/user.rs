@@ -1,10 +1,10 @@
 use crate::error::AppError;
-use gill_settings::SETTINGS;
 use activitypub_federation::core::signatures::generate_actor_keypair;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use gill_db::user::{CreateSSHKey, CreateUser, User};
+use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -19,16 +19,23 @@ pub async fn create(
     Json(user): Json<CreateUserDto>,
 ) -> Result<Response, AppError> {
     let keys = generate_actor_keypair()?;
-    println!("{:?}", SETTINGS);
+    let scheme = if gill_settings::debug_mod() {
+        "http://"
+    } else {
+        "https://"
+    };
+    let domain = &SETTINGS.domain;
+    let username = user.username;
+
     let user = CreateUser {
-        username: user.username.clone(),
-        email: user.email,
+        username: username.clone(),
+        email: Some(user.email),
         private_key: Some(keys.private_key),
         public_key: keys.public_key,
-        followers_url: format!("http://{}/apub/{}/followers", SETTINGS.domain, user.username),
-        outbox_url: format!("http://{}/apub/{}/outbox", SETTINGS.domain, user.username),
-        inbox_url: format!("http://{}/apub/{}/inbox", SETTINGS.domain, user.username),
-        activity_pub_id: format!("http://{}/apub/users/{}", SETTINGS.domain, user.username),
+        followers_url: format!("{scheme}{domain}/apub/{username}/followers"),
+        outbox_url: format!("{scheme}{domain}/apub/{username}/outbox"),
+        inbox_url: format!("{scheme}{domain}/apub/{username}/inbox"),
+        activity_pub_id: format!("{scheme}{domain}/apub/users/{username}"),
         domain: SETTINGS.domain.clone(),
         is_local: true,
     };

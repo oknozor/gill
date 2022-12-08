@@ -8,10 +8,10 @@ pub struct CreateSSHKey {
     pub key: String,
 }
 
-#[derive(Deserialize, Serialize, JsonSchema)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct CreateUser {
     pub username: String,
-    pub email: String,
+    pub email: Option<String>,
     pub private_key: Option<String>,
     pub public_key: String,
     pub activity_pub_id: String,
@@ -22,13 +22,13 @@ pub struct CreateUser {
     pub is_local: bool,
 }
 
-// Note that field ordering here should match the database schema
+/// A user living in gill database
 #[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug, FromRow)]
 pub struct User {
     pub id: i32,
     pub username: String,
     pub domain: String,
-    pub email: String,
+    pub email: Option<String>,
     pub public_key: String,
     pub private_key: Option<String>,
     pub activity_pub_id: String,
@@ -39,8 +39,9 @@ pub struct User {
 }
 
 impl User {
-    pub async fn create(user: CreateUser, pool: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
+    pub async fn create(user: CreateUser, pool: &PgPool) -> sqlx::Result<User> {
+        let user = sqlx::query_as!(
+            User,
             // language=PostgreSQL
             r#"
             insert into "users"(
@@ -55,6 +56,7 @@ impl User {
                                 is_local,
                                 activity_pub_id)
             values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            returning *;
         "#,
             user.username,
             user.email,
@@ -67,10 +69,10 @@ impl User {
             user.is_local,
             user.activity_pub_id,
         )
-        .execute(pool)
+        .fetch_one(pool)
         .await?;
 
-        Ok(())
+        Ok(user)
     }
 
     pub async fn by_email(email: &str, pool: &PgPool) -> sqlx::Result<User> {
@@ -89,7 +91,10 @@ impl User {
         Ok(user)
     }
 
-    pub async fn by_activity_pub_id(activity_pub_id: &str, pool: &PgPool) -> sqlx::Result<User> {
+    pub async fn by_activity_pub_id(
+        activity_pub_id: &str,
+        pool: &PgPool,
+    ) -> sqlx::Result<Option<User>> {
         let user = sqlx::query_as!(
             User,
             // language=PostgreSQL
@@ -99,7 +104,7 @@ impl User {
             "#,
             activity_pub_id,
         )
-        .fetch_one(pool)
+        .fetch_optional(pool)
         .await?;
 
         Ok(user)

@@ -1,14 +1,19 @@
 use config::{Config, File};
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::path::PathBuf;
-use once_cell::sync::Lazy;
 
 pub static SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
+
+pub fn debug_mod() -> bool {
+    SETTINGS.debug
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub domain: String,
+    pub debug: bool,
     pub port: u16,
     pub oauth_provider: AuthSettings,
     pub database: DbSettings,
@@ -121,12 +126,19 @@ impl Settings {
         }
 
         if let Ok(port) = env::var("DB_PORT") {
-            config.database.port = port.parse()
-                .expect("Invalid port number");
+            config.database.port = port.parse().expect("Invalid port number");
         }
 
         if let Ok(password) = env::var("DB_PASSWORD") {
             config.database.password = password;
+        }
+
+        if let Ok(port) = env::var("PORT") {
+            config.port = port.parse().expect("Invalid port number");
+        }
+
+        if let Ok(debug) = env::var("DEBUG") {
+            config.debug = debug.parse().expect("Expected a bool");
         }
 
         Ok(config)

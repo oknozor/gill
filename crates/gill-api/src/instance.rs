@@ -1,23 +1,14 @@
-
 use crate::error::AppError;
 use crate::oauth::{oauth_client, AppState};
 use crate::{api, apub, view};
 
-
-
-
-use activitypub_federation::{
-    InstanceSettings, LocalInstance, UrlVerifier,
-};
+use activitypub_federation::{InstanceSettings, LocalInstance, UrlVerifier};
 use async_session::MemoryStore;
 use axum::async_trait;
 
-
-
-
 use axum::response::IntoResponse;
 
-
+use axum::routing::get;
 use axum::{Extension, Router};
 use gill_ipc::listener::IPCListener;
 use http::StatusCode;
@@ -30,9 +21,8 @@ use std::sync::Arc;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
-
-use url::Url;
 use gill_settings::SETTINGS;
+use url::Url;
 
 use crate::syntax::{load_syntax, load_theme};
 
@@ -95,13 +85,17 @@ impl Instance {
             oauth_client,
             syntax_set,
             theme,
-            instance: instance.clone()
+            instance: instance.clone(),
         };
 
         let app = Router::new()
+            .route(
+                "/.well-known/webfinger",
+                get(crate::webfinger::webfinger).with_state(app_state.clone()),
+            )
             .nest("/api/v1/", api::router())
             .nest_service("/apub", apub::router(instance))
-            .nest_service("/", view::router(app_state))
+            .nest_service("/", view::router(app_state.clone()))
             .nest_service("/assets/", serve_dir)
             .layer(TraceLayer::new_for_http())
             .layer(Extension(db))

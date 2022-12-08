@@ -24,6 +24,3 @@ impl AppError {
         (StatusCode::NOT_FOUND, format!("{}", self.0)).into_response()
     }
 }
-
-
-
