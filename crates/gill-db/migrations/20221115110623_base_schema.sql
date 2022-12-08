@@ -3,7 +3,7 @@ CREATE TABLE users
     id              SERIAL PRIMARY KEY,
     username        VARCHAR(255) NOT NULL,
     domain          VARCHAR(255) NOT NULL,
-    email           VARCHAR(255) NOT NULL,
+    email           VARCHAR(255),
     public_key      TEXT         NOT NULL,
     private_key     TEXT,
     activity_pub_id VARCHAR(255) NOT NULL UNIQUE,
@@ -57,21 +57,21 @@ CREATE TABLE branch
 CREATE TABLE repository_star
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    starred_by    VARCHAR(255) REFERENCES users (activity_pub_id),
+    starred_by    INT REFERENCES users (id) NOT NULL,
     PRIMARY KEY (starred_by, repository_id)
 );
 
 CREATE TABLE repository_fork
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    forked_by     VARCHAR(255) REFERENCES users (activity_pub_id),
+    forked_by     INT REFERENCES users (id) NOT NULL,
     PRIMARY KEY (forked_by, repository_id)
 );
 
 CREATE TABLE repository_watch
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    watched_by    VARCHAR(255) REFERENCES users (activity_pub_id),
+    watched_by    INT REFERENCES users (id) NOT NULL,
     PRIMARY KEY (watched_by, repository_id)
 );
 

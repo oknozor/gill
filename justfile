@@ -10,6 +10,18 @@ compile-arm:
     cargo sqlx prepare --merged
     CROSS_CONFIG=Cross.toml cross build --target armv7-unknown-linux-musleabihf --release
 
+reset-db:
+    docker-compose exec gill "pkill" "gill-api" || true
+    docker-compose exec gill-2 "pkill" "gill-api" || true
+    docker-compose up postgres -d
+    yes | sqlx database drop || true
+    sqlx database create
+    sqlx migrate run --source crates/gill-db/migrations
+    yes | sqlx database drop --database-url "postgres://postgres:postgres@localhost/gill_2" || true
+    sqlx database create --database-url "postgres://postgres:postgres@localhost/gill_2"
+    sqlx migrate run --source crates/gill-db/migrations  --database-url "postgres://postgres:postgres@localhost/gill_2"
+    cargo sqlx prepare --merged
+
 scp-arm: compile-arm
  scp target/armv7-unknown-linux-musleabihf/release/gill-api git@192.168.0.17:bin/
  scp target/armv7-unknown-linux-musleabihf/release/gill-git-server git@192.168.0.17:bin/
@@ -17,12 +29,7 @@ scp-arm: compile-arm
  scp -r crates/gill-api/assets/ git@192.168.0.17:
  scp -r crates/gill-db/migrations/ git@192.168.0.17:
 
-migrate:
-    docker-compose up postgres -d
-    sqlx migrate run --source crates/gill-db/migrations
-    cargo sqlx prepare --merged
-
-build: migrate
+build: reset-db
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
     docker build -t gill-api:latest -f Dockerfile .
     docker-compose up -d

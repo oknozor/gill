@@ -1,4 +1,3 @@
-use std::string::ParseError;
 use crate::apub::object::user::{ApubUser, Person, PersonAcceptedActivities};
 use crate::error::AppError;
 use crate::instance::{Instance, InstanceHandle};
@@ -15,27 +14,28 @@ use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method, Request};
+
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
-use tracing::debug;
+
 use url::Url;
-use uuid::Uuid;
 
 pub mod activities;
 pub mod object;
 
 pub fn router(instance: Arc<Instance>) -> Router {
-    Router::new()
-        .route("/inbox", post(http_post_user_inbox))
-        // FIXME: the layer seems to apply to all route
-        // .layer(
-        //     ServiceBuilder::new()
-        //         .map_request_body(body::boxed)
-        //         .layer(middleware::from_fn(verify_request_payload)),
-        // )
-        .route("/users/:user_name", get(http_get_user))
-        .with_state(instance)
+    let public = Router::new().route("/users/:user_name", get(http_get_user));
+
+    let private = Router::new()
+        .route("/:user/inbox", post(http_post_user_inbox))
+        .layer(
+            ServiceBuilder::new()
+                .map_request_body(body::boxed)
+                .layer(middleware::from_fn(verify_request_payload)),
+        );
+
+    public.merge(private).with_state(instance)
 }
 
 async fn http_get_user(
@@ -51,7 +51,9 @@ async fn http_get_user(
         .into_apub(&data)
         .await;
 
-    Ok(ApubJson(WithContext::new_default(user?)))
+    let user = WithContext::new_default(user?);
+    println!("{:?}", user);
+    Ok(ApubJson(user))
 }
 
 async fn http_post_user_inbox(
@@ -73,4 +75,3 @@ async fn http_post_user_inbox(
     )
     .await
 }
-

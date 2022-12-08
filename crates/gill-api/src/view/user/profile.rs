@@ -14,13 +14,6 @@ pub struct UserProfileTemplate {
     user: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct RepositoryDo {
-    name: String,
-    is_default: bool,
-    is_current: bool,
-}
-
 pub async fn get_profile(
     connected_user: Option<Oauth2User>,
     Path(user): Path<String>,
