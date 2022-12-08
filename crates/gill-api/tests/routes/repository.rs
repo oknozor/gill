@@ -10,7 +10,7 @@ use tower::ServiceExt;
 use crate::helpers::{response_json, service, RequestBuilderExt};
 
 #[sqlx::test(fixtures("base"))]
-async fn init(db: PgPool) -> eyre::Result<()> {
+async fn init(db: PgPool) -> anyhow::Result<()> {
     let request = Request::post("/repositories")
         .header(CONTENT_TYPE, "application/json")
         .json(json! {{ "name": "gill" }});
@@ -22,7 +22,7 @@ async fn init(db: PgPool) -> eyre::Result<()> {
 }
 
 #[sqlx::test(fixtures("base"))]
-async fn list(db: PgPool) -> eyre::Result<()> {
+async fn list(db: PgPool) -> anyhow::Result<()> {
     let request = Request::get("/repositories").empty_body();
 
     let mut response = service(db).oneshot(request).await?;

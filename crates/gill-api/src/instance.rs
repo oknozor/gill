@@ -1,4 +1,7 @@
-use crate::error::Error;
+use crate::apub::object::user::{ApubUser, Person, PersonAcceptedActivities};
+use crate::error::AppError;
+use crate::oauth::{oauth_client, AppState};
+use crate::{api, apub, view};
 use activitypub_federation::core::axum::{
     inbox::receive_activity, json::ApubJson, verify_request_payload, DigestVerified,
 };
@@ -8,6 +11,7 @@ use activitypub_federation::traits::ApubObject;
 use activitypub_federation::{
     core::object_id::ObjectId, InstanceSettings, LocalInstance, UrlVerifier,
 };
+use async_session::MemoryStore;
 use axum::async_trait;
 use axum::body::Body;
 use axum::extract::{OriginalUri, State};
@@ -17,21 +21,25 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::routing::post;
 use axum::{body, middleware, Extension, Json, Router};
+use gill_ipc::listener::IPCListener;
+use http::StatusCode;
 use reqwest::Client;
 use sqlx::PgPool;
+use std::io;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use tower::ServiceBuilder;
+use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tower_http::ServiceBuilderExt;
 use url::Url;
 
-use crate::object::user::{ApubUser, Person, PersonAcceptedActivities};
+use crate::syntax::{load_syntax, load_theme};
 
 pub type InstanceHandle = Arc<Instance>;
 
 pub struct Instance {
-    local_instance: LocalInstance,
+    pub local_instance: LocalInstance,
     db: PgPool,
 }
 
@@ -52,7 +60,7 @@ impl UrlVerifier for MyUrlVerifier {
 }
 
 impl Instance {
-    pub fn new(hostname: String, db: PgPool) -> Result<InstanceHandle, Error> {
+    pub fn new(hostname: String, db: PgPool) -> Result<InstanceHandle, AppError> {
         let settings = InstanceSettings::builder()
             .debug(true)
             .url_verifier(Box::new(MyUrlVerifier()))
@@ -76,16 +84,28 @@ impl Instance {
     pub async fn listen(instance: &InstanceHandle) -> anyhow::Result<()> {
         let hostname = instance.local_instance.hostname();
         let instance = instance.clone();
+        let serve_dir =
+            axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error);
+        let store = MemoryStore::new();
+        let oauth_client = oauth_client();
+        let syntax_set = load_syntax();
+        let theme = load_theme();
+        let db = instance.db.clone();
+        let app_state = AppState {
+            store,
+            oauth_client,
+            syntax_set,
+            theme,
+        };
+
         let app = Router::new()
-            .route("/inbox", post(http_post_user_inbox))
-            .layer(
-                ServiceBuilder::new()
-                    .map_request_body(body::boxed)
-                    .layer(middleware::from_fn(verify_request_payload)),
-            )
-            .route("/objects/:user_name", get(http_get_user))
-            .with_state(instance)
-            .layer(TraceLayer::new_for_http());
+            .nest("/api/v1/", api::router())
+            .nest_service("/apub", apub::router(instance))
+            .nest_service("/", view::router(app_state))
+            .nest_service("/assets/", serve_dir)
+            .layer(TraceLayer::new_for_http())
+            .layer(Extension(db))
+            .into_make_service();
 
         // run it
         let addr = hostname
@@ -93,47 +113,15 @@ impl Instance {
             .next()
             .expect("Failed to lookup domain name");
 
-        axum::Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await?;
+        let app = axum::Server::bind(&addr).serve(app);
+
+        let ipc = IPCListener;
+        let _ = tokio::join!(app, ipc.listen());
 
         Ok(())
     }
 }
 
-async fn http_get_user(
-    State(data): State<InstanceHandle>,
-    request: Request<Body>,
-) -> Result<ApubJson<WithContext<Person>>, Error> {
-    let hostname: String = data.local_instance.hostname().to_string();
-    let request_url = format!("http://{}{}", hostname, &request.uri());
-    let url = Url::parse(&request_url).expect("Failed to parse url");
-    println!("{}", url);
-    let user = ObjectId::<ApubUser>::new(url)
-        .dereference_local(&data)
-        .await?
-        .into_apub(&data)
-        .await?;
-
-    Ok(ApubJson(WithContext::new_default(user)))
-}
-
-async fn http_post_user_inbox(
-    headers: HeaderMap,
-    method: Method,
-    OriginalUri(uri): OriginalUri,
-    State(data): State<InstanceHandle>,
-    Extension(digest_verified): Extension<DigestVerified>,
-    Json(activity): Json<WithContext<PersonAcceptedActivities>>,
-) -> impl IntoResponse {
-    receive_activity::<WithContext<PersonAcceptedActivities>, ApubUser, InstanceHandle>(
-        digest_verified,
-        activity,
-        &data.clone().local_instance,
-        &Data::new(data),
-        headers,
-        method,
-        uri,
-    )
-    .await
+async fn handle_error(_err: io::Error) -> impl IntoResponse {
+    (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }

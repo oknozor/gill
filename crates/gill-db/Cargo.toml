@@ -10,4 +10,4 @@ schemars = { version = "0.8.10", features = ["uuid1"] }
 
 [dev-dependencies]
 speculoos.workspace = true
-eyre.workspace = true
+anyhow.workspace = true

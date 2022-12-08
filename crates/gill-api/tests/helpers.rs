@@ -50,6 +50,6 @@ where
 }
 
 pub fn service(_db: PgPool) -> Router {
-    let router = gill_api::api::rest_api();
+    let router = gill_api::api::router();
     router
 }

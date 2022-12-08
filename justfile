@@ -6,6 +6,18 @@ clean:
     docker-compose down
     cargo clean
 
+compile-arm:
+    cargo sqlx prepare --merged
+    CROSS_CONFIG=Cross.toml cross build --target armv7-unknown-linux-musleabihf --release
+
+scp-arm: compile-arm
+ scp target/armv7-unknown-linux-musleabihf/release/gill-api git@192.168.0.17:bin/
+ scp target/armv7-unknown-linux-musleabihf/release/gill-apub git@192.168.0.17:bin/
+ scp target/armv7-unknown-linux-musleabihf/release/gill-git-server git@192.168.0.17:bin/
+ scp target/armv7-unknown-linux-musleabihf/release/post-receive git@192.168.0.17:hooks/
+ scp -r crates/gill-api/assets/ git@192.168.0.17:
+ scp -r crates/gill-db/migrations/ git@192.168.0.17:
+
 # Prepare build for offline sqlx build
 # this is required to build inside cross container
 migrate:

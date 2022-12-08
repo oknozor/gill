@@ -19,7 +19,7 @@ pub enum Message {
 }
 
 impl Message {
-    pub fn send(self) -> eyre::Result<()> {
+    pub fn send(self) -> anyhow::Result<()> {
         let mut stream = UnixStream::connect(SOCKET_ADDRESS)?;
         let message = rmp_serde::to_vec(&self)?;
         stream.write_all(&message)?;

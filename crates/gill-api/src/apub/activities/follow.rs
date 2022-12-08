@@ -1,16 +1,18 @@
+use crate::apub::object::user::ApubUser;
+use crate::error::AppError;
+use crate::instance::InstanceHandle;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::FollowType;
+use axum::async_trait;
 use serde::{Deserialize, Serialize};
 use url::Url;
-
-use crate::{instance::InstanceHandle, object::user::ApubUser};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Follow {
     id: Url,
-    pub(crate) actor: ObjectId<ApubUser>,
-    pub(crate) object: ObjectId<ApubUser>,
+    pub actor: ObjectId<ApubUser>,
+    pub object: ObjectId<ApubUser>,
     r#type: FollowType,
 }
 
@@ -25,10 +27,10 @@ impl Follow {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl ActivityHandler for Follow {
     type DataType = InstanceHandle;
-    type Error = crate::error::Error;
+    type Error = AppError;
 
     fn id(&self) -> &Url {
         &self.id

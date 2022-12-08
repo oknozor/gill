@@ -1,5 +1,6 @@
-use crate::{activities::follow::Follow, error::Error, instance::InstanceHandle};
-
+use crate::apub::activities::follow::Follow;
+use crate::error::AppError;
+use crate::instance::InstanceHandle;
 use activitypub_federation::{
     core::{activity_queue::send_activity, object_id::ObjectId, signatures::PublicKey},
     data::Data,
@@ -8,6 +9,7 @@ use activitypub_federation::{
     LocalInstance,
 };
 use activitystreams_kinds::actor::PersonType;
+use axum::async_trait;
 use gill_db::user::User;
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -35,7 +37,7 @@ pub struct Person {
 }
 
 impl ApubUser {
-    pub async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, Error> {
+    pub async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
         let db = instance.database();
 
         let followers = self.0.get_followers(i64::MAX, 0, db).await?;
@@ -49,7 +51,7 @@ impl ApubUser {
         Ok(followers)
     }
 
-    pub fn followers_url(&self) -> Result<Url, Error> {
+    pub fn followers_url(&self) -> Result<Url, AppError> {
         Url::parse(&self.0.followers_url).map_err(Into::into)
     }
 
@@ -57,18 +59,22 @@ impl ApubUser {
         &self.0.activity_pub_id
     }
 
-    fn activity_pub_id_as_url(&self) -> Result<Url, Error> {
+    fn activity_pub_id_as_url(&self) -> Result<Url, AppError> {
         Ok(Url::parse(self.activity_pub_id())?)
     }
 
-    fn public_key(&self) -> Result<PublicKey, Error> {
+    fn public_key(&self) -> Result<PublicKey, AppError> {
         Ok(PublicKey::new_main_key(
             self.activity_pub_id_as_url()?,
             self.0.public_key.clone(),
         ))
     }
 
-    pub async fn follow(&self, other: &ApubUser, instance: &InstanceHandle) -> Result<(), Error> {
+    pub async fn follow(
+        &self,
+        other: &ApubUser,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
         let follower = ObjectId::new(self.activity_pub_id_as_url()?);
         let following = ObjectId::new(other.activity_pub_id_as_url()?);
         let hostname = instance.local_instance().hostname();
@@ -84,7 +90,7 @@ impl ApubUser {
         Ok(())
     }
 
-    pub(crate) async fn send<Activity>(
+    pub async fn send<Activity>(
         &self,
         activity: Activity,
         recipients: Vec<Url>,
@@ -93,7 +99,7 @@ impl ApubUser {
     where
         Activity: ActivityHandler + Serialize + Send + Sync,
         <Activity as ActivityHandler>::Error:
-            From<anyhow::Error> + From<serde_json::Error> + From<Error>,
+            From<anyhow::Error> + From<serde_json::Error> + From<AppError>,
     {
         let activity = WithContext::new_default(activity);
         send_activity(
@@ -108,12 +114,12 @@ impl ApubUser {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl ApubObject for ApubUser {
     type DataType = InstanceHandle;
     type ApubType = Person;
     type DbType = ApubUser;
-    type Error = Error;
+    type Error = AppError;
 
     async fn read_from_apub_id(
         object_id: Url,

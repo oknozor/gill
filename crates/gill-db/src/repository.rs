@@ -6,6 +6,8 @@ use sqlx::{FromRow, PgPool};
 pub struct Repository {
     pub id: i32,
     pub name: String,
+    pub description: Option<String>,
+    pub private: bool,
     pub owner_id: i32,
 }
 
@@ -15,6 +17,8 @@ pub struct OwnedRepository {
     pub owner_id: i32,
     pub name: String,
     pub owner_name: String,
+    pub description: Option<String>,
+    pub private: bool,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -27,6 +31,12 @@ pub struct Branch {
     pub name: String,
     pub repository_id: i32,
     pub is_default: bool,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Star {
+    pub repository_id: i32,
+    pub stared_by: i32,
 }
 
 impl Repository {
@@ -55,10 +65,14 @@ impl Repository {
             Repository,
             // language=PostgreSQL
             r#"
-            SELECT r.id, r.name, owner_id FROM repository r
+            SELECT r.id,
+                   r.name,
+                   r.description,
+                   r.private,
+                   owner_id
+            FROM repository r
             JOIN users u on r.owner_id = u.id
             WHERE u.username = $1 AND r.name = $2
-
             "#,
             owner,
             name
@@ -74,7 +88,13 @@ impl Repository {
             OwnedRepository,
             // language=PostgreSQL
             r#"
-                SELECT r.id, r.owner_id, r.name, u.username as owner_name FROM repository r
+                SELECT r.id,
+                       r.owner_id,
+                       r.name,
+                       r.description,
+                       u.username as owner_name,
+                       r.private
+                FROM repository r
                 JOIN users u ON u.id = r.owner_id
                 LIMIT $1
                 OFFSET $2
