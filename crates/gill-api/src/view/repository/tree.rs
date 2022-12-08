@@ -72,7 +72,7 @@ pub async fn root(
     let branch = repo
         .get_default_branch(&db)
         .await
-        .ok_or(anyhow!("No default branch"))?;
+        .ok_or_else(||anyhow!("No default branch"))?;
 
     imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
 }

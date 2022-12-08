@@ -48,21 +48,13 @@ impl ActivityHandler for Follow {
         Ok(())
     }
 
-    // Ignore clippy false positive: https://github.com/rust-lang/rust-clippy/issues/6446
-    #[allow(clippy::await_holding_lock)]
     async fn receive(
         self,
-        _data: &Data<Self::DataType>,
+        data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        //  let local_user = {
-        //      let mut users = data.users.lock().unwrap();
-        //      let local_user = users.first_mut().unwrap();
-        //      local_user.followers.push(self.actor.inner().clone());
-        //      local_user.clone()
-        //  };
-        //
-        // Ok(())
-        todo!()
+        println!("Got APUB Follow event");
+        println!("{:?}", self);
+        Ok(())
     }
 }

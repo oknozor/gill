@@ -1,6 +1,5 @@
 use axum::response::{IntoResponse, Response};
 use http::StatusCode;
-use std::fmt::{write, Display, Formatter};
 
 #[derive(Debug)]
 pub struct AppError(anyhow::Error);
@@ -19,3 +18,12 @@ impl IntoResponse for AppError {
         (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", self.0)).into_response()
     }
 }
+
+impl AppError {
+    pub fn not_found(self) -> Response {
+        (StatusCode::NOT_FOUND, format!("{}", self.0)).into_response()
+    }
+}
+
+
+

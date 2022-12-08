@@ -1,7 +1,16 @@
-user_info_url = "https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo"
-repo_dir = "/home/git/"
 domain = "localhost:3000"
-database_host = "postgres"
-database_name = "gill"
-database_user = "postgres"
-database_password = "postgres"
+
+[database]
+host = "postgres"
+port = 5432
+database = "gill"
+user = "postgres"
+password = "postgres"
+
+[oauth_provider]
+client_id = "gill"
+client_secret = "8Nup063EeIOYzSsEyVZkbo67sUpIX0Bc"
+provider = "https://keycloak.cloud.hoohoot.org"
+user_info_url = "/auth/realms/hoohoot/protocol/openid-connect/userinfo"
+auth_url = "/auth/realms/hoohoot/protocol/openid-connect/auth"
+token_url = "/auth/realms/hoohoot/protocol/openid-connect/token"

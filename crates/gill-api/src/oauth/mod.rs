@@ -1,4 +1,6 @@
+
 use async_session::{MemoryStore, Session, SessionStore};
+
 use axum::{
     async_trait,
     extract::{
@@ -23,9 +25,10 @@ pub mod service;
 #[cfg(feature = "integration")]
 pub mod service_mock;
 
-use crate::SETTINGS;
+use gill_settings::SETTINGS;
 #[cfg(feature = "integration")]
 pub use service_mock as service;
+use crate::instance::InstanceHandle;
 
 static COOKIE_NAME: &str = "GILL_SESSION";
 
@@ -36,6 +39,7 @@ pub struct AppState {
     /// Fixme: Make those static
     pub syntax_set: SyntaxSet,
     pub theme: Theme,
+    pub instance: InstanceHandle,
 }
 
 impl FromRef<AppState> for MemoryStore {
@@ -63,16 +67,11 @@ impl FromRef<AppState> for Theme {
 }
 
 pub fn oauth_client() -> BasicClient {
-    /// FIXME: take those from config or env
-    let client_id = "gill".to_string();
-    let client_secret = "8Nup063EeIOYzSsEyVZkbo67sUpIX0Bc".to_string();
+    let client_id = SETTINGS.oauth_provider.client_id();
+    let client_secret = SETTINGS.oauth_provider.client_secret();
     let redirect_url = format!("http://{}/auth/authorized", SETTINGS.domain);
-    let auth_url =
-        "https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/auth"
-            .to_string();
-    let token_url =
-        "https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/token"
-            .to_string();
+    let auth_url = SETTINGS.oauth_provider.auth_url();
+    let token_url = SETTINGS.oauth_provider.token_url();
 
     BasicClient::new(
         ClientId::new(client_id),
@@ -146,9 +145,8 @@ pub async fn login_authorized(
         .unwrap();
 
     let client = reqwest::Client::new();
-    /// FIXME: get from env/config
     let user_data: Oauth2User = client
-        .get("https://keycloak.cloud.hoohoot.org/auth/realms/hoohoot/protocol/openid-connect/userinfo")
+        .get(SETTINGS.oauth_provider.user_info_url())
         .bearer_auth(token.access_token().secret())
         .send()
         .await

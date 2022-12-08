@@ -9,7 +9,7 @@ const navigation = (branch) => {
         let pathPart = parts[i];
         link = link + "/" + pathPart;
         let part = decodeURIComponent(pathPart);
-        if (blobOrTree === "blob" && pathPart === parts[parts.length -1]) {
+        if (blobOrTree === "blob" && pathPart === parts[parts.length - 1]) {
             linkElements.push(`<span class="font-bold">${part}</span>`)
         } else {
             linkElements.push(`<a href="${proto}//${host}/${user}/${repository}/tree/${currentBranch}${link}">${part}</a>`);
@@ -77,4 +77,3 @@ const pathInfo = () => {
         currentPath,
     }
 }
-

@@ -13,3 +13,4 @@ serde.workspace = true
 anyhow.workspace = true
 rmp-serde = "1.1.1"
 gill-db = { path = "../gill-db" }
+gill-settings = { path = "../gill-settings" }

@@ -1,9 +1,16 @@
 {% extends "base.html" %}
 
 {% block content_left %}
-<p>Here goes create a repo</p>
-<p>Here goes our repo list</p>
-<p>Here goes our activity list</p>
+{%- match user -%}
+{%- when Some with (user) -%}
+<form action="/follow_user">
+    <label for="follow">User apu url:</label><br>
+    <input type="text" id="follow" name="follow"><br>
+</form>
+{%- when None -%}
+
+{%- endmatch -%}
+
 {% endblock %}
 
 {% block content %}

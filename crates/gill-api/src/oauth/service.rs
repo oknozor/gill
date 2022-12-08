@@ -1,5 +1,5 @@
 use crate::oauth::Oauth2User;
-use crate::SETTINGS;
+use gill_settings::SETTINGS;
 use axum::{
     http,
     http::{Request, StatusCode},
@@ -59,7 +59,7 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
 
 async fn user_info(bearer: &str) -> anyhow::Result<Oauth2User> {
     let value: Value = CLIENT
-        .get(&SETTINGS.user_info_url)
+        .get(&SETTINGS.oauth_provider.user_info_url())
         .header("Authorization", bearer)
         .send()
         .await?
