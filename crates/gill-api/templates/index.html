@@ -14,10 +14,74 @@
 {% endblock %}
 
 {% block content %}
-<p>Here goes follows timeline</p>
+<div class="flex flex-row text-lg border-b-2 divide-x-2 divide-slate-300 border-slate-300 justify-items-center mb-3">
+    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py"
+            onclick="openTab('instance-repositories')">
+        <i class="ti ti-home-down px-3"></i>
+        Local repositories
+    </button>
+    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py" onclick="openTab('repositories')">
+        <i class="ti ti-affiliate px-3"></i>
+        Repositories
+    </button>
+    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py" onclick="openTab('activities')">
+        <i class="ti ti-bell px-3"></i>
+        Activities
+    </button>
+</div>
+
+<div>
+    <div id="instance-repositories" class="tab">
+        <ul class="flex flex-col divide-y divide-slate-200">
+            {% for repo in local_repositories %}
+            <li class="flex flex-col py-4">
+                <span class="pb-5">
+                <a href="/{{repo.owner}}/{{repo.name}}"
+                   class="text-lg text-sky-600 font-bold hover:underline">
+                    {{repo.owner}}/{{repo.name}}
+                </a>
+                </span>
+                {%- match repo.description -%}
+                {%- when Some with (description) -%}
+                <span class="text-slate-600 pb-2 text-base pb-5">{{description}}</span>
+                {%- when None -%}
+                {%- endmatch -%}
+
+                <div class="flex flex-row text-sm">
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.star_count}}</span>
+                        <i class="text-sm ti ti-star"></i>
+                    </a>
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.fork_count}}</span>
+                        <i class="text-sm ti ti-git-fork"></i>
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="repositories" class="tab" style="display:none">
+        <p>TODO</p>
+    </div>
+
+    <div id="activities" class="tab" style="display:none">
+        <p>TODO</p>
+    </div>
+</div>
+
+<script>
+    function openTab(cityName) {
+        let x = document.getElementsByClassName("tab");
+        for (let i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
+        }
+        document.getElementById(cityName).style.display = "block";
+    }
+</script>
 {%- endblock -%}
 
 {% block content_right %}
-<p> Here goes popular repo on our instace</p>
 {%- endblock -%}
 

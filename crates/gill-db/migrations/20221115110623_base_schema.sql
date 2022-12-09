@@ -53,6 +53,7 @@ CREATE TABLE repository
     published         TIMESTAMP    NOT NULL DEFAULT now(),
     ticket_tracked_by VARCHAR(255) NOT NULL,
     send_patches_to   VARCHAR(255) NOT NULL,
+    domain            VARCHAR(255) NOT NULL,
     is_local          BOOLEAN      NOT NULL,
     CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
 );

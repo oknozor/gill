@@ -166,6 +166,7 @@ impl User {
                 r.published,
                 r.ticket_tracked_by,
                 r.send_patches_to,
+                r.domain,
                 r.is_local
             FROM users u
             JOIN repository r ON u.activity_pub_id = r.attributed_to
@@ -200,6 +201,7 @@ impl User {
                 r.published,
                 r.ticket_tracked_by,
                 r.send_patches_to,
+                r.domain,
                 r.is_local
             FROM users u
             JOIN repository r ON u.activity_pub_id = r.attributed_to
