@@ -69,7 +69,7 @@ pub async fn root(
     if content_type == ContentType::html() {
         let connected_username = get_connected_user_username(&db, user).await;
         let user = User::by_user_name(&owner, &db).await?;
-        let repo = user.get_repository_by_name(&repository, &db).await?;
+        let repo = user.get_local_repository_by_name(&repository, &db).await?;
 
         let branch = repo
             .get_default_branch(&db)
@@ -114,7 +114,7 @@ mod imp {
         let tree = get_tree_for_path(&repo_path, Some(&current_branch), None)?;
         let readme = get_readme(&tree, &repo_path);
         let user = User::by_user_name(owner, db).await?;
-        let repo = user.get_repository_by_name(repository, db).await?;
+        let repo = user.get_local_repository_by_name(repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
         let branches = branches
             .into_iter()
@@ -154,7 +154,7 @@ mod imp {
         let tree = get_tree_for_path(&repo_path, Some(&current_branch), tree_path)?;
         let readme = get_readme(&tree, &repo_path);
         let user = User::by_user_name(&owner, db).await?;
-        let repo = user.get_repository_by_name(&repository, db).await?;
+        let repo = user.get_local_repository_by_name(&repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
         let branches = branches
             .into_iter()

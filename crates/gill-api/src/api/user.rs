@@ -5,18 +5,18 @@ use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use gill_db::user::{CreateSSHKey, CreateUser, User};
 use gill_settings::SETTINGS;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use sqlx::PgPool;
 
-#[derive(Deserialize, Serialize)]
-pub struct CreateUserDto {
+#[derive(Deserialize)]
+pub struct CreateUserCommand {
     pub username: String,
     pub email: String,
 }
 
 pub async fn create(
     pool: Extension<PgPool>,
-    Json(user): Json<CreateUserDto>,
+    Json(user): Json<CreateUserCommand>,
 ) -> Result<Response, AppError> {
     let keys = generate_actor_keypair()?;
     let scheme = if gill_settings::debug_mod() {

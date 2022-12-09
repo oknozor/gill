@@ -22,6 +22,7 @@ axum-macros.workspace = true
 thiserror.workspace = true
 activitypub_federation.workspace = true
 once_cell.workspace = true
+chrono.workspace = true
 
 gill-db = { path = "../gill-db" }
 gill-ipc = { path = "../gill-ipc" }

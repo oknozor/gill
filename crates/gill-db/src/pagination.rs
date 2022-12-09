@@ -1,8 +1,7 @@
-use schemars::JsonSchema;
 use serde::Deserialize;
 use std::num::NonZeroI64;
 
-#[derive(Deserialize, JsonSchema)]
+#[derive(Deserialize)]
 pub struct Pagination {
     pub page: NonZeroI64,
 }

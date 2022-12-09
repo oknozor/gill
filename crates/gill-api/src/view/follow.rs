@@ -1,4 +1,4 @@
-use crate::apub::object::user::ApubUser;
+use crate::apub::object::user::UserWrapper;
 
 use crate::oauth::{AppState, Oauth2User};
 use crate::view::get_connected_user;
@@ -37,12 +37,12 @@ pub async fn follow_form(
         return Err(AppError::from(anyhow!("Invalid user identifier")));
     };
 
-    let user_to_follow = ObjectId::<ApubUser>::new(url);
+    let user_to_follow = ObjectId::<UserWrapper>::new(url);
     let user_to_follow = user_to_follow
         .dereference(&data.instance, data.instance.local_instance(), &mut 0)
         .await?;
 
-    ApubUser::from(user)
+    UserWrapper::from(user)
         .follow(&user_to_follow, &data.instance)
         .await?;
 

@@ -11,6 +11,9 @@ use activitypub_federation::{
 use activitystreams_kinds::actor::PersonType;
 use std::str::FromStr;
 
+use crate::apub::activities::fork::Fork;
+use crate::apub::activities::star::Star;
+use crate::apub::activities::watch::Watch;
 use axum::async_trait;
 use gill_db::user::{CreateUser, User};
 use serde::{Deserialize, Serialize};
@@ -18,11 +21,11 @@ use url::Url;
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
-pub struct ApubUser(User);
+pub struct UserWrapper(User);
 
-impl From<User> for ApubUser {
+impl From<User> for UserWrapper {
     fn from(user: User) -> Self {
-        ApubUser(user)
+        UserWrapper(user)
     }
 }
 
@@ -32,14 +35,17 @@ impl From<User> for ApubUser {
 #[enum_delegate::implement(ActivityHandler)]
 pub enum PersonAcceptedActivities {
     Follow(Follow),
+    Watch(Watch),
+    Star(Star),
+    Fork(Fork),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Person {
+pub struct ApubUser {
     #[serde(rename = "type")]
     kind: PersonType,
-    id: ObjectId<ApubUser>,
+    id: ObjectId<UserWrapper>,
     email: Option<String>,
     username: String,
     outbox: Url,
@@ -49,7 +55,7 @@ pub struct Person {
     public_key: PublicKey,
 }
 
-impl ApubUser {
+impl UserWrapper {
     pub async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
         let db = instance.database();
         let followers = self.0.get_followers(i64::MAX, 0, db).await?;
@@ -98,7 +104,7 @@ impl ApubUser {
 
     pub async fn follow(
         &self,
-        other: &ApubUser,
+        other: &UserWrapper,
         instance: &InstanceHandle,
     ) -> Result<(), AppError> {
         let follower = ObjectId::new(self.activity_pub_id_as_url()?);
@@ -145,10 +151,10 @@ impl ApubUser {
 }
 
 #[async_trait]
-impl ApubObject for ApubUser {
+impl ApubObject for UserWrapper {
     type DataType = InstanceHandle;
-    type ApubType = Person;
-    type DbType = ApubUser;
+    type ApubType = ApubUser;
+    type DbType = UserWrapper;
     type Error = AppError;
 
     async fn read_from_apub_id(
@@ -157,11 +163,11 @@ impl ApubObject for ApubUser {
     ) -> Result<Option<Self>, Self::Error> {
         let db = data.database();
         let user = User::by_activity_pub_id(object_id.as_str(), db).await?;
-        Ok(user.map(ApubUser))
+        Ok(user.map(UserWrapper))
     }
 
     async fn into_apub(self, _data: &Self::DataType) -> Result<Self::ApubType, Self::Error> {
-        Ok(Person {
+        Ok(ApubUser {
             kind: Default::default(),
             id: ObjectId::new(self.activity_pub_id_as_url()?),
             public_key: self.public_key()?,
@@ -192,7 +198,7 @@ impl ApubObject for ApubUser {
         let id = Url::from(apub.id);
         let user = User::by_activity_pub_id(id.as_str(), db).await?;
         if let Some(user) = user {
-            Ok(ApubUser(user))
+            Ok(UserWrapper(user))
         } else {
             let user = CreateUser {
                 username: apub.username,
@@ -208,12 +214,12 @@ impl ApubObject for ApubUser {
             };
 
             let user = User::create(user, db).await?;
-            Ok(ApubUser(user))
+            Ok(UserWrapper(user))
         }
     }
 }
 
-impl Actor for ApubUser {
+impl Actor for UserWrapper {
     fn public_key(&self) -> &str {
         &self.0.public_key
     }
