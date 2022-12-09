@@ -237,6 +237,7 @@ impl ApubObject for RepositoryWrapper {
                 is_local: false,
                 private: false,
                 private_key: None,
+                domain: id.domain().expect("No domain").to_string(),
             };
 
             let repository = Repository::create(&repository, db).await?;
