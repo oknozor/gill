@@ -1,39 +1,41 @@
+use crate::apub::object::repository::RepositoryWrapper;
 use crate::apub::object::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
-
-use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
-use activitystreams_kinds::activity::FollowType;
+use activitypub_federation::core::object_id::ObjectId;
+use activitypub_federation::data::Data;
+use activitypub_federation::traits::ActivityHandler;
+use activitystreams_kinds::activity::LikeType;
 use axum::async_trait;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Follow {
+pub struct Star {
     id: Url,
-    pub follower: ObjectId<UserWrapper>,
-    pub followed: ObjectId<UserWrapper>,
-    r#type: FollowType,
+    pub user: ObjectId<UserWrapper>,
+    pub repository: ObjectId<RepositoryWrapper>,
+    r#type: LikeType,
 }
 
-impl Follow {
+impl Star {
     pub fn new(
-        follower: ObjectId<UserWrapper>,
-        followed: ObjectId<UserWrapper>,
+        user: ObjectId<UserWrapper>,
+        repository: ObjectId<RepositoryWrapper>,
         id: Url,
-    ) -> Follow {
-        Follow {
+    ) -> Star {
+        Star {
             id,
-            follower,
-            followed,
+            user,
+            repository,
             r#type: Default::default(),
         }
     }
 }
 
 #[async_trait]
-impl ActivityHandler for Follow {
+impl ActivityHandler for Star {
     type DataType = InstanceHandle;
     type Error = AppError;
 
@@ -42,7 +44,7 @@ impl ActivityHandler for Follow {
     }
 
     fn actor(&self) -> &Url {
-        self.follower.inner()
+        self.user.inner()
     }
 
     async fn verify(
@@ -58,15 +60,15 @@ impl ActivityHandler for Follow {
         data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let followed = ObjectId::<UserWrapper>::new(self.followed)
+        let user = ObjectId::<UserWrapper>::new(self.user)
             .dereference_local(data)
             .await?;
 
-        let follower = ObjectId::<UserWrapper>::new(self.follower)
+        let repository = ObjectId::<RepositoryWrapper>::new(self.repository)
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
-        followed.add_follower(follower.local_id(), data).await?;
+        repository.add_star(user.local_id(), data).await?;
         Ok(())
     }
 }

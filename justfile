@@ -14,10 +14,10 @@ reset-db:
     docker-compose exec gill "pkill" "gill-api" || true
     docker-compose exec gill-2 "pkill" "gill-api" || true
     docker-compose up postgres -d
-    yes | sqlx database drop || true
+    yes | sqlx database drop
     sqlx database create
     sqlx migrate run --source crates/gill-db/migrations
-    yes | sqlx database drop --database-url "postgres://postgres:postgres@localhost/gill_2" || true
+    yes | sqlx database drop --database-url "postgres://postgres:postgres@localhost/gill_2"
     sqlx database create --database-url "postgres://postgres:postgres@localhost/gill_2"
     sqlx migrate run --source crates/gill-db/migrations  --database-url "postgres://postgres:postgres@localhost/gill_2"
     cargo sqlx prepare --merged

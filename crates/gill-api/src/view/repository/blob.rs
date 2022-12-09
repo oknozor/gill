@@ -82,7 +82,7 @@ pub async fn blob(
 
     let user = User::by_user_name(&owner, &db).await.unwrap();
     /// TODO: factorize with tree
-    let repository = user.get_repository_by_name(&repository, &db).await?;
+    let repository = user.get_local_repository_by_name(&repository, &db).await?;
     let branches = repository.list_branches(20, 0, &db).await?;
     let branches = branches
         .into_iter()

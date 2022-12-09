@@ -13,9 +13,7 @@ pub fn router() -> Router {
         .route("/health", get(|| async { "Pong" }))
         .route("/health/", get(|| async { "Pong" }))
         .route("/users", post(user::create))
-        .route("/users/", post(user::create))
-        .route("/repositories", get(repository::list))
-        .route("/repositories/", get(repository::list));
+        .route("/users/", post(user::create));
 
     let authenticated = Router::new()
         .route("/users/ssh_key/add", post(user::register_ssh_key))
