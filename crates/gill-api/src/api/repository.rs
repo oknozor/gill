@@ -49,6 +49,7 @@ impl CreateRepositoryCommand {
             private_key: Some(key_pair.private_key),
             ticket_tracked_by: user.activity_pub_id.clone(),
             send_patches_to: user.activity_pub_id.clone(),
+            domain: domain.to_string(),
             is_local: true,
         })
     }
