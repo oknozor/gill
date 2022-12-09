@@ -1,15 +1,15 @@
 use crate::fixtures::{ALICE_ID, GILL_REPO_ID, LINUX_REPO_ID};
-use gill_db::repository::{Branch, InitRepository, OwnedRepository, Repository};
+use gill_db::repository::{Branch, CreateRepository, OwnedRepository, Repository};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("base"))]
 async fn should_create_repository(db: PgPool) {
-    let repository = InitRepository {
+    let repository = CreateRepository {
         name: "myrepo".to_string(),
     };
 
-    let other_repo = InitRepository {
+    let other_repo = CreateRepository {
         name: "myotherrepo".to_string(),
     };
 

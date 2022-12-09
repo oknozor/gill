@@ -1,29 +1,62 @@
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug, FromRow)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, FromRow)]
 pub struct Repository {
     pub id: i32,
+    pub activity_pub_id: String,
     pub name: String,
-    pub description: Option<String>,
+    pub summary: Option<String>,
     pub private: bool,
-    pub owner_id: i32,
+    pub inbox_url: String,
+    pub outbox_url: String,
+    pub followers_url: String,
+    pub attributed_to: String,
+    pub clone_uri: String,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub published: chrono::NaiveDateTime,
+    pub ticket_tracked_by: String,
+    pub send_patches_to: String,
+    pub is_local: bool,
 }
 
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug, FromRow)]
-pub struct OwnedRepository {
+#[derive(Deserialize, Serialize, FromRow)]
+pub struct RepositoryView {
     pub id: i32,
-    pub owner_id: i32,
+    pub activity_pub_id: String,
     pub name: String,
-    pub owner_name: String,
-    pub description: Option<String>,
+    pub summary: Option<String>,
     pub private: bool,
+    pub inbox_url: String,
+    pub outbox_url: String,
+    pub followers_url: String,
+    pub attributed_to: String,
+    pub clone_uri: String,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub published: chrono::NaiveDateTime,
+    pub ticket_tracked_by: String,
+    pub send_patches_to: String,
+    pub is_local: bool,
 }
 
-#[derive(Deserialize, JsonSchema)]
-pub struct InitRepository {
+#[derive(Deserialize)]
+pub struct CreateRepository {
+    pub activity_pub_id: String,
     pub name: String,
+    pub summary: Option<String>,
+    pub private: bool,
+    pub inbox_url: String,
+    pub outbox_url: String,
+    pub followers_url: String,
+    pub attributed_to: String,
+    pub clone_uri: String,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub ticket_tracked_by: String,
+    pub send_patches_to: String,
+    pub is_local: bool,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -40,24 +73,49 @@ pub struct Star {
 }
 
 impl Repository {
-    pub async fn create(
-        user_id: i32,
-        repository: &InitRepository,
-        db: &PgPool,
-    ) -> sqlx::Result<()> {
-        sqlx::query!(
+    pub async fn create(repository: &CreateRepository, db: &PgPool) -> sqlx::Result<Repository> {
+        let repository = sqlx::query_as!(
+            Repository,
             // language=PostgreSQL
             r#"
-            insert into "repository"(name, owner_id)
-            values ($1, $2)
+            insert into repository(
+                activity_pub_id,
+                name,
+                summary,
+                private,
+                inbox_url,
+                outbox_url,
+                followers_url,
+                attributed_to,
+                clone_uri,
+                public_key,
+                private_key,
+                ticket_tracked_by,
+                send_patches_to,
+                is_local
+            )
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            returning *;
         "#,
+            repository.activity_pub_id,
             repository.name,
-            user_id
+            repository.summary,
+            repository.private,
+            repository.inbox_url,
+            repository.outbox_url,
+            repository.followers_url,
+            repository.attributed_to,
+            repository.clone_uri,
+            repository.public_key,
+            repository.private_key,
+            repository.ticket_tracked_by,
+            repository.send_patches_to,
+            repository.is_local,
         )
-        .execute(db)
+        .fetch_one(db)
         .await?;
 
-        Ok(())
+        Ok(repository)
     }
 
     pub async fn by_namespace(owner: &str, name: &str, db: &PgPool) -> sqlx::Result<Repository> {
@@ -65,13 +123,24 @@ impl Repository {
             Repository,
             // language=PostgreSQL
             r#"
-            SELECT r.id,
-                   r.name,
-                   r.description,
-                   r.private,
-                   owner_id
+            SELECT  r.id,
+                    r.activity_pub_id,
+                    r.name,
+                    r.summary,
+                    r.private,
+                    r.inbox_url,
+                    r.outbox_url,
+                    r.followers_url,
+                    r.attributed_to,
+                    r.clone_uri,
+                    r.public_key,
+                    r.private_key,
+                    r.published,
+                    r.ticket_tracked_by,
+                    r.send_patches_to,
+                    r.is_local
             FROM repository r
-            JOIN users u on r.owner_id = u.id
+            JOIN users u on r.attributed_to = u.activity_pub_id
             WHERE u.username = $1 AND r.name = $2
             "#,
             owner,
@@ -81,31 +150,6 @@ impl Repository {
         .await?;
 
         Ok(repository)
-    }
-
-    pub async fn list(limit: i64, offset: i64, db: &PgPool) -> sqlx::Result<Vec<OwnedRepository>> {
-        let repositories = sqlx::query_as!(
-            OwnedRepository,
-            // language=PostgreSQL
-            r#"
-                SELECT r.id,
-                       r.owner_id,
-                       r.name,
-                       r.description,
-                       u.username as owner_name,
-                       r.private
-                FROM repository r
-                JOIN users u ON u.id = r.owner_id
-                LIMIT $1
-                OFFSET $2
-            "#,
-            limit,
-            offset
-        )
-        .fetch_all(db)
-        .await?;
-
-        Ok(repositories)
     }
 
     pub async fn list_branches(
@@ -167,6 +211,25 @@ impl Repository {
         .fetch_one(db)
         .await
         .ok()
+    }
+
+    pub async fn by_activity_pub_id(
+        activity_pub_id: &str,
+        pool: &PgPool,
+    ) -> sqlx::Result<Option<Repository>> {
+        let user = sqlx::query_as!(
+            Repository,
+            // language=PostgreSQL
+            r#"
+            select * from repository
+            where activity_pub_id = $1
+            "#,
+            activity_pub_id,
+        )
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(user)
     }
 }
 

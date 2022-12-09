@@ -1,9 +1,8 @@
 use crate::repository::Repository;
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
-#[derive(Deserialize, Serialize, JsonSchema)]
+#[derive(Deserialize, Serialize)]
 pub struct CreateSSHKey {
     pub key: String,
 }
@@ -23,7 +22,7 @@ pub struct CreateUser {
 }
 
 /// A user living in gill database
-#[derive(Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq, Debug, FromRow)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, FromRow)]
 pub struct User {
     pub id: i32,
     pub username: String,
@@ -142,7 +141,7 @@ impl User {
         Ok(())
     }
 
-    pub async fn get_repository_by_name(
+    pub async fn get_local_repository_by_name(
         self,
         repo_name: &str,
         db: &PgPool,
@@ -152,14 +151,25 @@ impl User {
             // language=PostgreSQL
             r#"
             SELECT
-                users.id,
-                name,
-                r.description,
+                r.id,
+                r.activity_pub_id,
+                r.name,
+                r.summary,
                 r.private,
-                owner_id
-            FROM users
-            JOIN repository r ON users.id = r.owner_id
-            WHERE r.name = $1
+                r.inbox_url,
+                r.outbox_url,
+                r.followers_url,
+                r.attributed_to,
+                r.clone_uri,
+                r.public_key,
+                r.private_key,
+                r.published,
+                r.ticket_tracked_by,
+                r.send_patches_to,
+                r.is_local
+            FROM users u
+            JOIN repository r ON u.activity_pub_id = r.attributed_to
+            WHERE r.name = $1 AND r.is_local
             "#,
             repo_name,
         )
@@ -175,13 +185,24 @@ impl User {
             // language=PostgreSQL
             r#"
             SELECT
-                users.id,
-                name,
-                r.description,
+                r.id,
+                r.activity_pub_id,
+                r.name,
+                r.summary,
                 r.private,
-                owner_id
-            FROM users
-            JOIN repository r ON users.id = r.owner_id
+                r.inbox_url,
+                r.outbox_url,
+                r.followers_url,
+                r.attributed_to,
+                r.clone_uri,
+                r.public_key,
+                r.private_key,
+                r.published,
+                r.ticket_tracked_by,
+                r.send_patches_to,
+                r.is_local
+            FROM users u
+            JOIN repository r ON u.activity_pub_id = r.attributed_to
             "#,
         )
         .fetch_all(db)

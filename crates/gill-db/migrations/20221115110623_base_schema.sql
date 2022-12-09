@@ -38,12 +38,23 @@ CREATE TABLE organisation
 
 CREATE TABLE repository
 (
-    id          SERIAL PRIMARY KEY,
-    name        VARCHAR(100)              NOT NULL,
-    description TEXT,
-    private     BOOLEAN DEFAULT false     NOT NULL,
-    owner_id    INT REFERENCES users (id) NOT NULL,
-    CONSTRAINT Unique_Name_For_Repository UNIQUE (name, owner_id)
+    id                SERIAL PRIMARY KEY,
+    activity_pub_id   VARCHAR(255) NOT NULL UNIQUE,
+    name              VARCHAR(100) NOT NULL,
+    summary           TEXT,
+    private           BOOLEAN               DEFAULT false NOT NULL,
+    inbox_url         VARCHAR(255) NOT NULL UNIQUE,
+    outbox_url        VARCHAR(255) NOT NULL UNIQUE,
+    followers_url     VARCHAR(255) NOT NULL UNIQUE,
+    attributed_to     VARCHAR(255) NOT NULL,
+    clone_uri         VARCHAR(255) NOT NULL,
+    public_key        TEXT         NOT NULL,
+    private_key       TEXT,
+    published         TIMESTAMP    NOT NULL DEFAULT now(),
+    ticket_tracked_by VARCHAR(255) NOT NULL,
+    send_patches_to   VARCHAR(255) NOT NULL,
+    is_local          BOOLEAN      NOT NULL,
+    CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
 );
 
 CREATE TABLE branch
@@ -57,21 +68,22 @@ CREATE TABLE branch
 CREATE TABLE repository_star
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    starred_by    INT REFERENCES users (id) NOT NULL,
+    starred_by    INT REFERENCES users (id)      NOT NULL,
     PRIMARY KEY (starred_by, repository_id)
 );
 
 CREATE TABLE repository_fork
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    forked_by     INT REFERENCES users (id) NOT NULL,
+    fork_id       INT REFERENCES repository (id) NOT NULL,
+    forked_by     INT REFERENCES users (id)      NOT NULL,
     PRIMARY KEY (forked_by, repository_id)
 );
 
 CREATE TABLE repository_watch
 (
     repository_id INT REFERENCES repository (id) NOT NULL,
-    watched_by    INT REFERENCES users (id) NOT NULL,
+    watched_by    INT REFERENCES users (id)      NOT NULL,
     PRIMARY KEY (watched_by, repository_id)
 );
 
@@ -82,10 +94,11 @@ CREATE TABLE org_repository
     org_id INT REFERENCES organisation (id) NOT NULL
 );
 
-
 CREATE TABLE public_key
 (
     id       SERIAL PRIMARY KEY,
     key      TEXT,
     owner_id INT REFERENCES users (id) NOT NULL
 );
+
+

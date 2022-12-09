@@ -12,7 +12,6 @@ use sqlx::PgPool;
 
 pub mod follow;
 pub mod index;
-pub mod repositories;
 pub mod repository;
 pub mod user;
 
@@ -28,7 +27,6 @@ pub fn router(app_state: AppState) -> Router {
         .route("/auth/authorized/", get(oauth::login_authorized))
         .route("/auth/authorized", get(oauth::login_authorized))
         .route("/logout/", get(oauth::logout))
-        .route("/repo/", get(repositories::list))
         .route("/follow_user", get(follow_form))
         .route("/follow_user/", get(follow_form))
         .with_state(app_state)

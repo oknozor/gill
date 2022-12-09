@@ -1,4 +1,4 @@
-use crate::apub::object::user::{ApubUser, Person, PersonAcceptedActivities};
+use crate::apub::object::user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 use crate::error::AppError;
 use crate::instance::{Instance, InstanceHandle};
 use activitypub_federation::core::axum::inbox::receive_activity;
@@ -41,11 +41,11 @@ pub fn router(instance: Arc<Instance>) -> Router {
 async fn http_get_user(
     State(data): State<InstanceHandle>,
     request: Request<Body>,
-) -> Result<ApubJson<WithContext<Person>>, AppError> {
+) -> Result<ApubJson<WithContext<ApubUser>>, AppError> {
     let hostname: String = data.local_instance.hostname().to_string();
     let request_url = format!("http://{}/apub{}", hostname, &request.uri());
     let url = Url::parse(&request_url).expect("Failed to parse url");
-    let user = ObjectId::<ApubUser>::new(url)
+    let user = ObjectId::<UserWrapper>::new(url)
         .dereference_local(&data)
         .await?
         .into_apub(&data)
@@ -64,7 +64,7 @@ async fn http_post_user_inbox(
     Extension(digest_verified): Extension<DigestVerified>,
     Json(activity): Json<WithContext<PersonAcceptedActivities>>,
 ) -> impl IntoResponse {
-    receive_activity::<WithContext<PersonAcceptedActivities>, ApubUser, InstanceHandle>(
+    receive_activity::<WithContext<PersonAcceptedActivities>, UserWrapper, InstanceHandle>(
         digest_verified,
         activity,
         &data.clone().local_instance,
