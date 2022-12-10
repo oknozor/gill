@@ -61,26 +61,20 @@ pub async fn tree_root(
 /// Returns the root of a tree with for a given owner and repository
 /// using the default branch
 pub async fn root(
-    TypedHeader(content_type): TypedHeader<ContentType>,
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
 ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
-    if content_type == ContentType::html() {
-        let connected_username = get_connected_user_username(&db, user).await;
-        let user = User::by_user_name(&owner, &db).await?;
-        let repo = user.get_local_repository_by_name(&repository, &db).await?;
+    let connected_username = get_connected_user_username(&db, user).await;
+    let user = User::by_user_name(&owner, &db).await?;
+    let repo = user.get_local_repository_by_name(&repository, &db).await?;
 
-        let branch = repo
-            .get_default_branch(&db)
-            .await
-            .ok_or_else(|| anyhow!("No default branch"))?;
+    let branch = repo
+        .get_default_branch(&db)
+        .await
+        .ok_or_else(|| anyhow!("No default branch"))?;
 
-        imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
-        // TODO
-    } else {
-        Err(AppError::from(anyhow!("oh no")))
-    }
+    imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
 }
 
 mod imp {
