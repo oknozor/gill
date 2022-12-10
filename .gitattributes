@@ -1,1 +1,2 @@
-crates/gill-api/assets/** linguist-vendored
+crates/gill-app/assets/** linguist-vendored
+docker/** linguist-vendored

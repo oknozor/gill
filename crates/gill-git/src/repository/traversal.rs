@@ -232,7 +232,7 @@ mod test {
         ]);
 
         assert_that!(crates.trees.keys()).contains_all_of(&[
-            &"gill-api".to_string(),
+            &"gill-app".to_string(),
             &"gill-git".to_string(),
             &"gill-git-server".to_string(),
         ]);

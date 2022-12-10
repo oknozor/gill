@@ -1,3 +1,4 @@
+https://github.com/sublimehq/Packages.git
 # gill 
 
 ## Dev
@@ -6,7 +7,7 @@
 
 ```shell
 cargo install sqlx-cli
-cd crates/gill-api
+cd crates/gill-app
 sqlx migrate run
 ```
 

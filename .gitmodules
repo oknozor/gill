@@ -1,6 +1,0 @@
-[submodule "crates/gill-api/src/syntax_highlight/Packages"]
-	path = crates/gill-api/src/syntax_highlight/Packages
-	url = https://github.com/sublimehq/Packages.git
-[submodule "crates/gill-api/assets/syntax-definitions/Packages"]
-	path = crates/gill-api/assets/syntax-definitions/Packages
-	url = https://github.com/sublimehq/Packages.git
