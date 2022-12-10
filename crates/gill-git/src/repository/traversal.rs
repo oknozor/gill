@@ -1,4 +1,4 @@
-use crate::traversal::imp::ref_to_tree;
+use crate::repository::traversal::imp::ref_to_tree;
 use git_repository::bstr::BString;
 use git_repository::ObjectId;
 use std::collections::HashMap;
@@ -52,7 +52,7 @@ impl BlobInfo {
 }
 
 mod imp {
-    use crate::traversal::{BlobInfo, TreeMap};
+    use crate::repository::traversal::{BlobInfo, TreeMap};
     use anyhow::anyhow;
     use git_repository::bstr::{BStr, BString, ByteSlice, ByteVec};
     use git_repository::objs::tree::EntryRef;
@@ -208,7 +208,7 @@ mod imp {
 
 #[cfg(test)]
 mod test {
-    use crate::traversal::get_tree_for_path;
+    use crate::repository::traversal::get_tree_for_path;
     use speculoos::prelude::*;
 
     #[test]

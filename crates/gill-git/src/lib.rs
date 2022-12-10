@@ -4,7 +4,6 @@ use std::io::Write;
 use std::{fs, io};
 
 pub mod repository;
-pub mod traversal;
 
 pub fn append_ssh_key(ssh_key: &str) -> io::Result<()> {
     let mut file = fs::OpenOptions::new()
