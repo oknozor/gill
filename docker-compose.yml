@@ -7,7 +7,7 @@ services:
     restart: always
     container_name: gill-api
     environment:
-      DOMAIN: bore.pub:38809
+      DOMAIN: bore.pub:40943
       DB_NAME: gill
       DB_HOST: postgres
       DB_PORT: 5432

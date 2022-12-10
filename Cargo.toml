@@ -4,7 +4,7 @@ members = ["crates/*"]
 [workspace.dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "any", "postgres", "offline", "chrono"] }
-axum = { version = "0.6.0", features = ["json", "headers", "macros"] }
+axum = { version = "0.6.0", default-features = false, features = ["json", "headers", "macros", 'http2'] }
 activitypub_federation = { git = "https://github.com/LemmyNet/activitypub-federation-rust", features = ["axum"] }
 axum-macros = "0.3.0"
 tower-http = { version = "0.3.4", features = ["trace", "fs"] }
