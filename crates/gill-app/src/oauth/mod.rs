@@ -15,8 +15,8 @@ use oauth2::{
     CsrfToken, RedirectUrl, reqwest::async_http_client, Scope, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
-use syntect::highlighting::Theme;
-use syntect::parsing::SyntaxSet;
+
+
 
 #[cfg(not(feature = "integration"))]
 pub mod service;
@@ -24,11 +24,11 @@ pub mod service;
 #[cfg(feature = "integration")]
 pub mod service_mock;
 
-use crate::instance::InstanceHandle;
+
 use gill_settings::SETTINGS;
 #[cfg(feature = "integration")]
 pub use service_mock as service;
-use crate::state::AppState;
+
 
 static COOKIE_NAME: &str = "GILL_SESSION";
 
