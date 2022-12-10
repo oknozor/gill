@@ -8,7 +8,7 @@ use askama::Template;
 use axum::extract::{Path, State};
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::traversal::get_tree_for_path;
+use gill_git::repository::traversal::get_tree_for_path;
 use sqlx::PgPool;
 use std::fmt::Formatter;
 use std::path::PathBuf;

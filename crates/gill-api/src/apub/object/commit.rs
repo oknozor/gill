@@ -1,35 +1,27 @@
-use crate::apub::activities::follow::Follow;
+
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::{
-    core::{activity_queue::send_activity, object_id::ObjectId, signatures::PublicKey},
-    deser::context::WithContext,
-    traits::{ActivityHandler, Actor, ApubObject},
-    LocalInstance,
+    core::{object_id::ObjectId},
+    traits::{ActivityHandler, ApubObject},
 };
 use activitystreams_kinds::kind;
-use std::str::FromStr;
+
 
 use crate::apub::object::repository::RepositoryWrapper;
 use crate::apub::object::user::UserWrapper;
 use axum::async_trait;
-use gill_db::repository::{CreateRepository, Repository};
+
 use gill_git::repository::commits::OwnedCommit;
 use serde::{Deserialize, Serialize};
 use url::Url;
-use uuid::Uuid;
+
 
 #[derive(Debug, Clone)]
 pub struct CommitWrapper {
     repository: String,
     owner: String,
     commit: OwnedCommit,
-}
-
-impl From<OwnedCommit> for CommitWrapper {
-    fn from(commit: OwnedCommit) -> Self {
-        CommitWrapper(commit)
-    }
 }
 
 kind!(CommitType, Commit);
@@ -65,20 +57,6 @@ impl CommitDescription {
     }
 }
 
-impl CommitWrapper {
-    fn activity_pub_id(&self) -> &str {
-        &self.0.activity_pub_id
-    }
-
-    pub fn local_id(&self) -> i32 {
-        self.0.id
-    }
-
-    fn activity_pub_id_as_url(&self) -> Result<Url, AppError> {
-        Ok(Url::parse(self.activity_pub_id())?)
-    }
-}
-
 #[async_trait]
 impl ApubObject for CommitWrapper {
     type DataType = InstanceHandle;
@@ -87,8 +65,8 @@ impl ApubObject for CommitWrapper {
     type Error = AppError;
 
     async fn read_from_apub_id(
-        object_id: Url,
-        data: &Self::DataType,
+        _object_id: Url,
+        _data: &Self::DataType,
     ) -> Result<Option<Self>, Self::Error> {
         todo!()
     }
@@ -107,8 +85,8 @@ impl ApubObject for CommitWrapper {
     }
 
     async fn from_apub(
-        apub: Self::ApubType,
-        data: &Self::DataType,
+        _apub: Self::ApubType,
+        _data: &Self::DataType,
         _request_counter: &mut i32,
     ) -> Result<Self, Self::Error> {
         todo!()

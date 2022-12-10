@@ -1,22 +1,13 @@
-use crate::fixtures::{ALICE_ID, GILL_REPO_ID, LINUX_REPO_ID};
-use gill_db::repository::{Branch, CreateRepository, OwnedRepository, Repository};
+use crate::fixtures::{create_repository, GILL_REPO_ID, LINUX_REPO_ID};
+use gill_db::repository::{Branch, Repository};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("base"))]
 async fn should_create_repository(db: PgPool) {
-    let repository = CreateRepository {
-        name: "myrepo".to_string(),
-    };
+    let repo = create_repository();
 
-    let other_repo = CreateRepository {
-        name: "myotherrepo".to_string(),
-    };
-
-    let res = Repository::create(ALICE_ID, &repository, &db).await;
-    assert_that!(res).is_ok();
-
-    let res = Repository::create(ALICE_ID, &other_repo, &db).await;
+    let res = Repository::create(&repo, &db).await;
     assert_that!(res).is_ok();
 }
 
@@ -26,34 +17,23 @@ async fn should_get_repository_by_namespace(db: PgPool) {
 
     assert_that!(linux).is_ok().is_equal_to(Repository {
         id: LINUX_REPO_ID,
+        activity_pub_id: "".to_string(),
         name: "linux".to_string(),
-        description: None,
         private: false,
-        owner_id: ALICE_ID,
+        inbox_url: "".to_string(),
+        outbox_url: "".to_string(),
+        followers_url: "".to_string(),
+        attributed_to: "".to_string(),
+        clone_uri: "".to_string(),
+        public_key: "".to_string(),
+        private_key: None,
+        published: Default::default(),
+        ticket_tracked_by: "".to_string(),
+        send_patches_to: "".to_string(),
+        domain: "".to_string(),
+        summary: None,
+        is_local: false,
     });
-}
-
-#[sqlx::test(fixtures("base"))]
-async fn should_list_repositories(db: PgPool) {
-    let repositories = Repository::list(10, 0, &db).await;
-    assert_that!(repositories).is_ok().contains_all_of(&[
-        &OwnedRepository {
-            id: GILL_REPO_ID,
-            owner_id: 1,
-            name: "gill".to_string(),
-            owner_name: "okno".to_string(),
-            description: None,
-            private: false,
-        },
-        &OwnedRepository {
-            id: LINUX_REPO_ID,
-            owner_id: 0,
-            name: "linux".to_string(),
-            owner_name: "alice".to_string(),
-            description: None,
-            private: false,
-        },
-    ]);
 }
 
 #[sqlx::test(fixtures("base"))]
@@ -132,7 +112,7 @@ async fn get_default_branch(db: PgPool) -> anyhow::Result<()> {
 }
 
 mod fixtures {
-    use gill_db::repository::Repository;
+    use gill_db::repository::{CreateRepository, Repository};
 
     pub const ALICE_ID: i32 = 0;
     pub const GILL_REPO_ID: i32 = 2;
@@ -141,23 +121,76 @@ mod fixtures {
     // This fixture repo has branches already
     // see: fixture/base.sql
     pub fn gill_repository() -> Repository {
+        let id = "https://instance.org/users/alice/repositories/gill".to_string();
+        let user_id = "https://instance.org/users/alice".to_string();
         Repository {
             id: GILL_REPO_ID,
+            activity_pub_id: id.clone(),
             name: "gill".to_string(),
-            description: None,
             private: false,
-            owner_id: 1,
+            inbox_url: format!("{id}/inbox"),
+            outbox_url: format!("{id}/outbox"),
+            followers_url: format!("{id}/followers"),
+            attributed_to: user_id.clone(),
+            clone_uri: user_id.clone(),
+            public_key: "12345".to_string(),
+            private_key: None,
+            published: Default::default(),
+            ticket_tracked_by: user_id.clone(),
+            send_patches_to: user_id,
+            domain: "instance.org".to_string(),
+            summary: None,
+            is_local: false,
         }
     }
 
     // A repo without branches
     pub fn linux_kernel_repository() -> Repository {
+        let id = "https://okno.org/users/okno/repositories/linux".to_string();
+        let user_id = "https://okno.org/users/okno".to_string();
+
         Repository {
             id: LINUX_REPO_ID,
+            activity_pub_id: "".to_string(),
             name: "linux".to_string(),
-            description: None,
             private: false,
-            owner_id: 0,
+            inbox_url: format!("{id}/inbox"),
+            outbox_url: format!("{id}/outbox"),
+            followers_url: format!("{id}/followers"),
+            attributed_to: user_id.clone(),
+            clone_uri: user_id.clone(),
+            public_key: "12345".to_string(),
+            private_key: None,
+            published: Default::default(),
+            ticket_tracked_by: user_id.clone(),
+            send_patches_to: user_id,
+            domain: "instance.org".to_string(),
+            summary: None,
+            is_local: false,
+        }
+    }
+
+    // A repo without branches
+    pub fn create_repository() -> CreateRepository {
+        let id = "https://okno.org/users/john/repositories/myrepo".to_string();
+        let user_id = "https://okno.org/users/john".to_string();
+
+        CreateRepository {
+            activity_pub_id: "".to_string(),
+            name: "myrepo".to_string(),
+            private: false,
+            inbox_url: format!("{id}/inbox"),
+            outbox_url: format!("{id}/outbox"),
+            followers_url: format!("{id}/followers"),
+            attributed_to: user_id.clone(),
+            clone_uri: user_id.clone(),
+            public_key: "12345".to_string(),
+            private_key: None,
+            ticket_tracked_by: user_id.clone(),
+            send_patches_to: user_id,
+            domain: "instance.org".to_string(),
+            summary: None,
+            is_local: false,
         }
     }
 }

@@ -5,10 +5,10 @@ use crate::view::{get_connected_user_username, HtmlTemplate};
 use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
-use axum::{Extension, TypedHeader};
+use axum::{Extension};
 use gill_db::user::User;
-use gill_git::traversal::TreeMap;
-use headers::ContentType;
+use gill_git::repository::traversal::TreeMap;
+
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -85,7 +85,7 @@ mod imp {
 
     use gill_db::user::User;
 
-    use gill_git::traversal::{get_tree_for_path, TreeMap};
+    use gill_git::repository::traversal::{get_tree_for_path, TreeMap};
     use pulldown_cmark::{html, Options, Parser};
     use sqlx::PgPool;
     use std::env;

@@ -14,7 +14,7 @@ pub fn history<'a>(namespace: &'a str, name: &'a str) -> anyhow::Result<Vec<Owne
     imp::list_commits(&repo)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OwnedCommit {
     pub id: String,
     pub summary: String,
