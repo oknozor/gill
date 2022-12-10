@@ -26,16 +26,12 @@ EXPOSE 3000
 WORKDIR /home/git
 RUN mkdir bin
 
-COPY target/x86_64-unknown-linux-musl/release/gill-api ./bin/gill-api
+COPY target/x86_64-unknown-linux-musl/release/gill-app ./bin/gill-app
 COPY target/x86_64-unknown-linux-musl/release/gill-git-server ./bin/gill-git-server
 COPY target/x86_64-unknown-linux-musl/release/post-receive /usr/share/git-core/templates/hooks/post-receive
 
-COPY config.toml ./config.toml
-COPY crates/gill-db/migrations ./migrations
-COPY docker/entrypoint.sh ./entrypoint.sh
-COPY docker/entrypoint-debug.sh ./entrypoint-debug.sh
-COPY docker/githooks ./hooks
-COPY docker/gitconfig ./.gitconfig
+COPY crates/gill-app/assets/ ./
+COPY docker/home/* ./
 
 RUN chown -R git:git ./
 

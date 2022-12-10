@@ -1,11 +1,11 @@
 version: '3.9'
 services:
   gill:
-    image: gill-api:latest
+    image: gill-app:latest
     depends_on:
       - postgres
     restart: always
-    container_name: gill-api
+    container_name: gill-app
     environment:
       DOMAIN: bore.pub:40943
       DB_NAME: gill
@@ -17,17 +17,15 @@ services:
       - "3000:3000"
       - "2222:22"
     volumes:
-      - ./docker/rbin:/home/git/bin
-      - ./docker/githooks:/home/git/hooks
-      - ./crates/gill-api/assets:/home/git/assets
+      - ./docker/home:/home/git
     entrypoint: /home/git/entrypoint-debug.sh
 
   gill-2:
-    image: gill-api:latest
+    image: gill-app:latest
     depends_on:
       - postgres
     restart: always
-    container_name: gill-api-2
+    container_name: gill-app-2
     environment:
       DOMAIN: bore.pub:46849
       DB_NAME: gill_2
@@ -39,9 +37,7 @@ services:
       - "3001:3000"
       - "2223:22"
     volumes:
-      - ./docker/rbin:/home/git/bin
-      - ./docker/githooks:/home/git/hooks
-      - ./crates/gill-api/assets:/home/git/assets
+      - ./docker/home:/home/git
     entrypoint: /home/git/entrypoint-debug.sh
 
   postgres:
