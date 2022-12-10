@@ -1,0 +1,3 @@
+[submodule "syntect"]
+	path = syntect
+	url = https://github.com/sublimehq/Packages.git

@@ -11,8 +11,9 @@ fn main()  -> Result<()> {
 pub fn dump_theme(out: &str) -> Result<()> {
     let mut themes = ThemeSet::new();
 
+    // FIXME, we don't have a theme anymore
     themes
-        .add_from_folder("syntax-definitions/default_theme.tmTheme")
+        .add_from_folder("syntect/default_theme.tmTheme")
         .expect("Failed to load syntect theme");
 
     let theme = themes
@@ -27,7 +28,7 @@ pub fn dump_theme(out: &str) -> Result<()> {
 pub fn dump_syntax(out: &str) -> Result<()> {
     let mut syntax_definitions = SyntaxSetBuilder::new();
     syntax_definitions
-        .add_from_folder("syntax-definitions/Packages", false)
+        .add_from_folder("syntect", false)
         .expect("Failed to load syntax definitions");
 
     let set = syntax_definitions.build();
