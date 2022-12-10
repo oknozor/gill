@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+{% block content %}
+{% include "branch.html" %}
+
+<ul>
+    {% for commit in commits %}
+    <li>{{commit.id}} - {{commit.summary}} - {{commit.author}}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

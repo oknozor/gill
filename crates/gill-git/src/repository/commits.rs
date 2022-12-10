@@ -9,7 +9,9 @@ pub fn by_sha<'a>(namespace: &'a str, name: &'a str, sha: &'a str) -> anyhow::Re
 }
 
 pub fn history<'a>(namespace: &'a str, name: &'a str) -> anyhow::Result<Vec<OwnedCommit>> {
-    let path = PathBuf::from(REPO_DIR).join(namespace).join(name);
+    let path = PathBuf::from(REPO_DIR)
+        .join(namespace)
+        .join(format!("{name}.git"));
     let repo = git_repository::open(path)?;
     imp::list_commits(&repo)
 }
