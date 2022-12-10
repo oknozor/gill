@@ -1,10 +1,10 @@
 use anyhow::anyhow;
 
 use syntect::easy::HighlightLines;
-use syntect::highlighting::{Color, Theme, ThemeSet};
+use syntect::highlighting::{Color, Theme};
 use syntect::html;
 use syntect::html::{append_highlighted_html_for_styled_line, ClassStyle, IncludeBackground};
-use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
+use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
 pub fn highlight_blob(
