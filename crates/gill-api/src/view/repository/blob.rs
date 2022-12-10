@@ -2,12 +2,12 @@ use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::syntax::highlight_blob;
 use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
-use crate::view::repository::BranchDto;
+use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::{get_connected_user_username, HtmlTemplate};
 use askama::Template;
 use axum::extract::{Path, State};
 use axum::Extension;
-use gill_db::user::User;
+
 use gill_git::repository::traversal::get_tree_for_path;
 use sqlx::PgPool;
 use std::fmt::Formatter;
@@ -80,22 +80,7 @@ pub async fn blob(
         .map(Highlighted)
         .unwrap_or(PlainText(blob));
 
-    let user = User::by_user_name(&owner, &db).await.unwrap();
-    /// TODO: factorize with tree
-    let repository = user.get_local_repository_by_name(&repository, &db).await?;
-    let branches = repository.list_branches(20, 0, &db).await?;
-    let branches = branches
-        .into_iter()
-        .map(|branch| {
-            let is_current = branch.name == current_branch;
-
-            BranchDto {
-                name: branch.name,
-                is_default: branch.is_default,
-                is_current,
-            }
-        })
-        .collect();
+    let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
 
     let template = GitBLobTemplate {
         blob,

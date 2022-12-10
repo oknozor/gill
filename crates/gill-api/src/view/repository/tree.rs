@@ -5,7 +5,7 @@ use crate::view::{get_connected_user_username, HtmlTemplate};
 use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
-use axum::{Extension};
+use axum::Extension;
 use gill_db::user::User;
 use gill_git::repository::traversal::TreeMap;
 
@@ -85,6 +85,7 @@ mod imp {
 
     use gill_db::user::User;
 
+    use crate::view::repository::get_repository_branches;
     use gill_git::repository::traversal::{get_tree_for_path, TreeMap};
     use pulldown_cmark::{html, Options, Parser};
     use sqlx::PgPool;
@@ -147,20 +148,7 @@ mod imp {
 
         let tree = get_tree_for_path(&repo_path, Some(&current_branch), tree_path)?;
         let readme = get_readme(&tree, &repo_path);
-        let user = User::by_user_name(&owner, db).await?;
-        let repo = user.get_local_repository_by_name(&repository, db).await?;
-        let branches = repo.list_branches(0, 20, db).await?;
-        let branches = branches
-            .into_iter()
-            .map(|branch| {
-                let is_current = branch.name == current_branch;
-                BranchDto {
-                    name: branch.name,
-                    is_default: branch.is_default,
-                    is_current,
-                }
-            })
-            .collect();
+        let branches = get_repository_branches(&owner, &repository, &current_branch, db).await?;
 
         let template = GitTreeTemplate {
             tree,
