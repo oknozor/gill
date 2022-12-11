@@ -1,9 +1,6 @@
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
-use activitypub_federation::{
-    core::object_id::ObjectId,
-    traits::ApubObject,
-};
+use activitypub_federation::{core::object_id::ObjectId, traits::ApubObject};
 use activitystreams_kinds::kind;
 
 use crate::apub::object::repository::RepositoryWrapper;

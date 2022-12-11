@@ -1,5 +1,6 @@
 use crate::oauth;
 use crate::oauth::Oauth2User;
+use crate::state::AppState;
 use crate::view::follow::follow_form;
 use askama::Template;
 use axum::http::StatusCode;
@@ -9,8 +10,8 @@ use axum::routing::get;
 use axum::Router;
 use gill_db::user::User;
 use sqlx::PgPool;
-use crate::state::AppState;
 
+pub mod dto;
 pub mod follow;
 pub mod index;
 pub mod repository;

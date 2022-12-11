@@ -13,13 +13,13 @@
 <body>
 {% include "navbar.html" %}
 <main class="container-md flex flex-row gap-4 px-20">
-    <section class="flex-none w-96">
+    <section class="flex-none w-2/12">
         {% block content_left %}{% endblock %}
     </section>
     <section class="grow">
         {% block content %}{% endblock %}
     </section>
-    <section class="flex-none w-96">
+    <section class="flex-none w-2/12">
         {% block content_right %}{% endblock %}
     </section>
 </main>

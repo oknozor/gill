@@ -1,4 +1,4 @@
-use crate::repository::Repository;
+use crate::repository::{Repository, RepositoryDigest};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
@@ -180,36 +180,69 @@ impl User {
         Ok(repository)
     }
 
-    pub async fn list_repositories(self, db: &PgPool) -> sqlx::Result<Vec<Repository>> {
-        let repository = sqlx::query_as!(
-            Repository,
+    pub async fn list_repositories(
+        &self,
+        limit: i64,
+        offset: i64,
+        db: &PgPool,
+    ) -> sqlx::Result<Vec<RepositoryDigest>> {
+        let repositories = sqlx::query_as!(
+            RepositoryDigest,
             // language=PostgreSQL
             r#"
-            SELECT
-                r.id,
-                r.activity_pub_id,
-                r.name,
-                r.summary,
-                r.private,
-                r.inbox_url,
-                r.outbox_url,
-                r.followers_url,
-                r.attributed_to,
-                r.clone_uri,
-                r.public_key,
-                r.private_key,
-                r.published,
-                r.ticket_tracked_by,
-                r.send_patches_to,
-                r.domain,
-                r.is_local
-            FROM users u
-            JOIN repository r ON u.activity_pub_id = r.attributed_to
-            "#,
+            SELECT r.id,
+                   r.name,
+                   u.username as owner,
+                   r.summary,
+                   COUNT(rs.repository_id) as star_count,
+                   COUNT(rf.repository_id) as fork_count
+            FROM repository r
+                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
+                     LEFT JOIN repository_star rs ON rs.repository_id = r.id
+                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+            WHERE NOT r.private AND r.is_local AND r.attributed_to = $1
+            GROUP BY r.id, u.username, r.name, r.id, r.summary
+            LIMIT $2 OFFSET $3;"#,
+            self.activity_pub_id,
+            limit,
+            offset,
         )
         .fetch_all(db)
         .await?;
 
-        Ok(repository)
+        Ok(repositories)
+    }
+
+    pub async fn list_starred_repositories(
+        &self,
+        limit: i64,
+        offset: i64,
+        db: &PgPool,
+    ) -> sqlx::Result<Vec<RepositoryDigest>> {
+        let repositories = sqlx::query_as!(
+            RepositoryDigest,
+            // language=PostgreSQL
+            r#"
+            SELECT r.id,
+                   r.name,
+                   u.username as owner,
+                   r.summary,
+                   COUNT(rs.repository_id) as star_count,
+                   COUNT(rf.repository_id) as fork_count
+            FROM repository r
+                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
+                     LEFT JOIN repository_star rs ON rs.repository_id = r.id
+                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+            WHERE NOT r.private AND rs.starred_by = $1
+            GROUP BY r.id, u.username, r.name, r.id, r.summary
+            LIMIT $2 OFFSET $3;"#,
+            self.id,
+            limit,
+            offset,
+        )
+        .fetch_all(db)
+        .await?;
+
+        Ok(repositories)
     }
 }

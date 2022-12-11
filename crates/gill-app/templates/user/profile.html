@@ -2,76 +2,127 @@
 {% block head %}{% endblock %}
 {% block content_left %}{% endblock %}
 {% block content %}
-<ul class="flex flex-col divide-y divide-slate-200">
-    <li class="flex flex-col py-4">
-    <span class="pb-5">
-        <a href="/oknozor/axum"
-           class="text-lg text-sky-600 font-bold hover:underline">
-            Toml-bombadil
-        </a>
-        <span class="text-sm border rounded-full border-gray-400 p-1 font-light">
-            Public
-        </span>
-    </span>
-        <span class="text-slate-600 pb-2 text-base pb-5"> With a nice and long description that explain what this repo
-        does and is very helpfull and make me want to fork it
-    </span>
-        <div class="flex flex-row text-sm">
-            <a class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>28</span>
-                <i class="text-sm ti ti-star"></i>
-            </a>
-            <a class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>12</span>
-                <i class="text-sm ti ti-git-fork"></i>
-            </a>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>MIT License</span>
-                <i class="text-sm ti ti-scale"></i>
-            </div>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>3 issues need help</span>
-            </div>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>Updated 20 hours ago</span>
-            </div>
-        </div>
-    </li>
+<div class="flex flex-row text-lg border-b-2 border-slate-300 justify-items-center pb-5">
+    <button
+            id="tab-profile-button"
+            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'profile')">
+        <i class="ti ti-user-circle px-4"></i>
+        Profile
+    </button>
+    <button
+            id="tab-repositories-button"
+            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'repositories')">
+        <i class="ti ti-vocabulary px-4"></i>
+        Repositories
+    </button>
+    <button
+            id="tab-stars-button"
+            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'stars')">
+        <i class="ti ti-file-star px-4"></i>
+        Stars
+    </button>
+</div>
 
-    <li class="flex flex-col py-4">
-    <span class="pb-5">
-        <a href="/oknozor/axum"
-           class="text-lg text-sky-600 font-bold hover:underline">
-            Toml-bombadil
-        </a>
-        <span class="text-sm border rounded-full border-gray-400 p-1 font-light">
-            Public
-        </span>
-    </span>
-        <span class="text-slate-600 pb-2 text-base pb-5"> With a nice and long description that explain what this repo
-        does and is very helpfull and make me want to fork it
-    </span>
-        <div class="flex flex-row text-sm">
-            <a class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>28</span>
-                <i class="text-sm ti ti-star"></i>
-            </a>
-            <a class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>12</span>
-                <i class="text-sm ti ti-git-fork"></i>
-            </a>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>MIT License</span>
-                <i class="text-sm ti ti-scale"></i>
-            </div>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>3 issues need help</span>
-            </div>
-            <div class="px-3 hover:text-sky-400 hover:font-semibold">
-                <span>Updated 20 hours ago</span>
-            </div>
-        </div>
-    </li>
-</ul>
+<div>
+    <div id="repositories" class="tab">
+        <ul class="flex flex-col divide-y divide-slate-200">
+            {% for repo in repositories %}
+            <li class="flex flex-col py-4">
+                <span class="pb-5">
+                <a href="{{profile_username}}/{{repo.name}}"
+                   class="text-lg text-sky-600 font-bold hover:underline">
+                    {{repo.name}}
+                </a>
+                </span>
+                {%- match repo.description -%}
+                {%- when Some with (description) -%}
+                <span class="text-slate-600 pb-2 text-base pb-5">{{description}}</span>
+                {%- when None -%}
+                {%- endmatch -%}
+
+                <div class="flex flex-row text-sm">
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.star_count}}</span>
+                        <i class="text-sm ti ti-star"></i>
+                    </a>
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.fork_count}}</span>
+                        <i class="text-sm ti ti-git-fork"></i>
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="stars" class="tab" style="display:none">
+        <ul class="flex flex-col divide-y divide-slate-200">
+            {% for repo in stars %}
+            <li class="flex flex-col py-4">
+                <span class="pb-5">
+                <a href="/{{repo.owner}}/{{repo.name}}"
+                   class="text-lg text-sky-600 font-bold hover:underline">
+                    {{repo.owner}}/{{repo.name}}
+                </a>
+                </span>
+                {%- match repo.description -%}
+                {%- when Some with (description) -%}
+                <span class="text-slate-600 pb-2 text-base pb-5">{{description}}</span>
+                {%- when None -%}
+                {%- endmatch -%}
+
+                <div class="flex flex-row text-sm">
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.star_count}}</span>
+                        <i class="text-sm ti ti-star"></i>
+                    </a>
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.fork_count}}</span>
+                        <i class="text-sm ti ti-git-fork"></i>
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="profile" class="tab" style="display:none">
+        <p>TODO</p>
+    </div>
+</div>
+
+<script>
+    function openTab(tabButton, tabName) {
+        console.log("open tab")
+        let tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].style.display = "none";
+        }
+
+        let buttons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("border-red-300");
+            buttons[i].classList.remove("border-b-4");
+        }
+
+        let tab = document.getElementById(tabName);
+        tab.style.display = "block";
+        tabButton.classList.add("border-red-300");
+        tabButton.classList.add("border-b-4");
+    }
+</script>
+
+<script defer>
+    let params = new URLSearchParams(window.location.search);
+    console.log(params)
+    let tab = params.get("tab");
+    console.log(tab)
+    let button = document.getElementById(`tab-${tab}-button`)
+    openTab(button, tab)
+</script>
+
 {% endblock %}
 {% block content_right %}{% endblock %}

@@ -2,25 +2,29 @@ use axum::response::{IntoResponse, Response};
 use http::StatusCode;
 
 #[derive(Debug)]
-pub struct AppError(anyhow::Error);
+pub enum AppError {
+    Internal(anyhow::Error),
+    Unauthorized,
+    NotFound,
+}
 
 impl<T> From<T> for AppError
 where
     T: Into<anyhow::Error>,
 {
     fn from(t: T) -> Self {
-        AppError(t.into())
+        AppError::Internal(t.into())
     }
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", self.0)).into_response()
-    }
-}
-
-impl AppError {
-    pub fn not_found(self) -> Response {
-        (StatusCode::NOT_FOUND, format!("{}", self.0)).into_response()
+        match self {
+            AppError::Internal(error) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", error)).into_response()
+            }
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED").into_response(),
+            AppError::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND").into_response(),
+        }
     }
 }
