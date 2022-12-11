@@ -7,4 +7,3 @@ pub mod syntax;
 pub mod view;
 pub mod webfinger;
 pub mod state;
-pub mod assets;

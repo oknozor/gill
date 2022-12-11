@@ -1,6 +1,6 @@
 use crate::error::AppError;
 use crate::oauth::oauth_client;
-use crate::{api, apub, assets, view};
+use crate::{api, apub, view};
 
 use activitypub_federation::{InstanceSettings, LocalInstance, UrlVerifier};
 use async_session::MemoryStore;
@@ -17,6 +17,7 @@ use sqlx::PgPool;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
+use tower_http::services::ServeDir;
 
 use tower_http::trace::TraceLayer;
 
@@ -85,7 +86,7 @@ impl Instance {
         };
 
         let app = Router::new()
-            .nest("/assets", assets::router())
+            .nest_service("/assets", axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error))
             .route(
                 "/.well-known/webfinger",
                 get(crate::webfinger::webfinger).with_state(app_state.clone()),

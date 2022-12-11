@@ -782,10 +782,6 @@ select {
   visibility: hidden;
 }
 
-.static {
-  position: static;
-}
-
 .absolute {
   position: absolute;
 }
@@ -810,16 +806,8 @@ select {
   display: block;
 }
 
-.inline {
-  display: inline;
-}
-
 .flex {
   display: flex;
-}
-
-.table {
-  display: table;
 }
 
 .w-96 {
@@ -882,22 +870,16 @@ select {
   gap: 1.25rem;
 }
 
-.divide-x > :not([hidden]) ~ :not([hidden]) {
+.divide-x-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-x-reverse: 0;
-  border-right-width: calc(1px * var(--tw-divide-x-reverse));
-  border-left-width: calc(1px * calc(1 - var(--tw-divide-x-reverse)));
+  border-right-width: calc(2px * var(--tw-divide-x-reverse));
+  border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
 }
 
 .divide-y > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-y-reverse: 0;
   border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
   border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
-}
-
-.divide-x-2 > :not([hidden]) ~ :not([hidden]) {
-  --tw-divide-x-reverse: 0;
-  border-right-width: calc(2px * var(--tw-divide-x-reverse));
-  border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
 }
 
 .divide-slate-300 > :not([hidden]) ~ :not([hidden]) {
@@ -942,10 +924,6 @@ select {
 
 .border-2 {
   border-width: 2px;
-}
-
-.border-b {
-  border-bottom-width: 1px;
 }
 
 .border-b-2 {
@@ -1000,23 +978,19 @@ select {
   padding: 0.25rem;
 }
 
-.p-2 {
-  padding: 0.5rem;
-}
-
-.px-2 {
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-
-.py-4 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+.px-20 {
+  padding-left: 5rem;
+  padding-right: 5rem;
 }
 
 .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .py-1 {
@@ -1034,14 +1008,14 @@ select {
   padding-right: 0.25rem;
 }
 
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
-}
-
-.py-6 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
 }
 
 .pb-5 {
@@ -1080,23 +1054,19 @@ select {
   padding-right: 3rem;
 }
 
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
 }
 
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 .text-4xl {
