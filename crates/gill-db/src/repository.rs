@@ -313,7 +313,38 @@ impl RepositoryDigest {
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
                      LEFT JOIN repository_fork rf ON rf.repository_id = r.id
-            WHERE NOT r.private
+            WHERE NOT r.private AND r.is_local
+            GROUP BY r.id, u.username, r.name, r.id, r.summary
+            LIMIT $1 OFFSET $2;"#,
+            limit,
+            offset,
+        )
+        .fetch_all(db)
+        .await?;
+
+        Ok(repositories)
+    }
+
+    pub async fn all_federated(
+        limit: i64,
+        offset: i64,
+        db: &PgPool,
+    ) -> sqlx::Result<Vec<RepositoryDigest>> {
+        let repositories = sqlx::query_as!(
+            RepositoryDigest,
+            // language=PostgreSQL
+            r#"
+            SELECT r.id,
+                   r.name,
+                   u.username as owner,
+                   r.summary,
+                   COUNT(rs.repository_id) as star_count,
+                   COUNT(rf.repository_id) as fork_count
+            FROM repository r
+                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
+                     LEFT JOIN repository_star rs ON rs.repository_id = r.id
+                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+            WHERE NOT r.private AND NOT r.is_local
             GROUP BY r.id, u.username, r.name, r.id, r.summary
             LIMIT $1 OFFSET $2;"#,
             limit,

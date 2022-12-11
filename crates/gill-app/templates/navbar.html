@@ -1,4 +1,24 @@
-<header class="pb-4">
+<script>
+    const dropDownUserMenu = () => {
+        let branchesMenu = document.getElementById("user-dropdown-menu")
+        branchesMenu.classList.remove("invisible");
+        branchesMenu.classList.replace("opacity-0", "opacity-100");
+    }
+
+    document.addEventListener('click', function (e) {
+        let container = document.getElementById('nav-header');
+        if (!container.contains(e.target)) {
+            closeUserDropDownMenu();
+        }
+    });
+
+    const closeUserDropDownMenu = () => {
+        let branchesMenu = document.getElementById("user-dropdown-menu")
+        branchesMenu.classList.replace("opacity-100", "opacity-0");
+    }
+</script>
+
+<header id="nav-header" class="pb-4">
     <nav class="py-1 flex flex-row flex-wrap w-full items-center justify-between text-gray-200 bg-teal-700">
         <div class="flex px-3 items-center gap-4">
             <a
@@ -31,11 +51,9 @@
                 <i class="text-xl ti ti-bell"></i>
                 <i class="text-sm ti ti-arrow-down"></i>
             </a>
-            <a
-                    href="/{{user}}"
-                    class="px-2 hover:bg-teal-500 hover:rounded-lg">
+            <span class="px-2 hover:bg-teal-500 hover:rounded-lg" onclick="dropDownUserMenu()">
                 <i class="text-xl ti ti-user"></i>
-            </a>
+            </span>
             {%- when None -%}
             <a class="px-2 hover:bg-teal-500 hover:rounded-lg"
                href="/auth/gill"
@@ -46,6 +64,49 @@
             {%- endmatch -%}
         </div>
     </nav>
+
+    <div class="relative -bottom-4">
+        <div id="user-dropdown-menu" class="
+           absolute right-10 top-0
+           bg-neutral-50
+           drop-shadow-lg
+           z-50 w-400
+           border-slate-400 rounded-md divide-y divide-slate-500 border border-slate-500
+           invisible
+           transform transition-all duration-150 ease-out opacity-0">
+            <div class="flex flex-col divide-y divide-slate-300 text-sm">
+                {%- match user -%}
+                {%- when Some with (user) -%}
+                <a
+                        href="/{{user}}?tab=profile"
+                        class="flex flex-row justify-between items-center p-3">
+                    <span class="text-md pr-8">Your profile</span>
+                </a>
+                <a
+                        href="/{{user}}?tab=repositories"
+                        class="flex flex-row justify-between items-center p-3">
+                    <span class="text-md pr-8">Your repositories</span>
+                </a>
+                <a
+                        href="/{{user}}?tab=stars"
+                        class="flex flex-row justify-between items-center p-3">
+                    <span class="text-md pr-8">Your stars</span>
+                </a>
+                <a
+                        href="/settings/profile"
+                        class="flex flex-row justify-between items-center p-3">
+                    <span class="text-md pr-8">Settings</span>
+                </a>
+                <a
+                        href="/logout/"
+                        class="flex flex-row justify-between items-center p-3">
+                    <span class="text-md pr-8">Logout</span>
+                </a>
+                {%- when None -%}
+                {%- endmatch -%}
+            </div>
+        </div>
+    </div>
 </header>
 
 

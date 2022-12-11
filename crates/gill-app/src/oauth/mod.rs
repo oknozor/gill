@@ -3,20 +3,18 @@ use async_session::{MemoryStore, Session, SessionStore};
 use axum::{
     async_trait,
     extract::{
-        FromRef, FromRequestParts, Query, rejection::TypedHeaderRejectionReason, State, TypedHeader,
+        rejection::TypedHeaderRejectionReason, FromRef, FromRequestParts, Query, State, TypedHeader,
     },
     http::{header::SET_COOKIE, HeaderMap},
-    RequestPartsExt,
     response::{IntoResponse, Redirect, Response},
+    RequestPartsExt,
 };
 use http::{header, request::Parts};
 use oauth2::{
-    AuthorizationCode, AuthUrl, basic::BasicClient, ClientId, ClientSecret,
-    CsrfToken, RedirectUrl, reqwest::async_http_client, Scope, TokenResponse, TokenUrl,
+    basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
+    ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
-
-
 
 #[cfg(not(feature = "integration"))]
 pub mod service;
@@ -24,11 +22,9 @@ pub mod service;
 #[cfg(feature = "integration")]
 pub mod service_mock;
 
-
 use gill_settings::SETTINGS;
 #[cfg(feature = "integration")]
 pub use service_mock as service;
-
 
 static COOKIE_NAME: &str = "GILL_SESSION";
 

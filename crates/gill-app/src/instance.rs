@@ -21,9 +21,9 @@ use tower_http::services::ServeDir;
 
 use tower_http::trace::TraceLayer;
 
+use crate::state::AppState;
 use gill_settings::SETTINGS;
 use url::Url;
-use crate::state::AppState;
 
 pub type InstanceHandle = Arc<Instance>;
 
@@ -86,7 +86,10 @@ impl Instance {
         };
 
         let app = Router::new()
-            .nest_service("/assets", axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error))
+            .nest_service(
+                "/assets",
+                axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error),
+            )
             .route(
                 "/.well-known/webfinger",
                 get(crate::webfinger::webfinger).with_state(app_state.clone()),

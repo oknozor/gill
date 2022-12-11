@@ -3,10 +3,12 @@
 {% block content_left %}
 {%- match user -%}
 {%- when Some with (user) -%}
+<!--
 <form action="/follow_user">
     <label for="follow">User apu url:</label><br>
     <input type="text" id="follow" name="follow"><br>
 </form>
+-->
 {%- when None -%}
 
 {%- endmatch -%}
@@ -14,18 +16,20 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex flex-row text-lg border-b-2 divide-x-2 divide-slate-300 border-slate-300 justify-items-center mb-3">
-    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py"
-            onclick="openTab('instance-repositories')">
-        <i class="ti ti-home-down px-3"></i>
+<div class="flex flex-row text-lg border-b-2 border-slate-300 justify-items-center pb-5">
+    <button class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'instance-repositories')">
+        <i class="ti ti-home-down px-4"></i>
         Local repositories
     </button>
-    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py" onclick="openTab('repositories')">
-        <i class="ti ti-affiliate px-3"></i>
+    <button class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'repositories')">
+        <i class="ti ti-affiliate px-4"></i>
         Repositories
     </button>
-    <button class="rounded-b-lg flex-1 flex items-center hover:bg-teal-500 py" onclick="openTab('activities')">
-        <i class="ti ti-bell px-3"></i>
+    <button class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            onclick="openTab(this, 'activities')">
+        <i class="ti ti-bell px-4"></i>
         Activities
     </button>
 </div>
@@ -72,12 +76,22 @@
 </div>
 
 <script>
-    function openTab(cityName) {
-        let x = document.getElementsByClassName("tab");
-        for (let i = 0; i < x.length; i++) {
-            x[i].style.display = "none";
+    function openTab(tabButton, tabName) {
+        let tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].style.display = "none";
         }
-        document.getElementById(cityName).style.display = "block";
+
+        let buttons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("border-red-300");
+            buttons[i].classList.remove("border-b-4");
+        }
+
+        let tab = document.getElementById(tabName);
+        tab.style.display = "block";
+        tabButton.classList.add("border-red-300");
+        tabButton.classList.add("border-b-4");
     }
 </script>
 {%- endblock -%}

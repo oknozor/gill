@@ -1,9 +1,9 @@
+use crate::instance::InstanceHandle;
 use async_session::MemoryStore;
 use axum::extract::FromRef;
 use oauth2::basic::BasicClient;
-use syntect::parsing::SyntaxSet;
 use syntect::highlighting::Theme;
-use crate::instance::InstanceHandle;
+use syntect::parsing::SyntaxSet;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -37,4 +37,3 @@ impl FromRef<AppState> for Theme {
         state.theme.clone()
     }
 }
-

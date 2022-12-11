@@ -2,7 +2,7 @@ use anyhow::Result;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSetBuilder;
 
-fn main()  -> Result<()> {
+fn main() -> Result<()> {
     dump_theme("theme.bin")?;
     dump_syntax("syntax.bin")?;
     Ok(())
@@ -35,4 +35,3 @@ pub fn dump_syntax(out: &str) -> Result<()> {
     syntect::dumps::dump_to_file(&set, out)?;
     Ok(())
 }
-

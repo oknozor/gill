@@ -7,7 +7,6 @@ services:
     restart: always
     container_name: gill-app
     environment:
-      DOMAIN: bore.pub:40943
       DB_NAME: gill
       DB_HOST: postgres
       DB_PORT: 5432
@@ -28,7 +27,6 @@ services:
     restart: always
     container_name: gill-app-2
     environment:
-      DOMAIN: bore.pub:46849
       DB_NAME: gill_2
       DB_HOST: postgres
       DB_PORT: 5432

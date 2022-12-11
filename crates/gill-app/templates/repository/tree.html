@@ -7,7 +7,7 @@
 
 {% block content %}
 {% include "branch.html" %}
-<div>
+<div class="flex flex-col space-around gap-5">
     <ul class="rounded-md border border-slate-200 divide-y divide-slate-200">
         {% for dir in tree.trees %}
         <li class="px-6 py-4">
@@ -27,7 +27,7 @@
 
     {%- match readme -%}
     {%- when Some with (readme) -%}
-    <div class="readme">{{- readme|safe -}}</div>
+    <div class="rounded-md border border-slate-200 readme py-3 px-5">{{- readme|safe -}}</div>
     {%- when None -%}
     {%- endmatch -%}
 </div>
