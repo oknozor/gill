@@ -3,5 +3,8 @@
 /Cargo.lock
 sqlx-data.json
 db-data/
-docker/home/
+docker/home/*
+!docker/home/entrypoint-debug.sh
+!docker/home/entrypoint.sh
+!docker/home/config.toml
 

@@ -18,6 +18,7 @@ services:
       - "2222:22"
     volumes:
       - ./docker/home:/home/git
+      - ./crates/gill-app/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
 
   gill-2:
@@ -38,6 +39,7 @@ services:
       - "2223:22"
     volumes:
       - ./docker/home:/home/git
+      - ./crates/gill-app/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
 
   postgres:

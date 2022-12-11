@@ -2,7 +2,7 @@ use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::{
     core::object_id::ObjectId,
-    traits::{ActivityHandler, ApubObject},
+    traits::ApubObject,
 };
 use activitystreams_kinds::kind;
 
