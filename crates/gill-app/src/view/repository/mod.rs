@@ -1,12 +1,13 @@
 use crate::state::AppState;
 use anyhow::Result;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
 use gill_db::user::User;
 use sqlx::PgPool;
 use std::fmt;
 use std::fmt::Formatter;
 
+pub mod activity;
 pub mod blob;
 pub mod commits;
 pub mod tree;
@@ -22,6 +23,8 @@ pub fn routes() -> Router<AppState> {
             get(commits::history),
         )
         .route("/:owner/:repository/commits/:branch", get(commits::history))
+        .route("/:owner/:repository/star", post(activity::star))
+        .route("/:owner/:repository/watch", post(activity::watch))
 }
 
 #[derive(Debug)]

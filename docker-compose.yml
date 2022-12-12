@@ -34,9 +34,9 @@ services:
       DB_PASSWORD: postgres
     ports:
       - "3001:3000"
-      - "2223:22"
+      - "12222:22"
     volumes:
-      - ./docker/home:/home/git
+      - ./docker/home2:/home/git
       - ./crates/gill-app/assets:/home/git/assets
     entrypoint: /home/git/entrypoint-debug.sh
 

@@ -3,11 +3,13 @@ use crate::oauth::Oauth2User;
 use crate::syntax::highlight_blob;
 use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
 use crate::view::repository::{get_repository_branches, BranchDto};
-use crate::view::{get_connected_user_username, HtmlTemplate};
+use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::{Path, State};
 use axum::Extension;
 
+use crate::get_connected_user_username;
+use gill_db::repository::RepositoryLight;
 use gill_git::repository::traversal::get_tree_for_path;
 use sqlx::PgPool;
 use std::fmt::Formatter;
@@ -19,6 +21,11 @@ use syntect::parsing::SyntaxSet;
 #[derive(Template)]
 #[template(path = "repository/blob.html")]
 pub struct GitBLobTemplate {
+    repository: String,
+    owner: String,
+    watch_count: u32,
+    fork_count: u32,
+    star_count: u32,
     blob: BlobDto,
     language: Option<String>,
     branches: Vec<BranchDto>,
@@ -81,8 +88,14 @@ pub async fn blob(
         .unwrap_or(PlainText(blob));
 
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
+    let stats = RepositoryLight::stats_by_namespace(&owner, &repository, &db).await?;
 
     let template = GitBLobTemplate {
+        repository,
+        owner,
+        watch_count: stats.watch_count.unwrap_or(0) as u32,
+        fork_count: stats.fork_count.unwrap_or(0) as u32,
+        star_count: stats.star_count.unwrap_or(0) as u32,
         blob,
         language,
         branches,

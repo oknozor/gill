@@ -193,6 +193,7 @@ impl User {
             SELECT r.id,
                    r.name,
                    u.username as owner,
+                   r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count
@@ -226,6 +227,7 @@ impl User {
             SELECT r.id,
                    r.name,
                    u.username as owner,
+                   r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count

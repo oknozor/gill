@@ -94,7 +94,7 @@ impl Instance {
                 "/.well-known/webfinger",
                 get(crate::webfinger::webfinger).with_state(app_state.clone()),
             )
-            .nest("/api/v1/", api::router())
+            .nest("/api/v1/", api::router(app_state.clone()))
             .nest_service("/apub", apub::router(instance))
             .nest_service("/", view::router(app_state.clone()))
             .layer(TraceLayer::new_for_http())

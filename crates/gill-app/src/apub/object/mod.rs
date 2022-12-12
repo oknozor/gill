@@ -1,3 +1,58 @@
+use crate::error::AppError;
+use crate::instance::InstanceHandle;
+use activitypub_federation::core::activity_queue::send_activity;
+use activitypub_federation::core::signatures::PublicKey;
+use activitypub_federation::deser::context::WithContext;
+use activitypub_federation::traits::ActivityHandler;
+use activitypub_federation::LocalInstance;
+use axum::async_trait;
+use serde::Serialize;
+use url::{ParseError, Url};
+
 pub mod commit;
 pub mod repository;
 pub mod user;
+
+#[async_trait]
+pub trait GillApubObject {
+    fn view_uri(&self) -> String;
+
+    fn followers_url(&self) -> Result<Url, AppError>;
+
+    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError>;
+
+    fn local_id(&self) -> i32;
+
+    fn activity_pub_id(&self) -> &str;
+
+    fn public_key_with_owner(&self) -> Result<PublicKey, ParseError>;
+
+    fn private_key(&self) -> Option<String>;
+
+    fn activity_pub_id_as_url(&self) -> Result<Url, ParseError> {
+        Url::parse(self.activity_pub_id())
+    }
+
+    async fn send<Activity>(
+        &self,
+        activity: Activity,
+        recipients: Vec<Url>,
+        local_instance: &LocalInstance,
+    ) -> Result<(), <Activity as ActivityHandler>::Error>
+    where
+        Activity: ActivityHandler + Serialize + Send + Sync,
+        <Activity as ActivityHandler>::Error:
+            From<anyhow::Error> + From<serde_json::Error> + From<AppError> + From<ParseError>,
+    {
+        let activity = WithContext::new_default(activity);
+        send_activity(
+            activity,
+            self.public_key_with_owner()?,
+            self.private_key().expect("has private key"),
+            recipients,
+            local_instance,
+        )
+        .await?;
+        Ok(())
+    }
+}

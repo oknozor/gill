@@ -1,18 +1,6 @@
 {% extends "base.html" %}
 
 {% block content_left %}
-{%- match user -%}
-{%- when Some with (user) -%}
-<!--
-<form action="/follow_user">
-    <label for="follow">User apu url:</label><br>
-    <input type="text" id="follow" name="follow"><br>
-</form>
--->
-{%- when None -%}
-
-{%- endmatch -%}
-
 {% endblock %}
 
 {% block content %}
@@ -67,7 +55,71 @@
     </div>
 
     <div id="repositories" class="tab" style="display:none">
-        <p>TODO</p>
+        <ul class="flex flex-col divide-y divide-slate-200">
+            {% for repo in federated_repositories %}
+            <li class="flex flex-col py-4">
+                <span class="pb-5">
+                <a href="/{{repo.owner}}/{{repo.name}}"
+                   class="text-lg text-sky-600 font-bold hover:underline">
+                    {{repo.owner}}/{{repo.name}}@{{repo.domain}}
+                </a>
+                </span>
+                {%- match repo.description -%}
+                {%- when Some with (description) -%}
+                <span class="text-slate-600 pb-2 text-base pb-5">{{description}}</span>
+                {%- when None -%}
+                {%- endmatch -%}
+
+                <div class="flex flex-row text-sm">
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.star_count}}</span>
+                        <i class="text-sm ti ti-star"></i>
+                    </a>
+                    <a class="px-3 hover:text-sky-400 hover:font-semibold">
+                        <span>{{repo.fork_count}}</span>
+                        <i class="text-sm ti ti-git-fork"></i>
+                    </a>
+                </div>
+                <div>
+                    <script>
+                        const watch = (element) => {
+                            fetch('/{{repo.owner}}/{{repo.name}}/watch', {
+                                method: 'POST',
+                            }).then(() => {
+                                document.getElementById("watch-label").innerHTML = "Watching"
+                            })
+                        }
+
+                        const star = (element) => {
+                            fetch('/{{repo.owner}}/{{repo.name}}/star', {
+                                method: 'POST',
+                            }).then(() => {
+                                document.getElementById("star-label").innerHTML = "Starred"
+                            })
+                        }
+                    </script>
+                    <button
+                            onclick="watch()"
+                            class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+                        <i class="text-lg ti ti-eye pr-2"></i>
+                        <span id="watch-label">Watch</span>
+                    </button>
+
+                    <button class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+                        <i class="text-lg ti ti-git-fork pr-2"></i>
+                        <span>Fork</span>
+                    </button>
+
+                    <button
+                            onclick="star()"
+                            class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+                        <i class="text-lg ti ti-star pr-2"></i>
+                        <span id="star-label">Star</span>
+                    </button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
 
     <div id="activities" class="tab" style="display:none">

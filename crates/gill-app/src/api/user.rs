@@ -26,16 +26,16 @@ pub async fn create(
     };
     let domain = &SETTINGS.domain;
     let username = user.username;
-
+    let apub_id = format!("{scheme}{domain}/apub/users/{username}");
     let user = CreateUser {
         username: username.clone(),
         email: Some(user.email),
         private_key: Some(keys.private_key),
         public_key: keys.public_key,
-        followers_url: format!("{scheme}{domain}/apub/{username}/followers"),
-        outbox_url: format!("{scheme}{domain}/apub/{username}/outbox"),
-        inbox_url: format!("{scheme}{domain}/apub/{username}/inbox"),
-        activity_pub_id: format!("{scheme}{domain}/apub/users/{username}"),
+        followers_url: format!("{apub_id}/followers"),
+        outbox_url: format!("{apub_id}/outbox"),
+        inbox_url: format!("{apub_id}/inbox"),
+        activity_pub_id: apub_id,
         domain: SETTINGS.domain.clone(),
         is_local: true,
     };

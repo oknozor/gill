@@ -1,11 +1,12 @@
 use crate::oauth::Oauth2User;
-use crate::view::{get_connected_user_username, HtmlTemplate};
+use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
 
 use crate::error::AppError;
-use crate::view::dto::RepositoryDto;
+use crate::get_connected_user_username;
+use crate::view::dto::{FederatedRepositoryDto, RepositoryDto};
 use gill_db::activity::Activity;
 use gill_db::repository::RepositoryDigest;
 use sqlx::PgPool;
@@ -17,7 +18,7 @@ pub struct ActivityDto {}
 struct LandingPageTemplate {
     user: Option<String>,
     local_repositories: Vec<RepositoryDto>,
-    all_repositories: Vec<RepositoryDto>,
+    federated_repositories: Vec<FederatedRepositoryDto>,
     activities: Vec<Activity>,
 }
 
@@ -32,10 +33,16 @@ pub async fn index(
         .map(RepositoryDto::from)
         .collect();
 
+    let federated_repositories = RepositoryDigest::all_federated(10, 0, &db).await?;
+    let federated_repositories = federated_repositories
+        .into_iter()
+        .map(FederatedRepositoryDto::from)
+        .collect();
+
     let template = LandingPageTemplate {
         user: username,
         local_repositories,
-        all_repositories: vec![],
+        federated_repositories,
         activities: vec![],
     };
 

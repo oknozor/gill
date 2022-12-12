@@ -1,11 +1,12 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
-use crate::view::{get_connected_user_username, HtmlTemplate};
+use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
 use gill_db::user::User;
 
+use crate::get_connected_user_username;
 use sqlx::PgPool;
 
 #[derive(Template)]

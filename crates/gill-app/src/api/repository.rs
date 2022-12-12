@@ -1,5 +1,7 @@
 use crate::error::AppError;
+
 use activitypub_federation::core::signatures::generate_actor_keypair;
+
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Extension;
@@ -65,5 +67,5 @@ pub async fn init(
     let repository = Repository::create(&create_repository_command, &pool).await?;
     // #[cfg(not(feature = "integration"))]
     gill_git::repository::init::init_bare(&user.username, &repository.name)?;
-    Ok((StatusCode::NO_CONTENT, ()).into_response())
+    Ok(StatusCode::NO_CONTENT.into_response())
 }

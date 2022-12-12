@@ -3,9 +3,8 @@ use axum::body::{Body, BoxBody, HttpBody};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{request, Request};
 use axum::response::Response;
-use axum::Router;
+
 use serde::de::DeserializeOwned;
-use sqlx::PgPool;
 
 pub trait RequestBuilderExt {
     fn json(self, json: serde_json::Value) -> Request<Body>;
@@ -47,8 +46,4 @@ where
     }
 
     serde_json::from_slice(&bytes).expect("failed to read response body as json")
-}
-
-pub fn service(_db: PgPool) -> Router {
-    gill_app::api::router()
 }

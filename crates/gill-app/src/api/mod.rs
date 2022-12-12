@@ -1,4 +1,5 @@
 use crate::oauth;
+use crate::state::AppState;
 use axum::{
     middleware,
     routing::{get, post},
@@ -8,7 +9,7 @@ use axum::{
 pub mod repository;
 pub mod user;
 
-pub fn router() -> Router {
+pub fn router(state: AppState) -> Router {
     let public = Router::new()
         .route("/health", get(|| async { "Pong" }))
         .route("/health/", get(|| async { "Pong" }))
@@ -22,5 +23,5 @@ pub fn router() -> Router {
         .route("/repositories/create/", post(repository::init))
         .route_layer(middleware::from_fn(oauth::service::auth));
 
-    public.merge(authenticated)
+    public.merge(authenticated).with_state(state)
 }

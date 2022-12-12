@@ -1,5 +1,5 @@
 use crate::oauth;
-use crate::oauth::Oauth2User;
+
 use crate::state::AppState;
 use crate::view::follow::follow_form;
 use askama::Template;
@@ -8,8 +8,6 @@ use axum::response::Response;
 use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum::Router;
-use gill_db::user::User;
-use sqlx::PgPool;
 
 pub mod dto;
 pub mod follow;
@@ -47,17 +45,5 @@ where
             )
                 .into_response(),
         }
-    }
-}
-
-async fn get_connected_user_username(db: &PgPool, user: Option<Oauth2User>) -> Option<String> {
-    get_connected_user(db, user).await.map(|user| user.username)
-}
-
-async fn get_connected_user(db: &PgPool, user: Option<Oauth2User>) -> Option<User> {
-    let email = user.map(|user| user.email);
-    match email {
-        Some(email) => User::by_email(&email, db).await.ok(),
-        None => None,
     }
 }
