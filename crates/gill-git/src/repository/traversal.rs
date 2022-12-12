@@ -1,4 +1,4 @@
-use crate::repository::traversal::imp::ref_to_tree;
+use crate::repository::ref_to_tree;
 use git_repository::bstr::BString;
 use git_repository::ObjectId;
 use std::collections::HashMap;
@@ -58,25 +58,10 @@ mod imp {
     use git_repository::objs::tree::EntryRef;
     use git_repository::traverse::tree::visit::Action;
     use git_repository::traverse::tree::Visit;
-    use git_repository::{ObjectId, Tree};
+    use git_repository::ObjectId;
     use std::collections::VecDeque;
     use std::fmt;
     use std::fmt::Formatter;
-
-    pub fn ref_to_tree<'repo>(
-        reference: Option<&str>,
-        repo: &'repo git_repository::Repository,
-    ) -> anyhow::Result<Tree<'repo>> {
-        Ok(match reference {
-            Some(reference) => repo
-                .find_reference(reference)?
-                .peel_to_id_in_place()?
-                .object()?
-                .try_into_commit()?
-                .tree()?,
-            None => repo.head()?.peel_to_commit_in_place()?.tree()?,
-        })
-    }
 
     pub struct Traversal {
         path_deque: VecDeque<BString>,
