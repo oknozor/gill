@@ -3,7 +3,7 @@ use crate::user::User;
 use sqlx::PgPool;
 
 impl Repository {
-    pub async fn add_star(&self, star_id: i32, db: &PgPool) -> sqlx::Result<()> {
+    pub async fn add_star(&self, starred_by: i32, db: &PgPool) -> sqlx::Result<()> {
         sqlx::query!(
             // language=PostgreSQL
             r#"
@@ -11,7 +11,7 @@ impl Repository {
             VALUES ($1, $2)
             "#,
             self.id,
-            star_id
+            starred_by
         )
         .execute(db)
         .await?;

@@ -10,7 +10,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| {
-                "gill_ipc=debug,gill_git=debug,gill_app=debug,tower_http=debug".into()
+                "activitypub_federation=debug,gill_ipc=debug,gill_git=debug,gill_app=debug,tower_http=debug".into()
             }),
         ))
         .with(tracing_subscriber::fmt::layer())

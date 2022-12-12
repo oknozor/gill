@@ -2,22 +2,21 @@ use crate::apub::activities::follow::Follow;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::{
-    core::{activity_queue::send_activity, object_id::ObjectId, signatures::PublicKey},
+    core::{object_id::ObjectId, signatures::PublicKey},
     data::Data,
-    deser::context::WithContext,
     traits::{ActivityHandler, Actor, ApubObject},
-    LocalInstance,
 };
 use activitystreams_kinds::actor::PersonType;
 use std::str::FromStr;
 
-use crate::apub::activities::fork::Fork;
-use crate::apub::activities::star::Star;
 use crate::apub::activities::watch::Watch;
+use crate::apub::object::repository::RepositoryWrapper;
+use crate::apub::object::GillApubObject;
 use axum::async_trait;
 use gill_db::user::{CreateUser, User};
+use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
-use url::Url;
+use url::{ParseError, Url};
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
@@ -35,9 +34,6 @@ impl From<User> for UserWrapper {
 #[enum_delegate::implement(ActivityHandler)]
 pub enum PersonAcceptedActivities {
     Follow(Follow),
-    Watch(Watch),
-    Star(Star),
-    Fork(Fork),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -55,8 +51,17 @@ pub struct ApubUser {
     public_key: PublicKey,
 }
 
-impl UserWrapper {
-    pub async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
+#[async_trait]
+impl GillApubObject for UserWrapper {
+    fn view_uri(&self) -> String {
+        format!("/{}", self.0.username)
+    }
+
+    fn followers_url(&self) -> Result<Url, AppError> {
+        Url::parse(&self.0.followers_url).map_err(Into::into)
+    }
+
+    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
         let db = instance.database();
         let followers = self.0.get_followers(i64::MAX, 0, db).await?;
 
@@ -69,6 +74,27 @@ impl UserWrapper {
         Ok(followers)
     }
 
+    fn local_id(&self) -> i32 {
+        self.0.id
+    }
+
+    fn activity_pub_id(&self) -> &str {
+        &self.0.activity_pub_id
+    }
+
+    fn public_key_with_owner(&self) -> Result<PublicKey, ParseError> {
+        Ok(PublicKey::new_main_key(
+            self.activity_pub_id_as_url()?,
+            self.0.public_key.clone(),
+        ))
+    }
+
+    fn private_key(&self) -> Option<String> {
+        self.0.private_key.clone()
+    }
+}
+
+impl UserWrapper {
     pub async fn add_follower(
         &self,
         follower_id: i32,
@@ -79,27 +105,11 @@ impl UserWrapper {
         Ok(())
     }
 
-    pub fn followers_url(&self) -> Result<Url, AppError> {
-        Url::parse(&self.0.followers_url).map_err(Into::into)
-    }
-
-    fn activity_pub_id(&self) -> &str {
-        &self.0.activity_pub_id
-    }
-
-    pub fn local_id(&self) -> i32 {
-        self.0.id
-    }
-
-    fn activity_pub_id_as_url(&self) -> Result<Url, AppError> {
-        Ok(Url::parse(self.activity_pub_id())?)
-    }
-
-    fn public_key(&self) -> Result<PublicKey, AppError> {
-        Ok(PublicKey::new_main_key(
-            self.activity_pub_id_as_url()?,
-            self.0.public_key.clone(),
-        ))
+    pub fn activity_pub_id_from_namespace(user: &str) -> anyhow::Result<ObjectId<Self>> {
+        let domain = &SETTINGS.domain;
+        let scheme = if SETTINGS.debug { "http" } else { "https" };
+        let url = Url::from_str(&format!("{scheme}://{domain}/apub/users/{user}"))?;
+        Ok(ObjectId::new(url))
     }
 
     pub async fn follow(
@@ -126,24 +136,51 @@ impl UserWrapper {
         Ok(())
     }
 
-    pub async fn send<Activity>(
+    pub async fn watch_repository(
         &self,
-        activity: Activity,
-        recipients: Vec<Url>,
-        local_instance: &LocalInstance,
-    ) -> Result<(), <Activity as ActivityHandler>::Error>
-    where
-        Activity: ActivityHandler + Serialize + Send + Sync,
-        <Activity as ActivityHandler>::Error:
-            From<anyhow::Error> + From<serde_json::Error> + From<AppError>,
-    {
-        let activity = WithContext::new_default(activity);
-        send_activity(
-            activity,
-            self.public_key()?,
-            self.0.private_key.clone().expect("has private key"),
-            recipients,
-            local_instance,
+        other: &RepositoryWrapper,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
+        let watcher = ObjectId::new(self.activity_pub_id_as_url()?);
+        let watching = ObjectId::new(other.activity_pub_id_as_url()?);
+        let hostname = instance.local_instance().hostname();
+        let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
+        let activity_id = Url::parse(&activity_id)?;
+        let watch = Watch::new(watcher, watching, activity_id);
+        println!("{:?}", other);
+        tracing::debug!(
+            "Sending watch activity to repository inbox {}",
+            other.shared_inbox_or_inbox()
+        );
+        self.send(
+            watch,
+            vec![other.shared_inbox_or_inbox()],
+            instance.local_instance(),
+        )
+        .await?;
+        Ok(())
+    }
+
+    pub async fn star_repository(
+        &self,
+        other: &RepositoryWrapper,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
+        let starred_by = ObjectId::new(self.activity_pub_id_as_url()?);
+        let starred = ObjectId::new(other.activity_pub_id_as_url()?);
+        let hostname = instance.local_instance().hostname();
+        let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
+        let activity_id = Url::parse(&activity_id)?;
+        let star = Watch::new(starred_by, starred, activity_id);
+        tracing::debug!(
+            "Sending star activity to repository inbox {}",
+            other.shared_inbox_or_inbox()
+        );
+
+        self.send(
+            star,
+            vec![other.shared_inbox_or_inbox()],
+            instance.local_instance(),
         )
         .await?;
         Ok(())
@@ -170,7 +207,7 @@ impl ApubObject for UserWrapper {
         Ok(ApubUser {
             kind: Default::default(),
             id: ObjectId::new(self.activity_pub_id_as_url()?),
-            public_key: self.public_key()?,
+            public_key: self.public_key_with_owner()?,
             email: self.0.email,
             username: self.0.username,
             outbox: Url::parse(&self.0.outbox_url)?,

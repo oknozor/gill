@@ -1,0 +1,63 @@
+<script>
+    const watch = () => {
+        fetch('/{{owner}}/{{repository}}/watch', {
+            method: 'POST',
+        }).then(() => {
+            let count = document.getElementById("watch-count");
+            count.innerHTML += 1;
+        })
+    }
+
+    const star = () => {
+        fetch('/{{owner}}/{{repository}}/star', {
+            method: 'POST',
+        }).then(() => {
+            let count = document.getElementById("star-count");
+            count.innerHTML += 1;
+        })
+    }
+
+    const fork = () => {
+        fetch('/{{owner}}/{{repository}}/fork', {
+            method: 'POST',
+        }).then(() => {
+            let count = document.getElementById("fork-count");
+            count.innerHTML += 1;
+        })
+    }
+</script>
+<div class="flex flex-row justify-between border-b-2 border-slate-500 pb-4">
+    <div class="items-center">
+        <i class="text-lg ti ti-book-2 pr-2"></i>
+        <a
+                href="/{{owner}}"
+                class="text-lg text-sky-600 font-bold hover:underline">{{owner}}</a>
+        <span class="font-bold">/</span>
+        <a
+                href="/{{owner}}/{{repository}}"
+                class="text-lg text-sky-600 font-bold hover:underline">{{repository}}</a>
+    </div>
+    <div class="flex flex-row space-around gap-4">
+        <button
+                onclick="watch()"
+                class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+            <i class="text-lg ti ti-eye pr-2"></i>
+            <span>Watch</span>
+            <span id="watch-count" class="rounded-lg p-1 bg bg-slate-200 border border-slate-700">{{watch_count}}</span>
+        </button>
+
+        <button class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+            <i class="text-lg ti ti-git-fork pr-2"></i>
+            <span>Fork</span>
+            <span id="fork-count" class="rounded-lg p-1 bg bg-slate-200 border border-slate-700">{{fork_count}}</span>
+        </button>
+
+        <button
+                onclick="star()"
+                class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2">
+            <i class="text-lg ti ti-star pr-2"></i>
+            <span>Star</span>
+            <span id="star-count" class="rounded-lg p-1 bg bg-slate-200 border border-slate-700">{{star_count}}</span>
+        </button>
+    </div>
+</div>

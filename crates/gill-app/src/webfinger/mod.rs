@@ -2,12 +2,14 @@ use crate::error::AppError;
 
 use anyhow::anyhow;
 use axum::extract::Query;
-use axum::response::IntoResponse;
 
-use axum::Json;
+use axum::{Extension, Json};
 use gill_settings::SETTINGS;
 
+use gill_db::repository::Repository;
+use gill_db::user::User;
 use serde::Deserialize;
+use sqlx::PgPool;
 use webfinger::{Link, Webfinger};
 
 #[derive(Deserialize)]
@@ -46,11 +48,15 @@ impl WebFingerQuery {
     }
 }
 
-pub async fn webfinger(Query(query): Query<WebFingerQuery>) -> impl IntoResponse {
+pub async fn webfinger(
+    Query(query): Query<WebFingerQuery>,
+    Extension(db): Extension<PgPool>,
+) -> Result<Json<Webfinger>, AppError> {
     let acct = query.parse().unwrap();
 
     if acct.domain == SETTINGS.domain {
         if let Some(repository) = acct.repository {
+            Repository::by_namespace(&acct.user, &repository, &db).await?;
             Ok(Json(Webfinger {
                 subject: query.resource,
                 aliases: vec![
@@ -60,29 +66,49 @@ pub async fn webfinger(Query(query): Query<WebFingerQuery>) -> impl IntoResponse
                         acct.domain, acct.user, repository
                     ),
                 ],
-                links: vec![Link {
-                    rel: "self".to_string(),
-                    href: Some(format!(
-                        "http://{}/apub/users/{}/repositories/{}",
-                        acct.domain, acct.user, repository
-                    )),
-                    template: None,
-                    mime_type: Some("application/activity+json".to_string()),
-                }],
+                links: vec![
+                    Link {
+                        rel: "repository-page".to_string(),
+                        href: Some(format!(
+                            "http://{}/{}/{}",
+                            acct.domain, acct.user, repository
+                        )),
+                        template: None,
+                        mime_type: Some("text/html".to_string()),
+                    },
+                    Link {
+                        rel: "self".to_string(),
+                        href: Some(format!(
+                            "http://{}/apub/users/{}/repositories/{}",
+                            acct.domain, acct.user, repository
+                        )),
+                        template: None,
+                        mime_type: Some("application/activity+json".to_string()),
+                    },
+                ],
             }))
         } else {
+            User::by_user_name(&acct.user, &db).await?;
             Ok(Json(Webfinger {
                 subject: query.resource,
                 aliases: vec![
                     format!("http://{}/@{}", acct.domain, acct.user),
                     format!("http://{}/apub/users/{}", acct.domain, acct.user),
                 ],
-                links: vec![Link {
-                    rel: "self".to_string(),
-                    href: Some(format!("http://{}/apub/users/{}", acct.domain, acct.user)),
-                    template: None,
-                    mime_type: Some("application/activity+json".to_string()),
-                }],
+                links: vec![
+                    Link {
+                        rel: "user-profile".to_string(),
+                        href: Some(format!("http://{}/{}", acct.domain, acct.user)),
+                        template: None,
+                        mime_type: Some("text/html".to_string()),
+                    },
+                    Link {
+                        rel: "self".to_string(),
+                        href: Some(format!("http://{}/apub/users/{}", acct.domain, acct.user)),
+                        template: None,
+                        mime_type: Some("application/activity+json".to_string()),
+                    },
+                ],
             }))
         }
     } else {

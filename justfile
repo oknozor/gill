@@ -47,6 +47,9 @@ reload:
     cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/home/bin/gill-git-server
     cp target/x86_64-unknown-linux-musl/release/post-receive docker/home/hooks/post-receive
     cp target/x86_64-unknown-linux-musl/release/gill-app docker/home/bin/gill-app
+    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/home2/bin/gill-git-server
+    cp target/x86_64-unknown-linux-musl/release/post-receive docker/home2/hooks/post-receive
+    cp target/x86_64-unknown-linux-musl/release/gill-app docker/home2/bin/gill-app
     docker-compose exec gill ./entrypoint.sh
 
 css_live:

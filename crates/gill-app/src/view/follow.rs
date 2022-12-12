@@ -1,15 +1,19 @@
 use crate::apub::object::user::UserWrapper;
 
+use crate::get_connected_user;
 use crate::oauth::Oauth2User;
-use crate::view::get_connected_user;
 use activitypub_federation::core::object_id::ObjectId;
 
+use crate::apub::object::repository::RepositoryWrapper;
+use crate::apub::object::GillApubObject;
 use anyhow::anyhow;
 use axum::extract::State;
+use axum::response::Redirect;
 use axum::{Extension, Form};
 use serde::Deserialize;
 use sqlx::PgPool;
 use url::Url;
+use webfinger::Webfinger;
 
 #[derive(Deserialize, Debug)]
 pub struct FollowForm {
@@ -19,45 +23,96 @@ pub struct FollowForm {
 use crate::error::AppError;
 use crate::state::AppState;
 
+//TODO :  We need to refactor this big pile of mud and think about how to handle this
+// properly
 pub async fn follow_form(
     State(data): State<AppState>,
     connected_user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<FollowForm>,
-) -> Result<(), AppError> {
-    let Some(user) = get_connected_user(&db, connected_user).await else {
-        return Err(AppError::from(anyhow!("Unauthorized")))
+) -> Result<Redirect, AppError> {
+    let Some(_user) = get_connected_user(&db, connected_user).await else {
+        return Err(AppError::from(anyhow!("Unauthorized")));
     };
 
     // First attempt to parse the whole user url, then fallback to webfinger
-    let url = if let Ok(url) = Url::parse(&input.follow) {
-        url
-    } else if let Ok(Some(url)) = resolve_webfinger(&input.follow).await {
-        url
+    if let Ok(url) = Url::parse(&input.follow) {
+        // FIXME: this is not compatible with other forgefed instances and should not be done this way
+        //  anyway, we should discuss this with forgefed people to find a common ground here
+        if input.follow.contains('/') {
+            let repository = ObjectId::<RepositoryWrapper>::new(url);
+            let repository = repository
+                .dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+
+            let user = repository.owner_apub_id()?;
+            user.dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+
+            Ok(Redirect::to(&repository.view_uri()))
+        } else {
+            let user = ObjectId::<UserWrapper>::new(url);
+            let user = user
+                .dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+
+            Ok(Redirect::to(&user.view_uri()))
+        }
+    } else if let Ok(webfinger) = resolve_webfinger(&input.follow).await {
+        let page_link = webfinger
+            .links
+            .iter()
+            .find(|link| link.rel == "repository-page");
+
+        let apub_link = webfinger.links.iter().find(|link| link.rel == "self");
+
+        if let (Some(apub_link), Some(page_link)) = (apub_link, page_link) {
+            let url = Url::parse(apub_link.href.as_ref().unwrap())?;
+            let repository = ObjectId::<RepositoryWrapper>::new(url);
+
+            let repository = repository
+                .dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+            println!("{:?}", repository);
+            let user = repository.owner_apub_id()?;
+            user.dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+
+            repository
+                .owner_apub_id()?
+                .dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                .await?;
+
+            Ok(Redirect::to(page_link.href.as_ref().unwrap()))
+        } else {
+            let page_link = webfinger
+                .links
+                .iter()
+                .find(|link| link.rel == "user-profile");
+
+            let apub_link = webfinger.links.iter().find(|link| link.rel == "self");
+
+            if let (Some(apub_link), Some(page_link)) = (apub_link, page_link) {
+                let url = Url::parse(apub_link.href.as_ref().unwrap())?;
+                let user = ObjectId::<UserWrapper>::new(url);
+                user.dereference(&data.instance, data.instance.local_instance(), &mut 0)
+                    .await?;
+
+                Ok(Redirect::to(page_link.href.as_ref().unwrap()))
+            } else {
+                Err(AppError::from(anyhow!(
+                    "Bad response from webfinger endpoind"
+                )))
+            }
+        }
     } else {
-        return Err(AppError::from(anyhow!("Invalid user identifier")));
-    };
-
-    let user_to_follow = ObjectId::<UserWrapper>::new(url);
-    let user_to_follow = user_to_follow
-        .dereference(&data.instance, data.instance.local_instance(), &mut 0)
-        .await?;
-
-    UserWrapper::from(user)
-        .follow(&user_to_follow, &data.instance)
-        .await?;
-
-    Ok(())
+        Err(AppError::from(anyhow!("Invalid user identifier")))
+    }
 }
 
-async fn resolve_webfinger(webfinger: &str) -> anyhow::Result<Option<Url>> {
+async fn resolve_webfinger(webfinger: &str) -> anyhow::Result<Webfinger> {
     let webfinger = webfinger::resolve(webfinger, false)
         .await
         .expect("Web finger error");
-    Ok(webfinger
-        .links
-        .iter()
-        .find(|link| link.rel == "self")
-        .and_then(|link| link.href.as_ref())
-        .and_then(|url| Url::parse(url).ok()))
+    Ok(webfinger)
 }

@@ -4,31 +4,39 @@ use crate::instance::{Instance, InstanceHandle};
 use activitypub_federation::core::axum::inbox::receive_activity;
 use activitypub_federation::core::axum::json::ApubJson;
 use activitypub_federation::core::axum::{verify_request_payload, DigestVerified};
-use activitypub_federation::core::object_id::ObjectId;
+
 use activitypub_federation::data::Data;
 use activitypub_federation::deser::context::WithContext;
 use activitypub_federation::traits::ApubObject;
-use axum::body::Body;
-use axum::extract::{OriginalUri, State};
+
+use axum::extract::{OriginalUri, Path, State};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{body, middleware, Extension, Json, Router};
-use http::{HeaderMap, Method, Request};
+use http::{HeaderMap, Method};
 
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
 
-use url::Url;
+use crate::apub::object::repository::{
+    ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper,
+};
 
 pub mod activities;
 pub mod object;
 
 pub fn router(instance: Arc<Instance>) -> Router {
-    let public = Router::new().route("/users/:user_name", get(http_get_user));
+    let public = Router::new()
+        .route("/users/:user", get(user))
+        .route("/users/:user/repositories/:repository", get(repository));
 
     let private = Router::new()
-        .route("/:user/inbox", post(http_post_user_inbox))
+        .route("/users/:user/inbox", post(user_inbox))
+        .route(
+            "/users/:user/repositories/:repository/inbox",
+            post(repository_inbox),
+        )
         .layer(
             ServiceBuilder::new()
                 .map_request_body(body::boxed)
@@ -38,25 +46,31 @@ pub fn router(instance: Arc<Instance>) -> Router {
     public.merge(private).with_state(instance)
 }
 
-async fn http_get_user(
+async fn user(
+    Path(user): Path<String>,
     State(data): State<InstanceHandle>,
-    request: Request<Body>,
 ) -> Result<ApubJson<WithContext<ApubUser>>, AppError> {
-    let hostname: String = data.local_instance.hostname().to_string();
-    let request_url = format!("http://{}/apub{}", hostname, &request.uri());
-    let url = Url::parse(&request_url).expect("Failed to parse url");
-    let user = ObjectId::<UserWrapper>::new(url)
+    let object_id = UserWrapper::activity_pub_id_from_namespace(&user)?;
+    let user = object_id
         .dereference_local(&data)
         .await?
         .into_apub(&data)
         .await;
-
-    let user = WithContext::new_default(user?);
-    println!("{:?}", user);
-    Ok(ApubJson(user))
+    Ok(ApubJson(WithContext::new_default(user?)))
 }
 
-async fn http_post_user_inbox(
+async fn repository(
+    State(data): State<InstanceHandle>,
+    Path((user, repository)): Path<(String, String)>,
+) -> Result<ApubJson<WithContext<ApubRepository>>, AppError> {
+    let object_id = RepositoryWrapper::activity_pub_id_from_namespace(&user, &repository)?;
+    let repository = object_id.dereference_local(&data).await?;
+    let repository = repository.into_apub(&data).await;
+    let repository = WithContext::new_default(repository?);
+    Ok(ApubJson(repository))
+}
+
+async fn user_inbox(
     headers: HeaderMap,
     method: Method,
     OriginalUri(uri): OriginalUri,
@@ -65,6 +79,26 @@ async fn http_post_user_inbox(
     Json(activity): Json<WithContext<PersonAcceptedActivities>>,
 ) -> impl IntoResponse {
     receive_activity::<WithContext<PersonAcceptedActivities>, UserWrapper, InstanceHandle>(
+        digest_verified,
+        activity,
+        &data.clone().local_instance,
+        &Data::new(data),
+        headers,
+        method,
+        uri,
+    )
+    .await
+}
+
+async fn repository_inbox(
+    headers: HeaderMap,
+    method: Method,
+    OriginalUri(uri): OriginalUri,
+    State(data): State<InstanceHandle>,
+    Extension(digest_verified): Extension<DigestVerified>,
+    Json(activity): Json<WithContext<RepositoryAcceptedActivities>>,
+) -> impl IntoResponse {
+    receive_activity::<WithContext<RepositoryAcceptedActivities>, UserWrapper, InstanceHandle>(
         digest_verified,
         activity,
         &data.clone().local_instance,

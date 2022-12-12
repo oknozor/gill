@@ -7,4 +7,7 @@ docker/home/*
 !docker/home/entrypoint-debug.sh
 !docker/home/entrypoint.sh
 !docker/home/config.toml
-
+docker/home2/*
+!docker/home2/entrypoint-debug.sh
+!docker/home2/entrypoint.sh
+!docker/home2/config.toml
