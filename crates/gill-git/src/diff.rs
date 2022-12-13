@@ -1,11 +1,15 @@
 use diffs::{Diff, Replace};
 
-
 #[derive(Debug, Default)]
 pub struct LineDiff<'a> {
-    pub changes: Vec<LineChange>,
+    pub changes: Vec<DiffChange>,
     old: &'a [Line<'a>],
     new: &'a [Line<'a>],
+}
+
+#[derive(Debug, Default)]
+pub struct TextDiff {
+    pub changes: Vec<DiffChange>,
 }
 
 impl LineDiff<'_> {
@@ -24,7 +28,7 @@ pub struct Line<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum LineChange {
+pub enum DiffChange {
     Equal {
         old: usize,
         new: usize,
@@ -48,23 +52,48 @@ pub enum LineChange {
     },
 }
 
-impl LineChange {
-    fn old(&self) -> usize {
-        match self {
-            LineChange::Equal { old, .. }
-            | LineChange::Insertion { old, .. }
-            | LineChange::Replace { old, .. }
-            | LineChange::Deletion { old, .. } => *old,
-        }
+impl TextDiff {
+    pub fn diff(self, old: &[u8], new: &[u8]) -> anyhow::Result<Self> {
+        let mut diff = Replace::new(self);
+        let _ = diffs::myers::diff(&mut diff, old, 0, old.len(), new, 0, new.len());
+        Ok(diff.into_inner())
+    }
+}
+
+impl Diff for TextDiff {
+    type Error = ();
+
+    fn equal(&mut self, old: usize, new: usize, len: usize) -> Result<(), Self::Error> {
+        self.changes.push(DiffChange::Equal { old, len, new });
+        Ok(())
     }
 
-    fn new(&self) -> usize {
-        match self {
-            LineChange::Equal { new, .. }
-            | LineChange::Insertion { new, .. }
-            | LineChange::Replace { new, .. }
-            | LineChange::Deletion { new, .. } => *new,
-        }
+    fn delete(&mut self, old: usize, len: usize, new: usize) -> Result<(), Self::Error> {
+        self.changes.push(DiffChange::Deletion { old, len, new });
+        Ok(())
+    }
+
+    fn insert(&mut self, old: usize, new: usize, new_len: usize) -> Result<(), Self::Error> {
+        self.changes
+            .push(DiffChange::Insertion { old, new_len, new });
+        Ok(())
+    }
+
+    fn replace(
+        &mut self,
+        old: usize,
+        old_len: usize,
+        new: usize,
+        new_len: usize,
+    ) -> Result<(), Self::Error> {
+        self.changes.push(DiffChange::Replace {
+            old,
+            old_len,
+            new,
+            new_len,
+        });
+
+        Ok(())
     }
 }
 
@@ -95,18 +124,18 @@ impl Diff for LineDiff<'_> {
     type Error = ();
 
     fn equal(&mut self, old: usize, new: usize, len: usize) -> Result<(), Self::Error> {
-        self.changes.push(LineChange::Equal { old, len, new });
+        self.changes.push(DiffChange::Equal { old, len, new });
         Ok(())
     }
 
     fn delete(&mut self, old: usize, len: usize, new: usize) -> Result<(), Self::Error> {
-        self.changes.push(LineChange::Deletion { old, len, new });
+        self.changes.push(DiffChange::Deletion { old, len, new });
         Ok(())
     }
 
     fn insert(&mut self, old: usize, new: usize, new_len: usize) -> Result<(), Self::Error> {
         self.changes
-            .push(LineChange::Insertion { old, new_len, new });
+            .push(DiffChange::Insertion { old, new_len, new });
         Ok(())
     }
 
@@ -117,7 +146,7 @@ impl Diff for LineDiff<'_> {
         new: usize,
         new_len: usize,
     ) -> Result<(), Self::Error> {
-        self.changes.push(LineChange::Replace {
+        self.changes.push(DiffChange::Replace {
             old,
             new_len,
             new,
