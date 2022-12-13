@@ -10,6 +10,7 @@ use std::fmt::Formatter;
 pub mod activity;
 pub mod blob;
 pub mod commits;
+pub mod diff;
 pub mod tree;
 
 pub fn routes() -> Router<AppState> {
