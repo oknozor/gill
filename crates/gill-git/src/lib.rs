@@ -3,6 +3,7 @@ extern crate core;
 use std::io::Write;
 use std::{fs, io};
 
+pub mod diff;
 pub mod repository;
 
 pub fn append_ssh_key(ssh_key: &str) -> io::Result<()> {

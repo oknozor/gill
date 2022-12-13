@@ -1,6 +1,6 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
-use crate::syntax::highlight_blob;
+use crate::syntax::highlight::highlight_blob;
 use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
