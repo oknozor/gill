@@ -1,10 +1,11 @@
-use crate::diff::{Line, LineChange, LineDiff};
+use crate::diff::{DiffChange, Line, LineDiff, TextDiff};
 use crate::repository::ref_to_tree;
 use git_repository::object::tree::diff::change::Event;
 use git_repository::object::tree::diff::{Action, Change};
 use git_repository::objs::tree::EntryMode;
 use git_repository::{object, Repository};
 
+use diffs::Replace;
 use std::io;
 use std::io::Write;
 
@@ -24,7 +25,7 @@ pub fn diff_to_output(diff: LineDiff, out: &mut impl Write) -> anyhow::Result<()
     let changes = &diff.changes;
     for change in changes {
         match change {
-            LineChange::Equal { new: _, old, len } => {
+            DiffChange::Equal { new: _, old, len } => {
                 for line in *old..(*old + *len) {
                     let line = diff.get_old_line(line).unwrap();
                     out.write_all(line)?;
@@ -32,30 +33,63 @@ pub fn diff_to_output(diff: LineDiff, out: &mut impl Write) -> anyhow::Result<()
                 }
             }
 
-            LineChange::Deletion { old, new: _, len } => {
+            DiffChange::Deletion { old, new: _, len } => {
                 for deleted in *old..(*old + *len) {
                     let deleted = diff.get_old_line(deleted).unwrap();
                     write_deleted(out, deleted)?;
                 }
             }
-            LineChange::Replace {
+            DiffChange::Replace {
                 old,
                 old_len,
                 new,
                 new_len,
             } => {
-                for deleted in *old..(*old + *old_len) {
-                    let deleted = diff.get_old_line(deleted).unwrap();
-                    write_deleted(out, deleted)?;
-                }
+                println!("{:?}", (old, old_len, new, new_len));
+                if old_len > new_len {
+                    for idx in *new..(*new + *new_len) {
+                        let inserted = diff.get_new_line(idx).unwrap();
+                        let deleted = diff.get_old_line(idx).unwrap();
+                        let diff = TextDiff::default().diff(deleted, inserted).unwrap();
 
-                for inserted in *new..(*new + *new_len) {
-                    let inserted = diff.get_new_line(inserted).unwrap();
-                    write_inserted(out, inserted)?;
+                        if diff.changes.len() < 3 {
+                            write_replaced(out, inserted, deleted, diff.changes)?;
+                        } else {
+                            write_deleted(out, deleted)?;
+                            write_inserted(out, inserted)?;
+                        }
+                    }
+
+                    for deleted in *old + *new_len..(*old + *old_len) {
+                        let deleted = diff.get_old_line(deleted).unwrap();
+                        write_inserted(out, deleted)?;
+                    }
+                } else {
+                    for idx in *old..(*old + *old_len) {
+                        let inserted = diff.get_new_line(idx).unwrap();
+                        let deleted = diff.get_old_line(idx).unwrap();
+                        let diff = TextDiff::default().diff(deleted, inserted).unwrap();
+
+                        if diff.changes.len() < 3 {
+                            write_replaced(out, inserted, deleted, diff.changes)?;
+                        } else {
+                            write_deleted(out, deleted)?;
+                            write_inserted(out, inserted)?;
+                        }
+                    }
+
+                    for inserted in *new + *old_len..(*new + *new_len) {
+                        let inserted = diff.get_new_line(inserted).unwrap();
+                        write_inserted(out, inserted)?;
+                    }
                 }
             }
 
-            LineChange::Insertion { old: _, new, new_len } => {
+            DiffChange::Insertion {
+                old: _,
+                new,
+                new_len,
+            } => {
                 for inserted in *new..(*new + *new_len) {
                     let inserted = diff.get_new_line(inserted).unwrap();
                     write_inserted(out, inserted)?;
@@ -64,6 +98,53 @@ pub fn diff_to_output(diff: LineDiff, out: &mut impl Write) -> anyhow::Result<()
         }
     }
 
+    Ok(())
+}
+
+fn write_replaced(
+    out: &mut (impl Write + Sized),
+    inserted: &[u8],
+    deleted: &[u8],
+    changes: Vec<DiffChange>,
+) -> io::Result<()> {
+    for change in changes {
+        match change {
+            DiffChange::Equal { old, new, len } => {
+                out.write_all(&deleted[new..new + len])?;
+                out.write_all(b"\n")?;
+            }
+            DiffChange::Deletion { old, new, len } => {
+                out.write_all(b"\x1b[91;5;57m")?;
+                out.write_all(b"-- ")?;
+                out.write_all(&deleted[old..old + len])?;
+                out.write_all(b"\n")?;
+                out.write_all(b"\x1b[91;5;m")?;
+            }
+            DiffChange::Insertion { old, new, new_len } => {
+                out.write_all(b"\x1b[92;5;57m")?;
+                out.write_all(b"++ ")?;
+                out.write_all(&inserted[new..new + new_len])?;
+                out.write_all(b"\n")?;
+                out.write_all(b"\x1b[92;5;m")?;
+            }
+            DiffChange::Replace {
+                old,
+                old_len,
+                new,
+                new_len,
+            } => {
+                out.write_all(b"\x1b[41;5;57m")?;
+                out.write_all(&deleted[old..old + old_len])?;
+                out.write_all(b"\x1b[41;5;m")?;
+                out.write_all(b"\n")?;
+
+                out.write_all(b"\x1b[42;5;57m")?;
+                out.write_all(&inserted[new..new + new_len])?;
+                out.write_all(b"\x1b[42;5;m")?;
+                out.write_all(b"\n")?;
+            }
+        }
+    }
     Ok(())
 }
 
