@@ -1,10 +1,24 @@
 use diffs::{Diff, Replace};
+use std::fmt;
+use std::fmt::Formatter;
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct LineDiff<'a> {
     pub changes: Vec<DiffChange>,
     old: &'a [Line<'a>],
     new: &'a [Line<'a>],
+}
+
+impl fmt::Debug for LineDiff<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(
+            f,
+            "LineDiff {{ changes: {:?}, old_len: {}, new_len {} }}",
+            self.changes,
+            self.old.len(),
+            self.new.len()
+        )
+    }
 }
 
 #[derive(Debug, Default)]
