@@ -24,6 +24,7 @@ pub fn routes() -> Router<AppState> {
             get(commits::history),
         )
         .route("/:owner/:repository/commits/:branch", get(commits::history))
+        .route("/:owner/:repository/diff", get(diff::diff))
         .route("/:owner/:repository/star", post(activity::star))
         .route("/:owner/:repository/watch", post(activity::watch))
 }
