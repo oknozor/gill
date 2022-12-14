@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="/assets/js/code-helper.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div id="code-container">
+    <div>
+        {{- content|safe -}}
+    </div>
+</div>
+{% endblock %}
