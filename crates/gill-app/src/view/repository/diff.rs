@@ -5,7 +5,8 @@ use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::{Path, Query};
 use axum::Extension;
-use serde::{Deserialize};
+use gill_git::repository::GitRepository;
+use serde::Deserialize;
 use sqlx::PgPool;
 
 #[derive(Deserialize)]
@@ -30,8 +31,8 @@ pub async fn diff<'a>(
     Extension(db): Extension<PgPool>,
 ) -> Result<HtmlTemplate<GitDiffTemplate>, AppError> {
     let connected_username = get_connected_user_username(&db, user).await;
-    let repo = gill_git::repository::open(&owner, &repository)?;
-    let diff = gill_git::repository::diff::diff(&repo, &diff.from, &diff.to)?;
+    let repo = GitRepository::open(&owner, &repository)?;
+    let diff = repo.diff(&diff.from, &diff.to)?;
     let diff = diff.replace('`', "\'");
     let diff = diff.replace('$', "\\$");
     Ok(HtmlTemplate(GitDiffTemplate {

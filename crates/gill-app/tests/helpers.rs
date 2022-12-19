@@ -23,13 +23,15 @@ impl RequestBuilderExt for request::Builder {
 }
 
 pub async fn response_json<T>(resp: &mut Response<BoxBody>) -> T
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     assert_eq!(
         resp.headers()
             .get(CONTENT_TYPE)
-            .expect("expected Content-Type"), "application/json");
+            .expect("expected Content-Type"),
+        "application/json"
+    );
 
     let body = resp.body_mut();
 
