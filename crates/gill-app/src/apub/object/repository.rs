@@ -208,7 +208,7 @@ impl ApubObject for RepositoryWrapper {
         data: &Self::DataType,
         _request_counter: &mut i32,
     ) -> Result<Self, Self::Error> {
-        println!("{:?}", apub);
+        println!("{apub:?}");
         let db = data.database();
         let id = Url::from(apub.id);
         let repository = Repository::by_activity_pub_id(id.as_str(), db).await?;

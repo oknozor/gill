@@ -1,4 +1,3 @@
-// This is imported by different tests that use different functions.
 use axum::body::{Body, BoxBody, HttpBody};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{request, Request};
@@ -23,17 +22,14 @@ impl RequestBuilderExt for request::Builder {
     }
 }
 
-#[track_caller]
 pub async fn response_json<T>(resp: &mut Response<BoxBody>) -> T
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     assert_eq!(
         resp.headers()
             .get(CONTENT_TYPE)
-            .expect("expected Content-Type"),
-        "application/json"
-    );
+            .expect("expected Content-Type"), "application/json");
 
     let body = resp.body_mut();
 
@@ -41,7 +37,6 @@ where
 
     while let Some(res) = body.data().await {
         let chunk = res.expect("error reading response body");
-
         bytes.extend_from_slice(&chunk[..]);
     }
 

@@ -1,5 +1,5 @@
 /*
-! tailwindcss v3.1.8 | MIT License | https://tailwindcss.com
+! tailwindcss v3.2.4 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -30,6 +30,7 @@
 2. Prevent adjustments of font size after orientation changes in iOS.
 3. Use a more readable tab size.
 4. Use the user's configured `sans` font-family by default.
+5. Use the user's configured `sans` font-feature-settings by default.
 */
 
 html {
@@ -44,6 +45,8 @@ html {
   /* 3 */
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   /* 4 */
+  font-feature-settings: normal;
+  /* 5 */
 }
 
 /*
@@ -410,6 +413,12 @@ video {
   height: auto;
 }
 
+/* Make elements with the HTML hidden attribute stay hidden by default */
+
+[hidden] {
+  display: none;
+}
+
 [type='text'],[type='email'],[type='url'],[type='password'],[type='number'],[type='date'],[type='datetime-local'],[type='month'],[type='search'],[type='tel'],[type='time'],[type='week'],[multiple],textarea,select {
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -470,7 +479,6 @@ select {
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
   -webkit-print-color-adjust: exact;
-     color-adjust: exact;
           print-color-adjust: exact;
 }
 
@@ -481,7 +489,6 @@ select {
   background-size: initial;
   padding-right: 0.75rem;
   -webkit-print-color-adjust: unset;
-     color-adjust: unset;
           print-color-adjust: unset;
 }
 
@@ -491,7 +498,6 @@ select {
           appearance: none;
   padding: 0;
   -webkit-print-color-adjust: exact;
-     color-adjust: exact;
           print-color-adjust: exact;
   display: inline-block;
   vertical-align: middle;
@@ -580,53 +586,6 @@ select {
 }
 
 *, ::before, ::after {
-  --tw-border-spacing-x: 0;
-  --tw-border-spacing-y: 0;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-rotate: 0;
-  --tw-skew-x: 0;
-  --tw-skew-y: 0;
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-pan-x:  ;
-  --tw-pan-y:  ;
-  --tw-pinch-zoom:  ;
-  --tw-scroll-snap-strictness: proximity;
-  --tw-ordinal:  ;
-  --tw-slashed-zero:  ;
-  --tw-numeric-figure:  ;
-  --tw-numeric-spacing:  ;
-  --tw-numeric-fraction:  ;
-  --tw-ring-inset:  ;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgb(59 130 246 / 0.5);
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-colored: 0 0 #0000;
-  --tw-blur:  ;
-  --tw-brightness:  ;
-  --tw-contrast:  ;
-  --tw-grayscale:  ;
-  --tw-hue-rotate:  ;
-  --tw-invert:  ;
-  --tw-saturate:  ;
-  --tw-sepia:  ;
-  --tw-drop-shadow:  ;
-  --tw-backdrop-blur:  ;
-  --tw-backdrop-brightness:  ;
-  --tw-backdrop-contrast:  ;
-  --tw-backdrop-grayscale:  ;
-  --tw-backdrop-hue-rotate:  ;
-  --tw-backdrop-invert:  ;
-  --tw-backdrop-opacity:  ;
-  --tw-backdrop-saturate:  ;
-  --tw-backdrop-sepia:  ;
-}
-
-::-webkit-backdrop {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
@@ -812,10 +771,6 @@ select {
 
 .flex {
   display: flex;
-}
-
-.hidden {
-  display: none;
 }
 
 .h-14 {
@@ -1008,24 +963,9 @@ select {
   background-color: rgb(228 228 231 / var(--tw-bg-opacity));
 }
 
-.bg-green-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(134 239 172 / var(--tw-bg-opacity));
-}
-
-.bg-red-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(252 165 165 / var(--tw-bg-opacity));
-}
-
 .bg-slate-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(226 232 240 / var(--tw-bg-opacity));
-}
-
-.bg-zinc-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(212 212 216 / var(--tw-bg-opacity));
 }
 
 .p-2 {
@@ -1189,8 +1129,7 @@ select {
 }
 
 .underline {
-  -webkit-text-decoration-line: underline;
-          text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 .opacity-0 {
@@ -1287,8 +1226,7 @@ select {
 }
 
 .hover\:underline:hover {
-  -webkit-text-decoration-line: underline;
-          text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 .hover\:drop-shadow-lg:hover {
