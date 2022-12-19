@@ -9,14 +9,27 @@
 {% include "header.html" %}
 {% include "branch.html" %}
 <div id="code-container">
+    {%- match blob -%}
+    {%- when Highlighted with {content, language} -%}
     <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
-        {%- match blob -%}
-            {%- when Highlighted with (blob) -%}
-                {{- blob|safe -}}
-            {%- when PlainText with (blob) -%}
-                {{- blob|safe -}}
-            {%- endmatch -%}
+        {{- content|safe -}}
     </div>
+    {%- when PlainText with (blob) -%}
+    <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
+        {{- blob|safe -}}
+    </div>
+    {%- when Image with (blob) -%}
+    <div class="flex items-center justify-center border-2 rounded-md">
+        <img class="p-5" id="image-blob" src="data:image/png;base64,{{-blob|safe-}}" alt="blob image">
+    </div>
+    {%- when Binary with {content, filename} -%}
+    <div class="flex justify-center border-2 rounded-md">
+        <a id="download-blob" download="{{filename}}">Download</a>
+        <script>
+            document.getElementById("download-blob").href = "data:text/plain," + encodeURIComponent(`{{- blob|safe -}}`);
+        </script>
+    </div>
+    {%- endmatch -%}
 </div>
 {% endblock %}
 

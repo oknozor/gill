@@ -1,7 +1,6 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::syntax::highlight::highlight_blob;
-use crate::view::repository::blob::BlobDto::{Highlighted, PlainText};
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
 use askama::Template;
@@ -10,13 +9,17 @@ use axum::Extension;
 
 use crate::get_connected_user_username;
 use gill_db::repository::RepositoryLight;
-use gill_git::repository::traversal::get_tree_for_path;
+use gill_git::repository::traversal::BlobMime;
+use gill_git::repository::GitRepository;
 use sqlx::PgPool;
 use std::fmt::Formatter;
-use std::path::PathBuf;
-use std::{env, fmt};
+
+use std::{fmt};
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
+
+// Needed in template
+use crate::view::repository::blob::BlobDto::*;
 
 #[derive(Template)]
 #[template(path = "repository/blob.html")]
@@ -27,7 +30,6 @@ pub struct GitBLobTemplate {
     fork_count: u32,
     star_count: u32,
     blob: BlobDto,
-    language: Option<String>,
     branches: Vec<BranchDto>,
     current_branch: String,
     user: Option<String>,
@@ -35,8 +37,10 @@ pub struct GitBLobTemplate {
 
 #[derive(Debug)]
 enum BlobDto {
-    Highlighted(String),
+    Highlighted { content: String, language: String },
     PlainText(String),
+    Image(String),
+    Binary { content: String, filename: String },
 }
 
 impl fmt::Display for BlobDto {
@@ -66,26 +70,36 @@ pub async fn blob(
         }
     };
 
-    let repo_path = format!("{owner}/{repository}.git");
-    if !PathBuf::from(&repo_path).exists() {
-        let current_dir = env::current_dir().unwrap();
-        let current_dir = current_dir.to_string_lossy();
-        tracing::error!("Repository not found '{current_dir}/{repo_path}'")
-    }
-
-    let tree = get_tree_for_path(&repo_path, Some(&current_branch), tree)?;
+    let repo = GitRepository::open(&owner, &repository)?;
+    let tree = repo.get_tree_for_path(Some(&current_branch), tree)?;
     let blob = tree
         .blobs
         .iter()
-        .find(|blob| blob.filename == blob_name)
+        .find(|blob| blob.filename() == blob_name)
         .unwrap();
-    let blob = blob.content(&repo_path)?;
-    let language = get_blob_language(blob_name);
-    let blob = language
-        .as_ref()
-        .and_then(|language| highlight_blob(&blob, language, syntax_set, &theme).ok())
-        .map(Highlighted)
-        .unwrap_or(PlainText(blob));
+    let blob = match repo.blob_mime(blob) {
+        BlobMime::Text => {
+            let blob = repo.blob_str(blob)?;
+            let language = get_blob_language(blob_name);
+            language
+                .as_ref()
+                .and_then(|language| {
+                    highlight_blob(&blob, language, syntax_set, &theme)
+                        .ok()
+                        .map(|hl| (language, hl))
+                })
+                .map(|(language, content)| BlobDto::Highlighted {
+                    content,
+                    language: language.to_string(),
+                })
+                .unwrap_or(BlobDto::PlainText(blob))
+        }
+        BlobMime::Image => BlobDto::Image(base64::encode(repo.blob_bytes(blob)?)),
+        BlobMime::Other => BlobDto::Binary {
+            content: base64::encode(repo.blob_bytes(blob)?),
+            filename: blob.filename.clone(),
+        },
+    };
 
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
     let stats = RepositoryLight::stats_by_namespace(&owner, &repository, &db).await?;
@@ -97,7 +111,6 @@ pub async fn blob(
         fork_count: stats.fork_count.unwrap_or(0) as u32,
         star_count: stats.star_count.unwrap_or(0) as u32,
         blob,
-        language,
         branches,
         current_branch,
         user: connected_username,

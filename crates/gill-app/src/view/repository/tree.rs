@@ -93,11 +93,12 @@ mod imp {
 
     use crate::view::repository::get_repository_branches;
     use gill_db::repository::RepositoryLight;
-    use gill_git::repository::traversal::{get_tree_for_path, TreeMap};
+    use gill_git::repository::traversal::TreeMap;
+    use gill_git::repository::GitRepository;
     use pulldown_cmark::{html, Options, Parser};
     use sqlx::PgPool;
-    use std::env;
-    use std::path::PathBuf;
+    
+    
 
     pub(crate) async fn get_tree_root(
         owner: &str,
@@ -106,15 +107,9 @@ mod imp {
         connected_username: Option<String>,
         db: &PgPool,
     ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
-        let repo_path = format!("{owner}/{repository}.git");
-
-        if !PathBuf::from(&repo_path).exists() {
-            let current_dir = env::current_dir().unwrap();
-            let current_dir = current_dir.to_string_lossy();
-            tracing::error!("Repository not found '{current_dir}/{repo_path}'")
-        }
-        let tree = get_tree_for_path(&repo_path, Some(&current_branch), None)?;
-        let readme = get_readme(&tree, &repo_path);
+        let repo = GitRepository::open(owner, repository)?;
+        let tree = repo.get_tree_for_path(Some(&current_branch), None)?;
+        let readme = get_readme(&tree, &repo);
         let user = User::by_user_name(owner, db).await?;
         let repo = user.get_local_repository_by_name(repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
@@ -153,15 +148,9 @@ mod imp {
         connected_username: Option<String>,
         db: &PgPool,
     ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
-        let repo_path = format!("{owner}/{repository}.git");
-        if !PathBuf::from(&repo_path).exists() {
-            let current_dir = env::current_dir().unwrap();
-            let current_dir = current_dir.to_string_lossy();
-            tracing::error!("Repository not found '{current_dir}/{repo_path}'")
-        };
-
-        let tree = get_tree_for_path(&repo_path, Some(&current_branch), tree_path)?;
-        let readme = get_readme(&tree, &repo_path);
+        let repo = GitRepository::open(&owner, &repository)?;
+        let tree = repo.get_tree_for_path(Some(&current_branch), tree_path)?;
+        let readme = get_readme(&tree, &repo);
         let branches = get_repository_branches(&owner, &repository, &current_branch, db).await?;
         let stats = RepositoryLight::stats_by_namespace(&owner, &repository, db).await?;
 
@@ -181,11 +170,11 @@ mod imp {
         Ok(HtmlTemplate(template))
     }
 
-    pub fn get_readme(tree: &TreeMap, repo_path: &str) -> Option<String> {
+    pub fn get_readme(tree: &TreeMap, repo: &GitRepository) -> Option<String> {
         tree.blobs
             .iter()
-            .find(|blob| &blob.filename.to_string() == "README.md")
-            .and_then(|blob| blob.content(repo_path).ok())
+            .find(|blob| &blob.filename() == "README.md")
+            .and_then(|blob| repo.blob_str(blob).ok())
             .map(|readme| {
                 let parser = Parser::new_ext(&readme, Options::empty());
                 let mut html = String::new();

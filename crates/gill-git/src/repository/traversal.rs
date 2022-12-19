@@ -1,30 +1,61 @@
-use crate::repository::ref_to_tree;
-use git_repository::bstr::BString;
-use git_repository::ObjectId;
+use crate::repository::{ref_to_tree, GitRepository};
+
+
+use git_repository::{ObjectId};
+
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{PathBuf};
 
-/// Traverse the whole repository and return a [`TreeMap`].
-pub fn get_tree_for_path<P: AsRef<Path>>(
-    repo: P,
-    branch: Option<&str>,
-    path: Option<&str>,
-) -> anyhow::Result<TreeMap> {
-    let repo = git_repository::open(repo.as_ref())?;
-    let reference = branch.map(|name| format!("heads/{name}"));
-    let reference = reference.as_deref();
-    let tree = ref_to_tree(reference, &repo)?;
-    let mut delegate = imp::Traversal::default();
-    tree.traverse().breadthfirst(&mut delegate).unwrap();
+impl GitRepository {
+    /// Traverse the whole repository and return a [`TreeMap`].
+    pub fn get_tree_for_path(
+        &self,
+        branch: Option<&str>,
+        path: Option<&str>,
+    ) -> anyhow::Result<TreeMap> {
+        let reference = branch.map(|name| format!("heads/{name}"));
+        let reference = reference.as_deref();
+        let tree = ref_to_tree(reference, &self.inner)?;
+        let repo_path = self.inner.path().to_string_lossy();
+        let mut delegate = imp::Traversal::new(repo_path.to_string());
+        tree.traverse().breadthfirst(&mut delegate).unwrap();
 
-    Ok(match path {
-        None => delegate.tree_root,
-        Some(path) => delegate.tree_root.get_tree(path)?,
-    })
+        Ok(match path {
+            None => delegate.tree_root,
+            Some(path) => delegate.tree_root.get_tree(path)?,
+        })
+    }
+
+    /// Returns this blob content
+    pub fn blob_str(&self, blob: &BlobInfo) -> anyhow::Result<String> {
+        let object = self.inner.find_object(blob.oid)?;
+        let content = String::from_utf8_lossy(&object.data);
+        Ok(content.to_string())
+    }
+
+    /// Returns this blob content
+    pub fn blob_bytes(&self, blob: &BlobInfo) -> anyhow::Result<Vec<u8>> {
+        let object = self.inner.find_object(blob.oid)?;
+        Ok(object.data.clone())
+    }
+
+    pub fn blob_mime(&self, blob: &BlobInfo) -> BlobMime {
+        let guess = mime_guess::from_path(&blob.path);
+        let is_text = guess.iter().any(|mime| mime.type_() == "text");
+        let is_image = guess.iter().any(|mime| mime.type_() == "image");
+
+        if is_text {
+            BlobMime::Text
+        } else if is_image {
+            BlobMime::Image
+        } else {
+            BlobMime::Other
+        }
+    }
 }
 
 /// A Graph representation of a given tree
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct TreeMap {
     /// The file name of this tree
     pub filename: String,
@@ -37,17 +68,24 @@ pub struct TreeMap {
 /// Wrap a blob filename an provide access to its content
 #[derive(Debug)]
 pub struct BlobInfo {
-    pub filename: BString,
+    pub filename: String,
+    path: PathBuf,
     oid: ObjectId,
 }
 
+pub enum BlobMime {
+    Text,
+    Image,
+    Other,
+}
+
 impl BlobInfo {
-    /// Returns this blob content
-    pub fn content<P: AsRef<Path>>(&self, repo_path: P) -> anyhow::Result<String> {
-        let repo = git_repository::open(repo_path.as_ref())?;
-        let object = repo.find_object(self.oid)?;
-        let content = String::from_utf8_lossy(&object.data);
-        Ok(content.to_string())
+    pub fn filename(&self) -> String {
+        self.path
+            .file_name()
+            .expect("filename")
+            .to_string_lossy()
+            .to_string()
     }
 }
 
@@ -62,6 +100,7 @@ mod imp {
     use std::collections::VecDeque;
     use std::fmt;
     use std::fmt::Formatter;
+    use std::path::PathBuf;
 
     pub struct Traversal {
         path_deque: VecDeque<BString>,
@@ -110,12 +149,12 @@ mod imp {
         }
     }
 
-    impl Default for Traversal {
-        fn default() -> Self {
+    impl Traversal {
+        pub fn new(repo_path_relative: String) -> Self {
             Self {
                 path_deque: Default::default(),
                 path: BString::from(""),
-                tree_root: Default::default(),
+                tree_root: TreeMap::new(repo_path_relative),
             }
         }
     }
@@ -170,6 +209,7 @@ mod imp {
         }
 
         fn visit_nontree(&mut self, entry: &EntryRef<'_>) -> Action {
+            let root = self.tree_root.filename.clone();
             let path = self.path.to_string();
             let mut parts = path.split('/').peekable();
             let mut current = &mut self.tree_root;
@@ -181,8 +221,11 @@ mod imp {
                 current = current.populate_tree(tree_path);
             }
 
+            let filename = entry.filename;
+
             current.blobs.push(BlobInfo {
-                filename: entry.filename.into(),
+                filename: filename.to_string(),
+                path: PathBuf::from(root).join(path),
                 oid: ObjectId::from(entry.oid),
             });
 
@@ -193,20 +236,19 @@ mod imp {
 
 #[cfg(test)]
 mod test {
-    use crate::repository::traversal::get_tree_for_path;
+    use crate::repository::traversal::BlobInfo;
+    use crate::repository::GitRepository;
     use speculoos::prelude::*;
 
     #[test]
     fn should_get_tree_root() -> anyhow::Result<()> {
-        let repo = git_repository::discover(".")?;
-        let tree = get_tree_for_path(repo.path(), None, None)?;
+        let repo = GitRepository {
+            inner: git_repository::discover(".")?,
+        };
+        let tree = repo.get_tree_for_path(None, None)?;
         let crates = tree.trees.get("crates").unwrap();
 
-        let blobs_in_root: Vec<String> = tree
-            .blobs
-            .iter()
-            .map(|blob| blob.filename.to_string())
-            .collect();
+        let blobs_in_root: Vec<String> = tree.blobs.iter().map(BlobInfo::filename).collect();
 
         assert_that!(blobs_in_root).contains_all_of(&[
             &"Cargo.toml".to_string(),
@@ -227,14 +269,12 @@ mod test {
 
     #[test]
     fn should_get_tree() -> anyhow::Result<()> {
-        let repo = git_repository::discover(".")?;
-        let tree = get_tree_for_path(repo.path(), Some("main"), Some("crates/gill-git"))?;
+        let repo = GitRepository {
+            inner: git_repository::discover(".")?,
+        };
+        let tree = repo.get_tree_for_path(Some("main"), Some("crates/gill-git"))?;
 
-        let blobs_in_root: Vec<String> = tree
-            .blobs
-            .iter()
-            .map(|blob| blob.filename.to_string())
-            .collect();
+        let blobs_in_root: Vec<String> = tree.blobs.iter().map(BlobInfo::filename).collect();
 
         assert_that!(blobs_in_root).contains_all_of(&[&"Cargo.toml".to_string()]);
 
