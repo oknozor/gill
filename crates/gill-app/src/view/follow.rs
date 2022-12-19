@@ -73,7 +73,7 @@ pub async fn follow_form(
             let repository = repository
                 .dereference(&data.instance, data.instance.local_instance(), &mut 0)
                 .await?;
-            println!("{:?}", repository);
+            println!("{repository:?}");
             let user = repository.owner_apub_id()?;
             user.dereference(&data.instance, data.instance.local_instance(), &mut 0)
                 .await?;

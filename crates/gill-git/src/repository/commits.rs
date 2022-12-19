@@ -88,7 +88,7 @@ mod test {
         let repo = git_repository::open("/home/okno/Code/gill")?;
         let commits = list_commits(&repo)?;
         for x in commits {
-            println!("{:#?}", x);
+            println!("{x:#?}");
         }
         Ok(())
     }

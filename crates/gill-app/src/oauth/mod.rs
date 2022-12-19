@@ -120,7 +120,7 @@ pub async fn login_authorized(
     let mut session = Session::new();
     session.insert("user", &user_data).unwrap();
     let cookie = store.store_session(session).await.unwrap().unwrap();
-    let cookie = format!("{}={}; SameSite=Lax; Path=/", COOKIE_NAME, cookie);
+    let cookie = format!("{COOKIE_NAME}={cookie}; SameSite=Lax; Path=/");
     let mut headers = HeaderMap::new();
     headers.insert(SET_COOKIE, cookie.parse().unwrap());
 
@@ -142,9 +142,9 @@ where
             .map_err(|e| match *e.name() {
                 header::COOKIE => match e.reason() {
                     TypedHeaderRejectionReason::Missing => AuthRedirect,
-                    _ => panic!("unexpected error getting Cookie header(s): {}", e),
+                    _ => panic!("unexpected error getting Cookie header(s): {e}"),
                 },
-                _ => panic!("unexpected error getting cookies: {}", e),
+                _ => panic!("unexpected error getting cookies: {e}"),
             })?;
         let session_cookie = cookies.get(COOKIE_NAME).ok_or(AuthRedirect)?;
         let session = store
