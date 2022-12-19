@@ -21,7 +21,7 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
             AppError::Internal(error) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", error)).into_response()
+                (StatusCode::INTERNAL_SERVER_ERROR, format!("{error}")).into_response()
             }
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED").into_response(),
             AppError::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND").into_response(),

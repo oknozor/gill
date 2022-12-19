@@ -147,7 +147,7 @@ impl UserWrapper {
         let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
         let activity_id = Url::parse(&activity_id)?;
         let watch = Watch::new(watcher, watching, activity_id);
-        println!("{:?}", other);
+        println!("{other:?}");
         tracing::debug!(
             "Sending watch activity to repository inbox {}",
             other.shared_inbox_or_inbox()

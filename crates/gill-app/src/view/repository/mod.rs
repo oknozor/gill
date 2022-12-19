@@ -63,6 +63,6 @@ async fn get_repository_branches(
 
 impl fmt::Display for BranchDto {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{:?}", self)
+        writeln!(f, "{self:?}")
     }
 }
