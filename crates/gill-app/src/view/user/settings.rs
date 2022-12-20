@@ -17,15 +17,15 @@ pub struct UserSettingsQuery {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "kebab-case")]
 pub enum Tab {
-    SshKeys,
-    PublicProfile,
+    SshKey,
+    Profile,
 }
 
 impl Default for Tab {
     fn default() -> Self {
-        Self::PublicProfile
+        Self::Profile
     }
 }
 

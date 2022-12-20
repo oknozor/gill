@@ -13,7 +13,6 @@ async fn main() -> anyhow::Result<()> {
     let db = PgPoolOptions::new()
         .max_connections(1)
         .idle_timeout(Duration::from_secs(3))
-        // TODO
         .connect(&SETTINGS.database_url())
         .await
         .expect("can connect to database");
