@@ -805,6 +805,10 @@ select {
   width: 5rem;
 }
 
+.w-36 {
+  width: 9rem;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -893,6 +897,12 @@ select {
 .divide-slate-400 > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-opacity: 1;
   border-color: rgb(148 163 184 / var(--tw-divide-opacity));
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .whitespace-pre-wrap {

@@ -2,9 +2,9 @@
     <button class="flex flex-row items-center grow-0 h-14 w-40 border border-zinc-300 bg-zinc-200 hover:bg-slate-200 drop-shadow-md
                       font-medium rounded-lg px-3" type="button" data-bs-toggle="dropdown"
             aria-expanded="false" onclick="dropDownBranches()">
-        <i class="ti ti-binary-tree-2 px-2"></i>
-        {{ current_branch }}
-        <i class="text-sm ti ti-arrow-down px-2"></i>
+        <i class="ti ti-binary-tree-2 pl-1 pr-2"></i>
+        <p class="truncate ...">{{current_branch}}</p>
+        <i class="text-sm ti ti-arrow-down pl-1 pr-2"></i>
     </button>
     <div class="text-1xl underline text-blue pl-6" id="navigation">
     </div>
