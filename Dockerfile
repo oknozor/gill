@@ -29,7 +29,6 @@ RUN mkdir bin
 COPY target/x86_64-unknown-linux-musl/release/gill-app ./bin/gill-app
 COPY target/x86_64-unknown-linux-musl/release/gill-git-server ./bin/gill-git-server
 COPY target/x86_64-unknown-linux-musl/release/post-receive /usr/share/git-core/templates/hooks/post-receive
-
 COPY crates/gill-app/assets/ ./
 COPY docker/home/* ./
 

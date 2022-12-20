@@ -14,7 +14,7 @@ use gill_git::repository::GitRepository;
 use sqlx::PgPool;
 use std::fmt::Formatter;
 
-use std::{fmt};
+use std::fmt;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 

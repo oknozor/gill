@@ -26,7 +26,6 @@ chrono.workspace = true
 syntect.workspace = true
 
 gill-db = { path = "../gill-db" }
-gill-ipc = { path = "../gill-ipc" }
 gill-git = { path = "../gill-git" }
 gill-settings = { path = "../gill-settings" }
 

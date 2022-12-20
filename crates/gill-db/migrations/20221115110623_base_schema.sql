@@ -98,8 +98,9 @@ CREATE TABLE org_repository
 CREATE TABLE ssh_key
 (
     id       SERIAL PRIMARY KEY,
-    key      TEXT,
-    name      VARCHAR(255),
+    key      TEXT                      NOT NULL,
+    name     VARCHAR(255)              NOT NULL UNIQUE,
+    key_type VARCHAR(255)              NOT NULL,
     owner_id INT REFERENCES users (id) NOT NULL
 );
 

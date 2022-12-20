@@ -1,10 +1,9 @@
 use crate::repository::{ref_to_tree, GitRepository};
 
-
-use git_repository::{ObjectId};
+use git_repository::ObjectId;
 
 use std::collections::HashMap;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 impl GitRepository {
     /// Traverse the whole repository and return a [`TreeMap`].

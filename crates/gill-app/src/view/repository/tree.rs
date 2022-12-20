@@ -97,8 +97,6 @@ mod imp {
     use gill_git::repository::GitRepository;
     use pulldown_cmark::{html, Options, Parser};
     use sqlx::PgPool;
-    
-    
 
     pub(crate) async fn get_tree_root(
         owner: &str,

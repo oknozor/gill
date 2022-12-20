@@ -10,7 +10,6 @@ use axum::response::IntoResponse;
 
 use axum::routing::get;
 use axum::{Extension, Router};
-use gill_ipc::listener::IPCListener;
 use http::StatusCode;
 use reqwest::Client;
 use sqlx::PgPool;
@@ -104,8 +103,7 @@ impl Instance {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), SETTINGS.port);
         let app = axum::Server::bind(&addr).serve(app);
 
-        let ipc = IPCListener;
-        let _ = tokio::join!(app, ipc.listen());
+        let _ = tokio::join!(app);
 
         Ok(())
     }

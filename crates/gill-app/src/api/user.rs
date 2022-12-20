@@ -44,13 +44,36 @@ pub async fn create(
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
 
+struct RawSshkey {
+    inner: String,
+}
+
+impl From<String> for RawSshkey {
+    fn from(inner: String) -> Self {
+        RawSshkey { inner }
+    }
+}
+
+impl RawSshkey {
+    fn key_parts(&self) -> (&str, &str) {
+        let key = self.inner.trim();
+        let mut parts = key.split(' ');
+        let key_type = parts.next().expect("ssh key type");
+        let key = parts.next().expect("ssh key");
+        (key_type, key)
+    }
+}
+
 pub async fn register_ssh_key(
     Extension(user): Extension<User>,
     Extension(pool): Extension<PgPool>,
     Json(ssh_key): Json<CreateSSHKey>,
 ) -> Result<Response, AppError> {
-    User::add_ssh_key(user.id, &ssh_key.key, &pool).await?;
+    let key_name = ssh_key.name;
+    let raw_key = RawSshkey::from(ssh_key.key);
+    let (key_type, key) = raw_key.key_parts();
+    User::add_ssh_key(user.id, &key_name, key, key_type, &pool).await?;
     #[cfg(not(feature = "integration"))]
-    gill_git::append_ssh_key(&ssh_key.key).expect("Failed to append ssh key");
+    gill_git::append_ssh_key(&raw_key.inner, user.id).expect("Failed to append ssh key");
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
