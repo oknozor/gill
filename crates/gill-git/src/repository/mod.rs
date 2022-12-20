@@ -1,7 +1,6 @@
 use git_repository::{Repository, Tree};
 use std::path::PathBuf;
 
-
 pub mod commits;
 pub mod diff;
 pub mod init;

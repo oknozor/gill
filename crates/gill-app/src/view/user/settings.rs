@@ -1,13 +1,13 @@
 use crate::error::AppError;
+use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 use crate::view::HtmlTemplate;
 use askama::Template;
+use axum::extract::Query;
 use axum::response::IntoResponse;
 use axum::Extension;
-use axum::extract::Query;
 use gill_db::user::User;
-use serde::{Deserialize};
-use crate::get_connected_user_username;
+use serde::Deserialize;
 use sqlx::PgPool;
 
 #[derive(Deserialize)]
@@ -33,7 +33,7 @@ impl Default for Tab {
 #[template(path = "user/settings.html")]
 pub struct UserSettingsTemplate {
     user: Option<String>,
-    tab: Tab
+    tab: Tab,
 }
 
 pub async fn settings(

@@ -4,6 +4,7 @@ use sqlx::{FromRow, PgPool};
 
 #[derive(Deserialize, Serialize)]
 pub struct CreateSSHKey {
+    pub name: String,
     pub key: String,
 }
 
@@ -90,6 +91,22 @@ impl User {
         Ok(user)
     }
 
+    pub async fn by_id(id: i32, pool: &PgPool) -> sqlx::Result<User> {
+        let user = sqlx::query_as!(
+            User,
+            // language=PostgreSQL
+            r#"
+            select * from users
+            where id = $1
+            "#,
+            id,
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(user)
+    }
+
     pub async fn by_activity_pub_id(
         activity_pub_id: &str,
         pool: &PgPool,
@@ -125,24 +142,8 @@ impl User {
         Ok(user)
     }
 
-    pub async fn add_ssh_key(user_id: i32, ssh_key: &str, pool: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-            insert into "public_key"(owner_id, key)
-            values ($1, $2)
-        "#,
-            user_id,
-            ssh_key
-        )
-        .execute(pool)
-        .await?;
-
-        Ok(())
-    }
-
     pub async fn get_local_repository_by_name(
-        self,
+        &self,
         repo_name: &str,
         db: &PgPool,
     ) -> sqlx::Result<Repository> {

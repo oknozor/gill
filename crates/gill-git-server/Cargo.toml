@@ -8,7 +8,9 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.66"
 shellwords = "1.1.0"
-gill-ipc = { path = "../gill-ipc" }
+tokio.workspace = true
+gill-db = { path = "../gill-db" }
+gill-settings = { path = "../gill-settings" }
 
 [[bin]]
 name = "post-receive"
@@ -17,7 +19,3 @@ path = "src/post-receive.rs"
 [[bin]]
 name = "gill-git-server"
 path = "src/pack-serve.rs"
-
-[[bin]]
-name = "authorize-ssh-keys"
-path = "src/authorize_ssh_keys.rs"
