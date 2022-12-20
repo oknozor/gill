@@ -15,13 +15,14 @@ use sqlx::PgPool;
 use url::Url;
 use webfinger::Webfinger;
 
+
+use crate::error::AppError;
+use crate::state::AppState;
+
 #[derive(Deserialize, Debug)]
 pub struct FollowForm {
     pub follow: String,
 }
-
-use crate::error::AppError;
-use crate::state::AppState;
 
 //TODO :  We need to refactor this big pile of mud and think about how to handle this
 // properly

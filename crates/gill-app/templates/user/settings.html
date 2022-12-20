@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block head %}{% endblock %}
 {% block content_left %}
-<div class="flex flex-col justify-center rounded-md border border-slate-200 divide-y divide-slate-200">
+<div class="flex flex-col justify-center rounded-md border border-slate-200 divide-y divide-slate-200"
+     xmlns="http://www.w3.org/1999/html">
     <button
-            id="tab-public-profile-button"
+            id="tab-profile-button"
             class="tab-button flex grow py-2 items-center hover:bg-slate-200"
-            onclick="openTab(this, 'public-profile')">
+            onclick="openTab(this, 'profile')">
         <i class="ti ti-user px-4"></i>
         Profile
     </button>
@@ -21,26 +22,35 @@
 {% endblock %}
 {% block content %}
 <div class="rounded-md border border-slate-200 divide-y divide-slate-200">
-    <div id="public-profile" class="tab">
+    <div id="profile" class="tab">
         <span>Profile</span>
     </div>
 
     <div id="ssh-key" class="tab" style="display:none">
-        <form action="/todo">
-            <label for="ssh-key">SSh key</label><br>
-            <input type="text" id="fname" name="fname" value="John"><br>
-            <label for="lname">Last name:</label><br>
-            <input type="text" id="lname" name="lname" value="Doe"><br><br>
-            <input type="submit" value="Submit">
-        </form>
+        <button
+                id="tab-add-ssh-key-button"
+                class="tab-button flex grow py-2 items-center bg-blue-300"
+                onclick="openSubTab('add-ssh-key')">
+            <i class="ti ti-key px-4"></i>
+            Add SSH Key
+        </button>
+    </div>
 
-        <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+    <div id="add-ssh-key" class="tab pb-2" style="display:none">
+        <form class="flex flex-col gap-2 px-5 py-3" action="/settings/profile/add-ssh-key">
+            <label class="font-bold" for="title">Title</label><br>
+            <input class="pb-2 max-w-md rounded-md bg-gray-100" type="text" id="title" name="title"
+                   placeholder="My Key"><br>
+            <label class="font-bold" for="key">Key</label><br>
+            <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="key" name="key" placeholder="Begins with 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521', 'ssh-ed25519', 'sk-ecdsa-sha2-nistp256@openssh.com', 'sk-ssh-ed25519@openssh.com'"></textarea>
+            <input class="tab-button drop-shadow-sm border border-green-600 w-20 py-2 px-3 items-center bg-green-400 hover:bg-green-500 rounded-md"
+                   type="submit" value="Add">
+        </form>
     </div>
 </div>
 
 <script>
     function openTab(tabButton, tabName) {
-        console.log("open tab")
         let tabs = document.getElementsByClassName("tab");
         for (let i = 0; i < tabs.length; i++) {
             tabs[i].style.display = "none";
@@ -48,15 +58,28 @@
 
         let buttons = document.getElementsByClassName("tab-button");
         for (let i = 0; i < buttons.length; i++) {
-            buttons[i].classList.remove("border-red-300");
-            buttons[i].classList.remove("border-b-4");
+            buttons[i].classList.remove("border-l-4");
+            buttons[i].classList.remove("border-teal-600");
+            buttons[i].classList.remove("bg-slate-200");
         }
 
         let tab = document.getElementById(tabName);
         tab.style.display = "block";
-        tabButton.classList.add("border-red-300");
-        tabButton.classList.add("border-b-4");
+        tabButton.classList.add("bg-slate-200");
+        tabButton.classList.add("border-teal-600");
+        tabButton.classList.add("border-l-3");
     }
+
+    function openSubTab(tabName) {
+        let tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].style.display = "none";
+        }
+
+        let tab = document.getElementById(tabName);
+        tab.style.display = "block";
+    }
+
 </script>
 
 <script defer>
