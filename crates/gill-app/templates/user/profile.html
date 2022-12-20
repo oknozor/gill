@@ -117,9 +117,7 @@
 
 <script defer>
     let params = new URLSearchParams(window.location.search);
-    console.log(params)
     let tab = params.get("tab");
-    console.log(tab)
     let button = document.getElementById(`tab-${tab}-button`)
     openTab(button, tab)
 </script>

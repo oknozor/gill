@@ -4,19 +4,41 @@ use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
+use axum::extract::Query;
 use gill_db::user::User;
-
+use serde::{Deserialize};
 use crate::get_connected_user_username;
 use sqlx::PgPool;
+
+#[derive(Deserialize)]
+pub struct UserSettingsQuery {
+    #[serde(default)]
+    tab: Tab,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Tab {
+    SshKeys,
+    PublicProfile,
+}
+
+impl Default for Tab {
+    fn default() -> Self {
+        Self::PublicProfile
+    }
+}
 
 #[derive(Template)]
 #[template(path = "user/settings.html")]
 pub struct UserSettingsTemplate {
     user: Option<String>,
+    tab: Tab
 }
 
 pub async fn settings(
     connected_user: Option<Oauth2User>,
+    Query(page): Query<UserSettingsQuery>,
     Extension(db): Extension<PgPool>,
 ) -> Result<impl IntoResponse, AppError> {
     let Some(user) = get_connected_user_username(&db, connected_user).await else {
@@ -27,5 +49,6 @@ pub async fn settings(
 
     Ok(HtmlTemplate(UserSettingsTemplate {
         user: Some(user.username),
+        tab: page.tab,
     }))
 }

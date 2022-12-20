@@ -88,14 +88,14 @@ pub async fn blob(
                         .ok()
                         .map(|hl| (language, hl))
                 })
-                .map(|(language, content)| BlobDto::Highlighted {
+                .map(|(language, content)| Highlighted {
                     content,
                     language: language.to_string(),
                 })
-                .unwrap_or(BlobDto::PlainText(blob))
+                .unwrap_or(PlainText(blob))
         }
-        BlobMime::Image => BlobDto::Image(base64::encode(repo.blob_bytes(blob)?)),
-        BlobMime::Other => BlobDto::Binary {
+        BlobMime::Image => Image(base64::encode(repo.blob_bytes(blob)?)),
+        BlobMime::Application => Binary {
             content: base64::encode(repo.blob_bytes(blob)?),
             filename: blob.filename.clone(),
         },
