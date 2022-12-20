@@ -14,6 +14,7 @@ use sqlx::PgPool;
 
 #[derive(Deserialize)]
 pub struct UserProfileQuery {
+    #[serde(default)]
     tab: Tab,
 }
 
@@ -23,6 +24,12 @@ pub enum Tab {
     Profile,
     Repositories,
     Stars,
+}
+
+impl Default for Tab {
+    fn default() -> Self {
+        Self::Repositories
+    }
 }
 
 #[derive(Template)]

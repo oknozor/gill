@@ -95,10 +95,11 @@ CREATE TABLE org_repository
     org_id INT REFERENCES organisation (id) NOT NULL
 );
 
-CREATE TABLE public_key
+CREATE TABLE ssh_key
 (
     id       SERIAL PRIMARY KEY,
     key      TEXT,
+    name      VARCHAR(255),
     owner_id INT REFERENCES users (id) NOT NULL
 );
 

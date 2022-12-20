@@ -41,15 +41,15 @@ impl GitRepository {
 
     pub fn blob_mime(&self, blob: &BlobInfo) -> BlobMime {
         let guess = mime_guess::from_path(&blob.path);
-        let is_text = guess.iter().any(|mime| mime.type_() == "text");
+        let is_application = guess.iter().any(|mime| mime.type_() == "application");
         let is_image = guess.iter().any(|mime| mime.type_() == "image");
 
-        if is_text {
-            BlobMime::Text
+        if is_application {
+            BlobMime::Application
         } else if is_image {
             BlobMime::Image
         } else {
-            BlobMime::Other
+            BlobMime::Text
         }
     }
 }
@@ -76,7 +76,7 @@ pub struct BlobInfo {
 pub enum BlobMime {
     Text,
     Image,
-    Other,
+    Application,
 }
 
 impl BlobInfo {

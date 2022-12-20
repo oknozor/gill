@@ -1,7 +1,69 @@
 {% extends "base.html" %}
 {% block head %}{% endblock %}
-{% block content_left %}{% endblock %}
-{% block content %}
+{% block content_left %}
+<div class="flex flex-col justify-center rounded-md border border-slate-200 divide-y divide-slate-200">
+    <button
+            id="tab-public-profile-button"
+            class="tab-button flex grow py-2 items-center hover:bg-slate-200"
+            onclick="openTab(this, 'public-profile')">
+        <i class="ti ti-user px-4"></i>
+        Profile
+    </button>
+    <button
+            id="tab-ssh-key-button"
+            class="tab-button flex grow py-2 items-center hover:bg-slate-200"
+            onclick="openTab(this, 'ssh-key')">
+        <i class="ti ti-key px-4"></i>
+        Ssh keys
+    </button>
+</div>
 
+{% endblock %}
+{% block content %}
+<div class="rounded-md border border-slate-200 divide-y divide-slate-200">
+    <div id="public-profile" class="tab">
+        <span>Profile</span>
+    </div>
+
+    <div id="ssh-key" class="tab" style="display:none">
+        <form action="/todo">
+            <label for="ssh-key">SSh key</label><br>
+            <input type="text" id="fname" name="fname" value="John"><br>
+            <label for="lname">Last name:</label><br>
+            <input type="text" id="lname" name="lname" value="Doe"><br><br>
+            <input type="submit" value="Submit">
+        </form>
+
+        <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+    </div>
+</div>
+
+<script>
+    function openTab(tabButton, tabName) {
+        console.log("open tab")
+        let tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) {
+            tabs[i].style.display = "none";
+        }
+
+        let buttons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("border-red-300");
+            buttons[i].classList.remove("border-b-4");
+        }
+
+        let tab = document.getElementById(tabName);
+        tab.style.display = "block";
+        tabButton.classList.add("border-red-300");
+        tabButton.classList.add("border-b-4");
+    }
+</script>
+
+<script defer>
+    let params = new URLSearchParams(window.location.search);
+    let tab = params.get("tab");
+    let button = document.getElementById(`tab-${tab}-button`)
+    openTab(button, tab)
+</script>
 {% endblock %}
 {% block content_right %}{% endblock %}
