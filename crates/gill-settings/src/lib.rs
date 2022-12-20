@@ -75,7 +75,8 @@ impl Settings {
 
 impl Settings {
     pub(crate) fn get() -> Result<Self, config::ConfigError> {
-        let config_path = PathBuf::from("config.toml");
+        // TODO
+        let config_path = PathBuf::from("/home/git/config.toml");
         if !config_path.exists() {
             tracing::warn!("{config_path:?}, not found");
         }

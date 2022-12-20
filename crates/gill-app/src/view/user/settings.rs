@@ -17,9 +17,9 @@ pub struct UserSettingsQuery {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "kebab-case")]
 pub enum Tab {
-    SshKeys,
+    SshKey,
     PublicProfile,
 }
 

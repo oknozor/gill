@@ -26,15 +26,32 @@
     </div>
 
     <div id="ssh-key" class="tab" style="display:none">
-        <form action="/todo">
-            <label for="ssh-key">SSh key</label><br>
-            <input type="text" id="fname" name="fname" value="John"><br>
-            <label for="lname">Last name:</label><br>
-            <input type="text" id="lname" name="lname" value="Doe"><br><br>
-            <input type="submit" value="Submit">
-        </form>
+        <button
+                id="tab-add-ssh-key-button"
+                class="tab-button flex grow py-2 items-center bg-blue-300"
+                onclick="openTab(this, 'add-ssh-key')">
+            <i class="ti ti-key px-4"></i>
+            Add SSH Key
+        </button>
+    </div>
 
-        <p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+    <div id="add-ssh-key" class="tab" style="display:none">
+        <form action="/settings/profile/add-ssh-key">
+            <label for="title">Title</label><br>
+            <input type="text" id="title" name="title" placeholder="My Key"><br>
+            <label for="key">Key</label><br>
+            <input type="text" id="key" name="key" placeholder="Begins with 'ssh-rsa', 'ecdsa-sha2-nistp256',
+            'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521',
+            'ssh-ed25519', 'sk-ecdsa-sha2-nistp256@openssh.com',
+            or 'sk-ssh-ed25519@openssh.com'"><br><br>
+            <input type="submit" value="Add">
+        </form>
+        <button
+                id="tab-add-ssh-key-submit"
+                class="tab-button flex grow py-2 items-center bg-green-300">
+            <i class="ti ti-key px-4"></i>
+            Add
+        </button>
     </div>
 </div>
 

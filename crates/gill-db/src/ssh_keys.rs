@@ -32,7 +32,7 @@ impl SshKey {
 
 impl User {
     pub async fn add_ssh_key(
-        user_id: i32,
+        &self,
         key_name: &str,
         ssh_key: &str,
         key_type: &str,
@@ -44,7 +44,7 @@ impl User {
             insert into "ssh_key"(owner_id, key, name, key_type)
             values ($1, $2, $3, $4)
         "#,
-            user_id,
+            &self.id,
             ssh_key,
             key_name,
             key_type,
