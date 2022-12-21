@@ -7,10 +7,32 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::repository::traversal::TreeMap;
+use gill_git::repository::traversal::{BlobInfo, TreeMap};
 
 use crate::get_connected_user_username;
 use sqlx::PgPool;
+
+#[derive(Debug)]
+struct TreeDto {
+    pub filename: String,
+    pub blobs: Vec<String>,
+    pub trees: Vec<String>,
+}
+
+impl From<TreeMap> for TreeDto {
+    fn from(tree: TreeMap) -> Self {
+        let mut trees: Vec<String> = tree.trees.into_values().map(|tree| tree.filename).collect();
+        trees.sort();
+        let mut blobs: Vec<String> = tree.blobs.into_iter().map(|blob| blob.filename).collect();
+        blobs.sort();
+
+        Self {
+            filename: tree.filename,
+            blobs,
+            trees
+        }
+    }
+}
 
 #[derive(Template, Debug)]
 #[template(path = "repository/tree.html")]
@@ -20,7 +42,7 @@ pub struct GitTreeTemplate {
     watch_count: u32,
     fork_count: u32,
     star_count: u32,
-    tree: TreeMap,
+    tree: TreeDto,
     readme: Option<String>,
     branches: Vec<BranchDto>,
     current_branch: String,
@@ -86,7 +108,7 @@ pub async fn root(
 mod imp {
     use super::GitTreeTemplate;
     use crate::error::AppError;
-    use crate::view::repository::tree::BranchDto;
+    use crate::view::repository::tree::{BranchDto, TreeDto};
     use crate::view::HtmlTemplate;
 
     use gill_db::user::User;
@@ -108,6 +130,7 @@ mod imp {
         let repo = GitRepository::open(owner, repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), None)?;
         let readme = get_readme(&tree, &repo);
+        let tree = TreeDto::from(tree);
         let user = User::by_user_name(owner, db).await?;
         let repo = user.get_local_repository_by_name(repository, db).await?;
         let branches = repo.list_branches(0, 20, db).await?;
@@ -149,6 +172,7 @@ mod imp {
         let repo = GitRepository::open(&owner, &repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), tree_path)?;
         let readme = get_readme(&tree, &repo);
+        let tree = TreeDto::from(tree);
         let branches = get_repository_branches(&owner, &repository, &current_branch, db).await?;
         let stats = RepositoryLight::stats_by_namespace(&owner, &repository, db).await?;
 
