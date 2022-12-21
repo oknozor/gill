@@ -13,15 +13,15 @@
         {% for dir in tree.trees %}
         <li class="px-6 py-4">
             <i class="text-xl ti ti-folder"></i>
-            <a id="{{dir.1.filename}}">{{dir.1.filename}}</a>
+            <a id="{{dir}}">{{dir}}</a>
         </li>
-        <script>generateTreeLink("{{dir.1.filename}}", "tree", "{{current_branch}}");</script>
+        <script>generateTreeLink("{{dir}}", "tree", "{{current_branch}}");</script>
         {% endfor %}
         {% for blob in tree.blobs %}
         <li class="px-6 py-4">
             <i class="text-xl ti ti-file-code"></i>
-            <a id="{{blob.filename}}">{{blob.filename}}</a>
-            <script>generateTreeLink("{{blob.filename}}", "blob", "{{current_branch}}"); </script>
+            <a id="{{blob}}">{{blob}}</a>
+            <script>generateTreeLink("{{blob}}", "blob", "{{current_branch}}"); </script>
         </li>
         {% endfor %}
     </ul>
