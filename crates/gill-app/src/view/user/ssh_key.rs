@@ -3,7 +3,6 @@ use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 
-
 use axum::response::Redirect;
 use axum::{Extension, Form};
 

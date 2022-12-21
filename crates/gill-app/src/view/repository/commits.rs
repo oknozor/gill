@@ -7,8 +7,9 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 
+use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
-use gill_db::repository::RepositoryLight;
+
 use gill_git::repository::commits::OwnedCommit;
 use sqlx::PgPool;
 
@@ -17,9 +18,7 @@ use sqlx::PgPool;
 pub struct CommitHistoryTemplate {
     repository: String,
     owner: String,
-    watch_count: u32,
-    fork_count: u32,
-    star_count: u32,
+    stats: RepositoryStats,
     commits: Vec<OwnedCommit>,
     branches: Vec<BranchDto>,
     current_branch: String,
@@ -34,14 +33,12 @@ pub async fn history(
     let connected_username = get_connected_user_username(&db, user).await;
     let commits = gill_git::repository::commits::history(&owner, &repository)?;
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
-    let stats = RepositoryLight::stats_by_namespace(&owner, &repository, &db).await?;
+    let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 
     Ok(HtmlTemplate(CommitHistoryTemplate {
         repository,
         owner,
-        watch_count: stats.watch_count.unwrap_or(0) as u32,
-        fork_count: stats.fork_count.unwrap_or(0) as u32,
-        star_count: stats.watch_count.unwrap_or(0) as u32,
+        stats,
         commits,
         branches,
         current_branch,

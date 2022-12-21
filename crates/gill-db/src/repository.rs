@@ -31,6 +31,7 @@ pub struct RepositoryDigest {
     pub summary: Option<String>,
     pub star_count: Option<i64>,
     pub fork_count: Option<i64>,
+    pub watch_count: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -326,11 +327,13 @@ impl RepositoryDigest {
                    r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
-                   COUNT(rf.repository_id) as fork_count
+                   COUNT(rf.repository_id) as fork_count,
+                   COUNT(rw.repository_id) as watch_count
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
                      LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id
             WHERE NOT r.private AND r.is_local
             GROUP BY r.id, u.username, r.name, r.id, r.summary
             LIMIT $1 OFFSET $2;"#,
@@ -358,11 +361,13 @@ impl RepositoryDigest {
                    r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
-                   COUNT(rf.repository_id) as fork_count
+                   COUNT(rf.repository_id) as fork_count,
+                   COUNT(rw.repository_id) as watch_count
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
                      LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id
             WHERE NOT r.private AND NOT r.is_local
             GROUP BY r.id, u.username, r.name, r.id, r.summary
             LIMIT $1 OFFSET $2;"#,

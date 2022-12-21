@@ -7,8 +7,9 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::repository::traversal::{TreeMap};
+use gill_git::repository::traversal::TreeMap;
 
+use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
 use sqlx::PgPool;
 
@@ -39,9 +40,7 @@ impl From<TreeMap> for TreeDto {
 pub struct GitTreeTemplate {
     repository: String,
     owner: String,
-    watch_count: u32,
-    fork_count: u32,
-    star_count: u32,
+    stats: RepositoryStats,
     tree: TreeDto,
     readme: Option<String>,
     branches: Vec<BranchDto>,
@@ -113,8 +112,9 @@ mod imp {
 
     use gill_db::user::User;
 
+    use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;
-    use gill_db::repository::RepositoryLight;
+    
     use gill_git::repository::traversal::TreeMap;
     use gill_git::repository::GitRepository;
     use pulldown_cmark::{html, Options, Parser};
@@ -133,24 +133,25 @@ mod imp {
         let tree = TreeDto::from(tree);
         let user = User::by_user_name(owner, db).await?;
         let repo = user.get_local_repository_by_name(repository, db).await?;
-        let branches = repo.list_branches(0, 20, db).await?;
+        let branches = repo.list_branches(20, 0, db).await?;
         let branches = branches
             .into_iter()
-            .map(|branch| BranchDto {
-                name: branch.name,
-                is_default: branch.is_default,
-                is_current: false,
+            .map(|branch| {
+                let is_current = branch.name == current_branch;
+                BranchDto {
+                    name: branch.name,
+                    is_default: branch.is_default,
+                    is_current,
+                }
             })
             .collect();
 
-        let stats = RepositoryLight::stats_by_namespace(owner, repository, db).await?;
+        let stats = RepositoryStats::get(owner, repository, db).await?;
 
         let template = GitTreeTemplate {
             repository: repository.to_string(),
             owner: owner.to_string(),
-            watch_count: stats.watch_count.unwrap_or(0) as u32,
-            fork_count: stats.fork_count.unwrap_or(0) as u32,
-            star_count: stats.star_count.unwrap_or(0) as u32,
+            stats,
             tree,
             readme,
             branches,
@@ -174,14 +175,12 @@ mod imp {
         let readme = get_readme(&tree, &repo);
         let tree = TreeDto::from(tree);
         let branches = get_repository_branches(&owner, &repository, &current_branch, db).await?;
-        let stats = RepositoryLight::stats_by_namespace(&owner, &repository, db).await?;
+        let stats = RepositoryStats::get(&owner, &repository, db).await?;
 
         let template = GitTreeTemplate {
             repository,
             owner,
-            watch_count: stats.watch_count.unwrap_or(0) as u32,
-            fork_count: stats.fork_count.unwrap_or(0) as u32,
-            star_count: stats.star_count.unwrap_or(0) as u32,
+            stats,
             tree,
             readme,
             branches,
