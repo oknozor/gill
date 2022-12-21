@@ -4,6 +4,7 @@ use sqlx::PgPool;
 
 pub mod api;
 pub mod apub;
+pub mod domain;
 pub mod error;
 pub mod instance;
 pub mod oauth;
@@ -11,7 +12,6 @@ pub mod state;
 pub mod syntax;
 pub mod view;
 pub mod webfinger;
-pub mod domain;
 
 async fn get_connected_user_username(db: &PgPool, user: Option<Oauth2User>) -> Option<String> {
     get_connected_user(db, user).await.map(|user| user.username)
