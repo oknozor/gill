@@ -55,6 +55,7 @@ CREATE TABLE repository
     send_patches_to   VARCHAR(255) NOT NULL,
     domain            VARCHAR(255) NOT NULL,
     is_local          BOOLEAN      NOT NULL,
+    item_count        INT          NOT NULL DEFAULT 0,
     CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
 );
 
@@ -64,6 +65,26 @@ CREATE TABLE branch
     name          VARCHAR(255)                   NOT NULL,
     is_default    BOOLEAN                        NOT NULL DEFAULT FALSE,
     PRIMARY KEY (name, repository_id)
+);
+
+CREATE TABLE pull_request
+(
+    number        INT                            NOT NULL,
+    repository_id INT REFERENCES repository (id) NOT NULL,
+    title         VARCHAR(255)                   NOT NULL,
+    base          VARCHAR(255)                   NOT NULL,
+    compare       VARCHAR(255)                   NOT NULL,
+    CONSTRAINT base_key FOREIGN KEY (base, repository_id) REFERENCES branch (name, repository_id),
+    PRIMARY KEY (number, repository_id)
+);
+
+CREATE TABLE issue
+(
+    number        INT                            NOT NULL,
+    repository_id INT REFERENCES repository (id) NOT NULL,
+    title         VARCHAR(255)                   NOT NULL,
+    content       TEXT                           NOT NULL,
+    PRIMARY KEY (number, repository_id)
 );
 
 CREATE TABLE repository_star
