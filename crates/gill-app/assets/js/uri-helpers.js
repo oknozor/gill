@@ -23,20 +23,19 @@ const navigation = (branch) => {
 
 const setBranchDropDownLink = (branch) => {
     let {proto, host, user, repository, blobOrTree, currentPath} = pathInfo();
-
+    let branchUri = encodeURIComponent(branch);
     let href;
     if (!blobOrTree) {
-        href = `${proto}//${host}/${user}/${repository}/tree/${branch}`
+        href = `${proto}//${host}/${user}/${repository}/tree/${branchUri}`
     } else {
         if (currentPath) {
-            href = `${proto}//${host}/${user}/${repository}/${blobOrTree}/${branch}/${currentPath}`
+            href = `${proto}//${host}/${user}/${repository}/${blobOrTree}/${branchUri}/${currentPath}`
         } else {
-            href = `${proto}//${host}/${user}/${repository}/${blobOrTree}/${branch}`
+            href = `${proto}//${host}/${user}/${repository}/${blobOrTree}/${branchUri}`
         }
 
     }
 
-    console.log(branch);
     let link = document.getElementById(`branch-${branch}`);
     link.setAttribute("href", href);
 }
