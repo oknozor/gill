@@ -1,14 +1,14 @@
-use axum::{Extension, Form};
-use axum::extract::State;
-use axum::response::Redirect;
-use sqlx::PgPool;
-use gill_db::user::User;
+use crate::domain::ssh_key::RawSshkey;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
-use crate::state::AppState;
+
+
+use axum::response::Redirect;
+use axum::{Extension, Form};
+
 use serde::Deserialize;
-use crate::domain::ssh_key::RawSshkey;
+use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct AddSshKeyForm {
@@ -31,4 +31,3 @@ pub async fn add(
     gill_git::append_ssh_key(raw_key.full_key(), user.id).expect("Failed to append ssh key");
     Ok(Redirect::to("/settings/profile?tab=ssh-key"))
 }
-

@@ -7,7 +7,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::repository::traversal::{BlobInfo, TreeMap};
+use gill_git::repository::traversal::{TreeMap};
 
 use crate::get_connected_user_username;
 use sqlx::PgPool;
@@ -29,7 +29,7 @@ impl From<TreeMap> for TreeDto {
         Self {
             filename: tree.filename,
             blobs,
-            trees
+            trees,
         }
     }
 }

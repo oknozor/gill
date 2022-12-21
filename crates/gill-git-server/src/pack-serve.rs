@@ -4,7 +4,7 @@ use gill_db::PgPoolOptions;
 use gill_settings::SETTINGS;
 use std::env;
 use std::fs::OpenOptions;
-use std::io::{Write};
+use std::io::Write;
 use std::process::{exit, Command, Stdio};
 use std::time::Duration;
 

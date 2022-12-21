@@ -15,7 +15,6 @@ use sqlx::PgPool;
 use url::Url;
 use webfinger::Webfinger;
 
-
 use crate::error::AppError;
 use crate::state::AppState;
 
