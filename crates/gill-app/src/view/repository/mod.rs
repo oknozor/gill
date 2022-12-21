@@ -11,11 +11,15 @@ pub mod activity;
 pub mod blob;
 pub mod commits;
 pub mod diff;
+pub mod issues;
+pub mod pulls;
 pub mod tree;
 
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/:owner/:repository", get(tree::root))
+        .route("/:owner/:repository/issues", get(issues::issues))
+        .route("/:owner/:repository/pulls", get(pulls::pulls))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))

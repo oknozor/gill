@@ -8,12 +8,13 @@ use axum::extract::{Path, State};
 use axum::Extension;
 
 use crate::get_connected_user_username;
-use gill_db::repository::RepositoryLight;
+
 use gill_git::repository::traversal::BlobMime;
 use gill_git::repository::GitRepository;
 use sqlx::PgPool;
 use std::fmt::Formatter;
 
+use crate::domain::repository::RepositoryStats;
 use std::fmt;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
@@ -26,9 +27,7 @@ use crate::view::repository::blob::BlobDto::*;
 pub struct GitBLobTemplate {
     repository: String,
     owner: String,
-    watch_count: u32,
-    fork_count: u32,
-    star_count: u32,
+    stats: RepositoryStats,
     blob: BlobDto,
     branches: Vec<BranchDto>,
     current_branch: String,
@@ -102,14 +101,12 @@ pub async fn blob(
     };
 
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
-    let stats = RepositoryLight::stats_by_namespace(&owner, &repository, &db).await?;
+    let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 
     let template = GitBLobTemplate {
         repository,
         owner,
-        watch_count: stats.watch_count.unwrap_or(0) as u32,
-        fork_count: stats.fork_count.unwrap_or(0) as u32,
-        star_count: stats.star_count.unwrap_or(0) as u32,
+        stats,
         blob,
         branches,
         current_branch,

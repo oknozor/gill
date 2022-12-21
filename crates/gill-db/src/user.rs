@@ -197,11 +197,13 @@ impl User {
                    r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
-                   COUNT(rf.repository_id) as fork_count
+                   COUNT(rf.repository_id) as fork_count,
+                   COUNT(rw.repository_id) as watch_count
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
                      LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id
             WHERE NOT r.private AND r.is_local AND r.attributed_to = $1
             GROUP BY r.id, u.username, r.name, r.id, r.summary
             LIMIT $2 OFFSET $3;"#,
@@ -231,11 +233,13 @@ impl User {
                    r.domain,
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
-                   COUNT(rf.repository_id) as fork_count
+                   COUNT(rf.repository_id) as fork_count,
+                   COUNT(rw.repository_id) as watch_count
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
                      LEFT JOIN repository_fork rf ON rf.repository_id = r.id
+                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id
             WHERE NOT r.private AND rs.starred_by = $1
             GROUP BY r.id, u.username, r.name, r.id, r.summary
             LIMIT $2 OFFSET $3;"#,
