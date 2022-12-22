@@ -8,11 +8,6 @@ use git_repository::{object, Id};
 use imara_diff::intern::InternedInput;
 use imara_diff::{Algorithm, UnifiedDiffBuilder};
 
-pub fn diff_it(repo: &GitRepository) -> anyhow::Result<()> {
-    repo.diff("main", "testdiff")?;
-    Ok(())
-}
-
 #[derive(Debug, Default)]
 pub struct DiffBuilder {
     out: String,

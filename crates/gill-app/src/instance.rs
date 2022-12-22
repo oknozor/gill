@@ -16,11 +16,13 @@ use sqlx::PgPool;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
+
 use tower_http::services::ServeDir;
 
 use tower_http::trace::TraceLayer;
 
 use crate::state::AppState;
+use crate::syntax::{SYNTAX_SET, THEME};
 use gill_settings::SETTINGS;
 use url::Url;
 
@@ -73,14 +75,12 @@ impl Instance {
         let instance = instance.clone();
         let store = MemoryStore::new();
         let oauth_client = oauth_client();
-        let syntax_set = syntect::dumps::from_binary(include_bytes!("syntax/syntax.bin"));
-        let theme = syntect::dumps::from_binary(include_bytes!("syntax/theme.bin"));
         let db = instance.db.clone();
         let app_state = AppState {
             store,
             oauth_client,
-            syntax_set,
-            theme,
+            syntax_set: SYNTAX_SET.clone(),
+            theme: THEME.clone(),
             instance: instance.clone(),
         };
 

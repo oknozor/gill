@@ -1,4 +1,4 @@
-use gill_db::repository::Repository;
+use gill_db::repository::{Repository};
 use gill_db::PgPoolOptions;
 use gill_settings::SETTINGS;
 use std::env;
@@ -55,14 +55,19 @@ async fn main() -> anyhow::Result<()> {
     match git_ref.strip_prefix("refs/heads/") {
         Some(branch) => {
             let repo = Repository::by_namespace(&repository_owner, repository_name, &db).await?;
-            if repo.get_default_branch(&db).await.is_none() {
+            let branches = repo.list_branches(i64::MAX, 0, &db).await?;
+            let branches: Vec<&str> = branches.iter().map(|branch| branch.name.as_str()).collect();
+
+            if branches.is_empty() {
                 repo.set_default_branch(branch, &db).await?;
                 writeln!(
                     log_file,
                     "default branch {branch} set for {repository_owner}/{repository_name}"
                 )?;
+            } else if !branches.contains(&branch) {
+                repo.create_branch(branch, &db).await?;
             } else {
-                writeln!(log_file, "already have a default branch")?;
+                writeln!(log_file, "existing branch")?;
             }
         }
         None => writeln!(log_file, "branch not found")?,

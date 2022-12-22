@@ -210,6 +210,11 @@ impl Repository {
         .ok()
     }
 
+    pub async fn create_branch(&self, branch_name: &str, db: &PgPool) -> sqlx::Result<()> {
+        Branch::create(branch_name, self.id, false, db).await?;
+        Ok(())
+    }
+
     pub async fn by_activity_pub_id(
         activity_pub_id: &str,
         pool: &PgPool,

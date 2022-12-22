@@ -1,4 +1,4 @@
-AuthorizedKeysFile	.ssh/authorized_keys
+AuthorizedKeysFile .ssh/authorized_keys
 PasswordAuthentication no
 Subsystem sftp /usr/lib/ssh/sftp-server
 AcceptEnv GIT_PROTOCOL

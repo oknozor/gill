@@ -10,11 +10,11 @@
 <div id="code-container">
     {%- match blob -%}
     {%- when Highlighted with {content, language} -%}
-    <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
+    <div class="whitespace-pre-wrap border-2 pr-10 rounded-md">
         {{- content|safe -}}
     </div>
     {%- when PlainText with (blob) -%}
-    <div class="whitespace-pre-wrap border-2 pr-10 blob-code rounded-md">
+    <div class="whitespace-pre-wrap border-2 pr-10 rounded-md">
         {{- blob|safe -}}
     </div>
     {%- when Image with (blob) -%}

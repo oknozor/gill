@@ -42,7 +42,8 @@ fn highlighted_html_for_string(
             IncludeBackground::IfDifferent(bg),
             &mut output,
         )?;
-        output.push_str("<td/>");
+        output.push_str("</td>");
+        output.push_str("</tr>");
     }
     output.push_str("</tbody>");
     output.push_str("</table>");
