@@ -114,7 +114,7 @@ mod imp {
 
     use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;
-    
+
     use gill_git::repository::traversal::TreeMap;
     use gill_git::repository::GitRepository;
     use pulldown_cmark::{html, Options, Parser};

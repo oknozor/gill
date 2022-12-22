@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /*
+    The class name are one character long on purpose to avoid bloating the generated diff
+    We are using apply here only because otherwise,
+    tailwind cli does not pick the class in the generated diff.
+    This should not be used if not absolutely needed.
+    see: https://tailwindcss.com/docs/reusing-styles#avoiding-premature-abstraction
+     */
+
+    /* file diff container */
+    .d {
+        @apply flex flex-col whitespace-pre-wrap rounded-md border-2 border-slate-200;
+    }
+
+    /* file diff header (icon + filename) */
+    .h {
+        @apply flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200;
+    }
+
+    /* code line number */
+    .l {
+        @apply pr-3 text-right bg-zinc-200;
+    }
+
+    /* code line */
+    .c {
+        @apply pl-5 w-max;
+    }
+}

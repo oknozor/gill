@@ -55,7 +55,6 @@ CREATE TABLE repository
     send_patches_to   VARCHAR(255) NOT NULL,
     domain            VARCHAR(255) NOT NULL,
     is_local          BOOLEAN      NOT NULL,
-    item_count        INT          NOT NULL DEFAULT 0,
     CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
 );
 

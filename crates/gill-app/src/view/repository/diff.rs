@@ -1,6 +1,7 @@
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
+use crate::syntax::diff::diff2html;
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::{Path, Query};
@@ -33,8 +34,8 @@ pub async fn diff<'a>(
     let connected_username = get_connected_user_username(&db, user).await;
     let repo = GitRepository::open(&owner, &repository)?;
     let diff = repo.diff(&diff.from, &diff.to)?;
-    let diff = diff.replace('`', "\'");
-    let diff = diff.replace('$', "\\$");
+    let diff = diff2html(&diff)?;
+
     Ok(HtmlTemplate(GitDiffTemplate {
         repository,
         owner,

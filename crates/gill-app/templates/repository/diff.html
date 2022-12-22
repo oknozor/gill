@@ -1,20 +1,13 @@
 {% extends "base.html" %}
 
 {% block head %}
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
 {% endblock %}
 
 {% block content %}
 
-<div>
-    <div id="diff"></div>
-    <script>
-        const targetElement = document.getElementById('diff');
-        const configuration = { drawFileList: true, matching: 'lines' };
-        const diff2htmlUi = new Diff2HtmlUI(targetElement, `{{diff|safe}}`, configuration);
-        diff2htmlUi.draw();
-    </script>
+<!-- TODO: Only for CSS loading we need to create reusable style to force tailwind loading this-->
+<div class="flex flex-col gap-5">
+    {{diff|safe}}
 </div>
 {% endblock %}
 

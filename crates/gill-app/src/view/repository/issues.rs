@@ -8,7 +8,7 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::repository::{Repository};
+use gill_db::repository::Repository;
 
 use sqlx::PgPool;
 
