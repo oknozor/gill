@@ -197,7 +197,7 @@ mod imp {
             .find(|blob| &blob.filename() == "README.md")
             .and_then(|blob| repo.blob_str(blob).ok())
             .map(|readme| {
-                let parser = Parser::new_ext(&readme, Options::empty());
+                let parser = Parser::new_ext(&readme, Options::all());
                 let mut html = String::new();
                 html::push_html(&mut html, parser);
                 html

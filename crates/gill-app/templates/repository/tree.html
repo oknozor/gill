@@ -2,7 +2,6 @@
 
 {% block head %}
 {% include "navigation.html" %}
-<link rel="stylesheet" type="text/css" href="/assets/css/markdown.css"/>
 {% endblock %}
 
 {% block content %}
@@ -25,10 +24,9 @@
         </li>
         {% endfor %}
     </ul>
-
     {%- match readme -%}
     {%- when Some with (readme) -%}
-    <div class="rounded-md border border-slate-200 readme py-3 px-5">{{- readme|safe -}}</div>
+    <div class="rounded-md border border-slate-200 prose prose-stone max-w-none py-3 px-5">{{- readme|safe -}}</div>
     {%- when None -%}
     {%- endmatch -%}
 </div>
