@@ -10,55 +10,84 @@ use imara_diff::{Algorithm, UnifiedDiffBuilder};
 
 #[derive(Debug, Default)]
 pub struct DiffBuilder {
-    out: String,
+    out: Vec<Diff>,
+}
+
+#[derive(Debug)]
+pub enum Diff {
+    Addition {
+        id: String,
+        file_path: String,
+        hunk: Option<String>,
+    },
+    Deletion {
+        id: String,
+        file_path: String,
+        hunk: Option<String>,
+    },
+    Changes {
+        previous_id: String,
+        id: String,
+        file_path: String,
+        hunk: Option<String>,
+    },
+}
+
+impl Diff {
+    pub fn path(&self) -> &str {
+        match self {
+            Diff::Addition { file_path, .. } => file_path.as_str(),
+            Diff::Deletion { file_path, .. } => file_path.as_str(),
+            Diff::Changes { file_path, .. } => file_path.as_str(),
+        }
+    }
+
+    pub fn hunk(&self) -> Option<&str> {
+        match self {
+            Diff::Addition { hunk, .. } => hunk.as_deref(),
+            Diff::Deletion { hunk, .. } => hunk.as_deref(),
+            Diff::Changes { hunk, .. } => hunk.as_deref(),
+        }
+    }
 }
 
 impl DiffBuilder {
-    fn changed(&mut self, file_path: &str, previous_id: &Id, id: &Id, diff: String) {
-        // TODO: find the correct mode (100644 is blob)
-        let previous_id = &previous_id.to_string()[0..7];
-        let id = &id.to_string()[0..7];
-        let diff = format!(
-            r#"diff --git a/ {file_path} b/{file_path}
-index {previous_id}..{id} 100644
---- a/{file_path}
-+++ b/{file_path}
-{diff}"#
-        );
-        self.out.push_str(&diff);
+    fn changed(&mut self, file_path: &str, previous_id: &Id, id: &Id, hunk: Option<String>) {
+        let previous_id = previous_id.to_string();
+        let id = id.to_string();
+        let file_path = file_path.to_owned();
+
+        self.out.push(Diff::Changes {
+            previous_id,
+            id,
+            file_path,
+            hunk,
+        });
     }
 
-    fn addition(&mut self, file_path: &str, id: &Id, diff: String) {
-        // TODO: find the correct mode (100644 is blob)
-        let id = &id.to_string()[0..7];
-        let diff = format!(
-            r#"diff --git a/ {file_path} b/{file_path}
-new file mode 100644
-index 0000000..{id}
---- /dev/null
-+++ b/{file_path}
-{diff}"#
-        );
-        self.out.push_str(&diff);
+    fn addition(&mut self, file_path: &str, id: &Id, hunk: Option<String>) {
+        let id = id.to_string();
+        let file_path = file_path.to_owned();
+        self.out.push(Diff::Addition {
+            id,
+            file_path,
+            hunk,
+        });
     }
 
-    fn deletion(&mut self, file_path: &str, previous_id: &Id, diff: String) {
-        let previous_id = &previous_id.to_string()[0..7];
-        // TODO: find the correct mode (100644 is blob)
-        let diff = format!(
-            r#"diff --git a/ {file_path} b/{file_path}
-deleted file mode 100644
-index {previous_id}..0000000
---- a/{file_path}
-+++ /dev/null
-{diff}"#
-        );
-        self.out.push_str(&diff);
+    fn deletion(&mut self, file_path: &str, previous_id: &Id, hunk: Option<String>) {
+        let id = previous_id.to_string();
+        let file_path = file_path.to_owned();
+        self.out.push(Diff::Deletion {
+            id,
+            file_path,
+            hunk,
+        });
     }
 }
 
 impl GitRepository {
-    pub fn diff(&self, branch: &str, other: &str) -> anyhow::Result<String> {
+    pub fn diff(&self, branch: &str, other: &str) -> anyhow::Result<Vec<Diff>> {
         let repository = &self.inner;
         let mut diff_builder = DiffBuilder::default();
         let tree = ref_to_tree(Some(&format!("heads/{branch}")), repository)?;
@@ -84,17 +113,26 @@ impl GitRepository {
                             let object = repository.find_object(previous_id)?;
                             // Todo: Any chance we could avoid allocation here ?
                             //      Maybe we need to collect all git objects in a upper structure and handle the writing there ?
-                            let previous_content =
-                                String::from_utf8_lossy(&object.data).to_string();
+                            let data = object.detach().data;
+                            let previous_content = String::from_utf8(data).ok();
                             let object = repository.find_object(id)?;
-                            let content = String::from_utf8_lossy(&object.data).to_string();
-                            let input =
-                                InternedInput::new(previous_content.as_str(), content.as_str());
-                            let diff: String = imara_diff::diff(
-                                Algorithm::Histogram,
-                                &input,
-                                UnifiedDiffBuilder::new(&input),
-                            );
+                            let data = object.detach().data;
+                            let content = String::from_utf8(data).ok();
+
+                            let diff = previous_content
+                                .as_deref()
+                                .zip(content.as_deref())
+                                .map(|(previous_content, content)| {
+                                    InternedInput::new(previous_content, content)
+                                })
+                                .map(|input| {
+                                    imara_diff::diff(
+                                        Algorithm::Histogram,
+                                        &input,
+                                        UnifiedDiffBuilder::new(&input),
+                                    )
+                                });
+
                             diff_builder.changed(location, &previous_id, &id, diff);
                         }
                         _ => {
@@ -105,14 +143,19 @@ impl GitRepository {
                         EntryMode::Tree => {}
                         EntryMode::Blob | EntryMode::BlobExecutable => {
                             let object = repository.find_object(id)?;
-                            let content = String::from_utf8_lossy(&object.data).to_string();
-                            let input = InternedInput::new("", content.as_str());
-                            let diff: String = imara_diff::diff(
-                                Algorithm::Histogram,
-                                &input,
-                                UnifiedDiffBuilder::new(&input),
-                            );
-                            diff_builder.addition(location, &id, diff);
+                            let data = object.detach().data;
+                            let content = String::from_utf8(data).ok();
+                            let hunk = content
+                                .as_deref()
+                                .map(|content| InternedInput::new("", content))
+                                .map(|input| {
+                                    imara_diff::diff(
+                                        Algorithm::Histogram,
+                                        &input,
+                                        UnifiedDiffBuilder::new(&input),
+                                    )
+                                });
+                            diff_builder.addition(location, &id, hunk);
                         }
                         EntryMode::Link => {}
                         EntryMode::Commit => {}
@@ -122,14 +165,20 @@ impl GitRepository {
                         EntryMode::Tree => {}
                         EntryMode::BlobExecutable | EntryMode::Blob => {
                             let object = repository.find_object(id)?;
-                            let content = String::from_utf8_lossy(&object.data).to_string();
-                            let input = InternedInput::new(content.as_str(), "");
-                            let diff: String = imara_diff::diff(
-                                Algorithm::Histogram,
-                                &input,
-                                UnifiedDiffBuilder::new(&input),
-                            );
-                            diff_builder.deletion(location, &id, diff);
+                            let data = object.detach().data;
+                            let content = String::from_utf8(data).ok();
+                            let hunk = content
+                                .as_deref()
+                                .map(|content| InternedInput::new(content, ""))
+                                .map(|input| {
+                                    imara_diff::diff(
+                                        Algorithm::Histogram,
+                                        &input,
+                                        UnifiedDiffBuilder::new(&input),
+                                    )
+                                });
+
+                            diff_builder.deletion(location, &id, hunk);
                         }
                         EntryMode::Link => {}
                         EntryMode::Commit => {}
@@ -155,7 +204,6 @@ mod test {
         };
 
         let diffs = repo.diff("main", "testdiff").unwrap();
-        println!("{diffs}");
         Ok(())
     }
 }

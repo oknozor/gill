@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% include "header.html" %}
+
+<script>
+    let base = '{{current_branch}}';
+    let compare = '{{current_branch}}';
+    const setBase = (element, branch) => {
+        base = branch;
+        let checkMark = document.getElementById("checkmark-base");
+        element.insertBefore(checkMark, element.firstChild);
+        document.getElementById("button-base-value").innerText = base;
+        document.getElementById("base").value = base;
+        closeDropDown("base-dropdown");
+        getDiff();
+    }
+
+    const setCompare = (element, branch) => {
+        compare = branch;
+        let checkMark = document.getElementById("checkmark-compare");
+        element.insertBefore(checkMark, element.firstChild);
+        document.getElementById("button-compare-value").innerText = compare;
+        document.getElementById("compare").value = compare;
+        closeDropDown("compare-dropdown");
+        getDiff();
+    }
+
+    const getDiff = () => {
+        let diffContainer = document.getElementById("diff");
+
+        if (base === compare) {
+            document.getElementById("create-pull-request-button").disabled = true;
+            diffContainer.innerHTML = `<span>Nothing to compare</span>`
+        } else {
+            document.getElementById("create-pull-request-button").disabled = false;
+            let from = encodeURIComponent(base);
+            let to = encodeURIComponent(compare);
+            fetch(`/{{owner}}/{{repository}}/get_diff?from=${from}&to=${to}`, {
+                method: 'GET',
+            }).then(response => {
+                response.text()
+                    .then(body => diffContainer.innerHTML = body)
+                    .catch(reason => console.log(reason))
+            })
+                .catch(reason => console.log(reason));
+        }
+    }
+
+    const dropDownBranches = (dropDownId) => {
+        let branchesMenu = document.getElementById(dropDownId)
+        branchesMenu.classList.remove("invisible");
+        branchesMenu.classList.replace("opacity-0", "opacity-100");
+    }
+
+    const closeDropDown = (dropDownId) => {
+        let menu = document.getElementById(dropDownId)
+        menu.classList.replace("opacity-100", "opacity-0");
+    }
+
+    const openCreatePullRequestForm = () => {
+        if (base !== compare) {
+            let diff = document.getElementById("create-pull-request-form");
+            diff.classList.remove("hidden")
+        }
+    }
+
+    document.addEventListener('click', function (e) {
+        let container = document.getElementById('base-dropdown-container');
+        if (!container.contains(e.target)) {
+            closeDropDown("base-dropdown");
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        let container = document.getElementById('compare-dropdown-container');
+        if (!container.contains(e.target)) {
+            closeDropDown("compare-dropdown");
+        }
+    });
+</script>
+<div class="flex flex-row items-center justify-start bg-stone-100 border-slate-400 rounded-md border py-2 px-3 gap-x-10"
+     onload="getDiff()">
+    <div class="flex items-center gap-4">
+        <i class="text-slate-600 text-2xl ti ti-git-compare"></i>
+        <div class="relative">
+            <!-- ONE -->
+            <div id="base-dropdown-container" class="flex flex-row items-center space-around">
+                <button class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-zinc-300 bg-zinc-200 hover:bg-slate-200
+                      rounded-lg px-3" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" onclick="dropDownBranches('base-dropdown')">
+                    <i class="font-medium ti ti-binary-tree-2 pl-1 pr-2"></i>
+                    <p id="button-base-value" class="truncate ...">{{current_branch}}</p>
+                    <i class="font-medium text-sm ti ti-arrow-down pl-1 pr-2"></i>
+                </button>
+                <div id="base-dropdown" class="
+           bg-zinc-200
+           absolute -bottom-32 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
+           transform transition-all duration-150 ease-out opacity-0">
+                    <div class="flex flex-col divide-y divide-slate-300 text-sm">
+                        <div class="flex flex-row justify-between items-center p-3">
+                            <span class="text-md pr-8">Switch branches</span>
+                            <i class="text-xl ti ti-x hover:drop-shadow-lg" onclick="closeDropDown('base-dropdown')">
+                            </i>
+                        </div>
+
+                        {%- for branch in branches -%}
+                        <span
+                                onclick="setBase(this, '{{branch.name}}')"
+                                class="py-2 hover:bg-slate-200 flex flex-row justify-between">
+                        {%- if branch.is_current -%}
+                            <span>
+                            <i id="checkmark-base" class="self-start text-sm ti ti-check px-2 pr-2"></i>
+                            </span>
+                            {%- endif -%}
+                            {{ branch.name }}
+                            {%- if branch.is_default -%}
+                            <span class="self-end border rounded-full border-gray-400 p-1">
+                                default
+                            </span>
+                        {%- endif -%}
+                    </span>
+                        {%- endfor -%}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <i class="text-slate-600 text-2xl ti ti-arrow-narrow-left"></i>
+    <div class="flex items-center justify-between w-full">
+        <div class="relative">
+            <div id="compare-dropdown-container" class="flex flex-row items-center space-around">
+                <button class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-zinc-300 bg-zinc-200 hover:bg-slate-200
+                      rounded-lg px-3" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" onclick="dropDownBranches('compare-dropdown')">
+                    <i class="font-medium ti ti-binary-tree-2 pl-1 pr-2"></i>
+                    <p id="button-compare-value" class="truncate ...">{{current_branch}}</p>
+                    <i class="font-medium text-sm ti ti-arrow-down pl-1 pr-2"></i>
+                </button>
+                <div id="compare-dropdown" class="
+           bg-zinc-200
+           absolute absolute -bottom-32 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
+           transform transition-all duration-150 ease-out opacity-0">
+                    <div class="flex flex-col divide-y divide-slate-300 text-sm">
+                        <div class="flex flex-row justify-between items-center p-3">
+                            <span class="text-md pr-8">Switch branches</span>
+                            <i class="text-xl ti ti-x hover:drop-shadow-lg" onclick="closeDropDown('compare-dropdown')">
+                            </i>
+                        </div>
+
+                        {%- for branch in branches -%}
+                        <span
+                                onclick="setCompare(this, '{{branch.name}}')"
+                                class="py-2 hover:bg-slate-200 flex flex-row justify-between">
+                        <span>
+                        {%- if branch.is_current -%}
+                        <i id="checkmark-compare" class="self-start text-sm ti ti-check px-2 pr-2"></i>
+                        {%- endif -%}
+                        {{ branch.name }}
+                        </span>
+                        {%- if branch.is_default -%}
+                        <span class="self-end border rounded-full border-gray-400 p-1">
+                            default
+                        </span>
+                        {%- endif -%}
+                    </span>
+                        {%- endfor -%}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button disabled id="create-pull-request-button" class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-blue-300 bg-blue-200 rounded-lg px-3" type="button" onclick="openCreatePullRequestForm()">
+            Create pull request
+        </button>
+    </div>
+</div>
+
+<div id="create-pull-request-form" class="pb-2 hidden">
+    <form class="flex flex-col gap-2 px-5 py-3" action="/{{owner}}/{{repository}}/pulls/create">
+        <label class="font-bold" for="title">Title</label><br>
+        <input class="pb-2 rounded-md bg-gray-100" type="text" id="title" name="title"
+               placeholder="Title"><br>
+        <label class="font-bold" for="description">Description</label><br>
+        <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="description" name="description" placeholder="Describe your pull request"></textarea>
+        <input class="max-w-lg drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-400 rounded-md"
+               type="submit" value="Create pull request">
+        <label for="base" class="hidden"></label>
+        <label for="compare" class="hidden"></label>
+        <input id="base" name="base" class="hidden" value="{{current_branch}}">
+        <input id="compare" name="compare" class="hidden" value="{{current_branch}}">
+    </form>
+</div>
+
+<div id="diff" class="flex flex-col gap-5"></div>
+
+{% endblock %}

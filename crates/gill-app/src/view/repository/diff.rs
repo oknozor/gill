@@ -25,7 +25,7 @@ pub struct GitDiffTemplate {
     user: Option<String>,
 }
 
-pub async fn diff<'a>(
+pub async fn view(
     user: Option<Oauth2User>,
     Path((owner, repository)): Path<(String, String)>,
     Query(diff): Query<DiffQuery>,
@@ -42,4 +42,15 @@ pub async fn diff<'a>(
         diff,
         user: connected_username,
     }))
+}
+
+pub async fn get_diff(
+    Path((owner, repository)): Path<(String, String)>,
+    Query(diff): Query<DiffQuery>,
+) -> Result<String, AppError> {
+    let repo = GitRepository::open(&owner, &repository)?;
+    let diff = repo.diff(&diff.from, &diff.to)?;
+    let diff = diff2html(&diff)?;
+
+    Ok(diff)
 }

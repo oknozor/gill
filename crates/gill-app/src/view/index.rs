@@ -8,7 +8,7 @@ use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::view::dto::{FederatedRepositoryDto, RepositoryDto};
 use gill_db::activity::Activity;
-use gill_db::repository::RepositoryDigest;
+use gill_db::repository::digest::RepositoryDigest;
 use sqlx::PgPool;
 
 pub struct ActivityDto {}

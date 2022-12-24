@@ -1,5 +1,25 @@
+<script src="/assets/js/uri-helpers.js"></script>
+<script>
+    const dropDownBranches = () => {
+        let branchesMenu = document.getElementById("branches-dropdown")
+        branchesMenu.classList.remove("invisible");
+        branchesMenu.classList.replace("opacity-0", "opacity-100");
+    }
+
+    const closeDropDown = () => {
+        let branchesMenu = document.getElementById("branches-dropdown")
+        branchesMenu.classList.replace("opacity-100", "opacity-0");
+    }
+
+    document.addEventListener('click', function (e) {
+        let container = document.getElementById('branch-dropdown-container');
+        if (!container.contains(e.target)) {
+            closeDropDown();
+        }
+    });
+</script>
 <div id="branch-dropdown-container" class="flex flex-row items-center space-around">
-    <button class="flex flex-row items-center grow-0 h-14 min-w-40 max-w-60 border border-zinc-300 bg-zinc-200 hover:bg-slate-200 drop-shadow-md
+    <button class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-zinc-300 bg-zinc-200 hover:bg-slate-200 drop-shadow-md
                       font-medium rounded-lg px-3" type="button" data-bs-toggle="dropdown"
             aria-expanded="false" onclick="dropDownBranches()">
         <i class="ti ti-binary-tree-2 pl-1 pr-2"></i>

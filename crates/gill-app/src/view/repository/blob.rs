@@ -3,7 +3,7 @@ use crate::oauth::Oauth2User;
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
 use askama::Template;
-use axum::extract::{Path};
+use axum::extract::Path;
 use axum::Extension;
 use gill_syntax::highlight::highlight_blob;
 

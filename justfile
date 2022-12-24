@@ -40,8 +40,6 @@ run: build
 reload:
     docker-compose exec gill "pkill" "gill-app" || true
     docker-compose exec gill-2 "pkill" "gill-app" || true
-    docker-compose exec gill "rm" "/tmp/gill-socket" || true
-    docker-compose exec gill-2 "rm" "/tmp/gill-socket" || true
     cargo sqlx prepare --merged
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
     cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/home/bin/gill-git-server
