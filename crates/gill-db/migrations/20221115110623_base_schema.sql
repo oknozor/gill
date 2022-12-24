@@ -55,6 +55,7 @@ CREATE TABLE repository
     send_patches_to   VARCHAR(255) NOT NULL,
     domain            VARCHAR(255) NOT NULL,
     is_local          BOOLEAN      NOT NULL,
+    item_count        INT          NOT NULL DEFAULT 0,
     CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
 );
 
@@ -66,16 +67,22 @@ CREATE TABLE branch
     PRIMARY KEY (name, repository_id)
 );
 
+CREATE TYPE pull_request_state AS ENUM ('Open', 'Closed', 'Merged');
+
 CREATE TABLE pull_request
 (
     number        INT                            NOT NULL,
     repository_id INT REFERENCES repository (id) NOT NULL,
     title         VARCHAR(255)                   NOT NULL,
+    description   TEXT,
     base          VARCHAR(255)                   NOT NULL,
     compare       VARCHAR(255)                   NOT NULL,
+    state         pull_request_state             NOT NULL DEFAULT 'Open',
     CONSTRAINT base_key FOREIGN KEY (base, repository_id) REFERENCES branch (name, repository_id),
     PRIMARY KEY (number, repository_id)
 );
+
+CREATE TYPE issue_state AS ENUM ('Open', 'Closed');
 
 CREATE TABLE issue
 (
@@ -83,6 +90,7 @@ CREATE TABLE issue
     repository_id INT REFERENCES repository (id) NOT NULL,
     title         VARCHAR(255)                   NOT NULL,
     content       TEXT                           NOT NULL,
+    state         issue_state             NOT NULL DEFAULT 'Open',
     PRIMARY KEY (number, repository_id)
 );
 

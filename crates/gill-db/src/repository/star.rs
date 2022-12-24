@@ -2,6 +2,12 @@ use crate::repository::Repository;
 use crate::user::User;
 use sqlx::PgPool;
 
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Star {
+    pub repository_id: i32,
+    pub stared_by: i32,
+}
+
 impl Repository {
     pub async fn add_star(&self, starred_by: i32, db: &PgPool) -> sqlx::Result<()> {
         sqlx::query!(

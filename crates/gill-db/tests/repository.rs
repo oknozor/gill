@@ -1,5 +1,6 @@
 use crate::fixtures::{create_repository, GILL_REPO_ID, LINUX_REPO_ID};
-use gill_db::repository::{Branch, Repository};
+use gill_db::repository::branch::Branch;
+use gill_db::repository::Repository;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -112,7 +113,8 @@ async fn get_default_branch(db: PgPool) -> anyhow::Result<()> {
 }
 
 mod fixtures {
-    use gill_db::repository::{CreateRepository, Repository};
+    use gill_db::repository::create::CreateRepository;
+    use gill_db::repository::Repository;
 
     pub const GILL_REPO_ID: i32 = 2;
     pub const LINUX_REPO_ID: i32 = 1;

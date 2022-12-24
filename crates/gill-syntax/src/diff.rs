@@ -1,5 +1,5 @@
 use crate::SYNTAX_SET;
-use std::fmt::Write;
+use gill_git::repository::diff::Diff;
 use syntect::easy::HighlightLines;
 use syntect::html::{append_highlighted_html_for_styled_line, IncludeBackground};
 
@@ -22,130 +22,172 @@ enum LineType {
     Unchanged,
 }
 
-pub fn diff2html(diff: &str) -> Result<String, syntect::Error> {
-    let mut state = State::Head;
-    let mut lines = diff.lines().peekable();
+pub fn diff2html(diffs: &[Diff]) -> Result<String, syntect::Error> {
     let mut out = String::new();
-    while let Some(line) = lines.next() {
-        if line == "\\ No newline at end of file" {
-            continue;
+    for diff in diffs {
+        let path = diff.path();
+        out.push_str(r#"<div class="d">"#);
+        out.push_str(&format!(
+            r#"<div class="h"><i class="ti ti-file-code-2 px-4"></i>{path}</div>"#
+        ));
+        out.push_str("<table>");
+
+        match diff {
+            Diff::Addition { .. } => generate_html_for_addition(&mut out, diff)?,
+            Diff::Deletion { .. } => generate_html_for_deletion(&mut out, diff)?,
+            Diff::Changes { .. } => generate_html_for_change(&mut out, diff)?,
         }
 
-        match state {
-            State::Head => {
-                println!("HEAD {}", line);
-                let diff_line = line.strip_prefix("diff --git a/").unwrap();
-                let (_previous_path, path) = diff_line.split_once(" b/").unwrap();
-                let line = lines.peek().unwrap();
-                // For now we just skip it but we could speed up the
-                // parser by driving it to only iter through addition/deletion
-                // depending on the diff mode
-                if line.starts_with("deleted file") || line.starts_with("new file") {
-                    let _deleted_or_new = lines.next();
-                };
+        out.push_str("</table>");
+        out.push_str("</div>");
+    }
+    Ok(out)
+}
 
-                let _index = lines.next();
-                let _a = lines.next();
-                let _b = lines.next();
+fn generate_html_for_addition(out: &mut String, diff: &Diff) -> Result<(), syntect::Error> {
+    let (_, ext) = diff.path().rsplit_once('.').unzip();
 
-                let line_hunk = lines.next().unwrap();
-                println!("INFO {}", line_hunk);
-                state = parse_line_info(path, line_hunk);
-                out.push_str(r#"<div class="d">"#);
-                out.push_str(&format!(
-                    r#"<div class="h"><i class="ti ti-file-code-2 px-4"></i>{path}</div>"#
-                ));
-                out.push_str("<table>");
+    let Some(hunk) = diff.hunk() else {
+        return Ok(());
+    };
+
+    let mut highligher = ext.and_then(super::highlighter_for_extension);
+    let mut lines = hunk.lines();
+    let _ = lines.next();
+
+    for (idx, line) in lines.enumerate() {
+        match highligher.as_mut() {
+            None => line_to_html(line, idx as u32 + 1, out, &LineType::Add),
+
+            Some(hl) => line_to_html_highlighted(line, idx as u32 + 1, &LineType::Add, out, hl)?,
+        }
+    }
+
+    Ok(())
+}
+
+fn generate_html_for_deletion(out: &mut String, diff: &Diff) -> Result<(), syntect::Error> {
+    let (_, ext) = diff.path().rsplit_once('.').unzip();
+
+    let Some(hunk) = diff.hunk() else {
+        return Ok(());
+    };
+
+    let mut highligher = ext.and_then(super::highlighter_for_extension);
+    let mut lines = hunk.lines();
+    let _ = lines.next();
+
+    for (idx, line) in lines.enumerate() {
+        match highligher.as_mut() {
+            None => line_to_html(line, idx as u32 + 1, out, &LineType::Del),
+
+            Some(hl) => line_to_html_highlighted(line, idx as u32 + 1, &LineType::Del, out, hl)?,
+        }
+    }
+
+    Ok(())
+}
+
+fn generate_html_for_change(out: &mut String, diff: &Diff) -> Result<(), syntect::Error> {
+    let mut state = State::Head;
+
+    let path = diff.path();
+    let hunk = diff.hunk();
+    if let Some(hunk) = hunk {
+        let mut lines = hunk.lines().peekable();
+        while let Some(line) = lines.next() {
+            if line == "\\ No newline at end of file" {
+                continue;
             }
-            State::Diff {
-                deletion_start,
-                addition_start,
-                deletion_nth,
-                addition_nth,
-                path,
-                first_line,
-            } => {
-                let (_, ext) = path.rsplit_once('.').unzip();
-                let mut highligher = ext.and_then(super::highlighter_for_extension);
-                let mut addition_count = 0;
-                let mut deletion_count = 0;
 
-                let line_type = LineType::from_line(line);
-                let start_line = match line_type {
-                    LineType::Add => addition_start,
-                    LineType::Del => deletion_start,
-                    LineType::Unchanged => addition_start,
-                };
+            match state {
+                State::Head => state = parse_line_info(path, line),
+                State::Diff {
+                    deletion_start,
+                    addition_start,
+                    deletion_nth,
+                    addition_nth,
+                    path,
+                    first_line,
+                } => {
+                    let (_, ext) = path.rsplit_once('.').unzip();
+                    let mut highligher = ext.and_then(super::highlighter_for_extension);
+                    let mut addition_count = 0;
+                    let mut deletion_count = 0;
 
-                match highligher.as_mut() {
-                    None => {
-                        if let Some(first_line) = first_line {
-                            line_to_html(first_line, start_line, &mut out, &LineType::Unchanged)
-                        }
-                        line_to_html(line, start_line + 1, &mut out, &line_type)
-                    }
-                    Some(highlighter) => {
-                        if let Some(first_line) = first_line {
-                            line_to_html_highlighted(
-                                first_line,
-                                start_line + 1,
-                                &LineType::Unchanged,
-                                &mut out,
-                                highlighter,
-                            )?
-                        }
-                        line_to_html_highlighted(
-                            line,
-                            start_line,
-                            &line_type,
-                            &mut out,
-                            highlighter,
-                        )?
-                    }
-                };
-
-                update_line_counters(&mut addition_count, &mut deletion_count, line_type);
-                while addition_count < addition_nth || deletion_count < deletion_nth {
-                    let line = lines.next().unwrap();
                     let line_type = LineType::from_line(line);
-                    let line_number = match line_type {
-                        LineType::Add => addition_start + addition_count,
-                        LineType::Del => deletion_start + deletion_count,
-                        LineType::Unchanged => addition_start + addition_count,
+                    let start_line = match line_type {
+                        LineType::Add => addition_start,
+                        LineType::Del => deletion_start,
+                        LineType::Unchanged => addition_start,
                     };
 
                     match highligher.as_mut() {
-                        None => line_to_html(line, line_number, &mut out, &line_type),
-                        Some(highlighter) => line_to_html_highlighted(
-                            line,
-                            line_number,
-                            &line_type,
-                            &mut out,
-                            highlighter,
-                        )?,
+                        None => {
+                            if let Some(first_line) = first_line {
+                                line_to_html(first_line, start_line, out, &LineType::Unchanged)
+                            }
+                            line_to_html(line, start_line + 1, out, &line_type)
+                        }
+                        Some(highlighter) => {
+                            if let Some(first_line) = first_line {
+                                line_to_html_highlighted(
+                                    first_line,
+                                    start_line + 1,
+                                    &LineType::Unchanged,
+                                    out,
+                                    highlighter,
+                                )?
+                            }
+                            line_to_html_highlighted(
+                                line,
+                                start_line,
+                                &line_type,
+                                out,
+                                highlighter,
+                            )?
+                        }
                     };
 
                     update_line_counters(&mut addition_count, &mut deletion_count, line_type);
-                }
+                    while addition_count < addition_nth || deletion_count < deletion_nth {
+                        let line = lines.next().unwrap();
+                        let line_type = LineType::from_line(line);
+                        let line_number = match line_type {
+                            LineType::Add => addition_start + addition_count,
+                            LineType::Del => deletion_start + deletion_count,
+                            LineType::Unchanged => addition_start + addition_count,
+                        };
 
-                let line = lines.peek();
+                        match highligher.as_mut() {
+                            None => line_to_html(line, line_number, out, &line_type),
+                            Some(highlighter) => line_to_html_highlighted(
+                                line,
+                                line_number,
+                                &line_type,
+                                out,
+                                highlighter,
+                            )?,
+                        };
 
-                if let Some(line) = line {
-                    if line.starts_with("@@") {
-                        let diff_state = parse_line_info(path, line);
-                        state = diff_state;
-                        lines.next();
-                        continue;
+                        update_line_counters(&mut addition_count, &mut deletion_count, line_type);
+                    }
+
+                    let line = lines.peek();
+
+                    if let Some(line) = line {
+                        if line.starts_with("@@") {
+                            state = parse_line_info(path, line);
+                            lines.next();
+                            continue;
+                        }
                     }
                 }
-                state = State::Head;
-                out.push_str("</table>");
-                out.push_str("</div>");
             }
         }
     }
 
-    Ok(out)
+    Ok(())
 }
 
 impl LineType {
@@ -245,48 +287,34 @@ fn extract_line_start_and_nth(line_info: &str) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
+    use gill_git::repository::diff::Diff;
 
-    const DIFF: &str = r#"diff --git a/crates/gill-app/src/syntax/mod.rs b/crates/gill-app/src/syntax/mod.rs
-index d1f7f0f..300870e 100644
---- a/crates/gill-app/src/syntax/mod.rs
-+++ b/crates/gill-app/src/syntax/mod.rs
-@@ -1 +1,2 @@
+    #[test]
+    fn diff2html() {
+        let diffs = vec![Diff::Changes {
+            previous_id: "1234".to_string(),
+            id: "1234".to_string(),
+            file_path: "toto.rs".to_string(),
+            hunk: Some(
+                r#"@@ -1 +1,2 @@
  pub mod highlight;
 +pub mod diff;
-\ No newline at end of file
-diff --git a/crates/gill-db/migrations/20221115110623_base_schema.sql b/crates/gill-db/migrations/20221115110623_base_schema.sql
-index 1251133..6c801b8 100644
---- a/crates/gill-db/migrations/20221115110623_base_schema.sql
-+++ b/crates/gill-db/migrations/20221115110623_base_schema.sql
-@@ -55,7 +55,6 @@ CREATE TABLE repository
-     send_patches_to   VARCHAR(255) NOT NULL,
-     domain            VARCHAR(255) NOT NULL,
-     is_local          BOOLEAN      NOT NULL,
--    item_count        INT          NOT NULL DEFAULT 0,
-     CONSTRAINT Unique_Name_For_Repository UNIQUE (name, attributed_to)
- );
+\ No newline at end of file"#
+                    .to_string(),
+            ),
+        }];
+        let diffs = super::diff2html(&diffs);
+        assert!(diffs.is_ok());
+    }
 
-diff --git a/crates/gill-db/src/repository.rs b/crates/gill-db/src/repository.rs
-index 279ba5f..621c93f 100644
---- a/crates/gill-db/src/repository.rs
-+++ b/crates/gill-db/src/repository.rs
-@@ -210,6 +210,11 @@ impl Repository {
-         .ok()
-     }
-
-+    pub async fn create_branch(&self, branch_name: &str, db: &PgPool) -> sqlx::Result<()> {
-+        Branch::create(branch_name, self.id, false, db).await?;
-+        Ok(())
-+    }
-+
-     pub async fn by_activity_pub_id(
-         activity_pub_id: &str,
-         pool: &PgPool,
-diff --git a/crates/gill-git-server/src/post-receive.rs b/crates/gill-git-server/src/post-receive.rs
-index aa0bec7..1dd11a3 100644
---- a/crates/gill-git-server/src/post-receive.rs
-+++ b/crates/gill-git-server/src/post-receive.rs
-@@ -1,4 +1,4 @@
+    #[test]
+    fn diff2html_multiple_hunks() {
+        let diffs = vec![Diff::Changes {
+            previous_id: "1234".to_string(),
+            id: "1234".to_string(),
+            file_path: "toto.rs".to_string(),
+            hunk: Some(
+                r#"@@ -1,4 +1,4 @@
 -use gill_db::repository::Repository;
 +use gill_db::repository::{Branch, Repository};
  use gill_db::PgPoolOptions;
@@ -316,100 +344,11 @@ index aa0bec7..1dd11a3 100644
 +                writeln!(log_file, "existing branch")?;
              }
          }
-         None => writeln!(log_file, "branch not found")?,
-diff --git a/crates/gill-git/src/repository/diff.rs b/crates/gill-git/src/repository/diff.rs
-index 89b1cf1..3570e28 100644
---- a/crates/gill-git/src/repository/diff.rs
-+++ b/crates/gill-git/src/repository/diff.rs
-@@ -8,11 +8,6 @@ use git_repository::{object, Id};
- use imara_diff::intern::InternedInput;
- use imara_diff::{Algorithm, UnifiedDiffBuilder};
-
--pub fn diff_it(repo: &GitRepository) -> anyhow::Result<()> {
--    repo.diff("main", "testdiff")?;
--    Ok(())
--}
--
- #[derive(Debug, Default)]
- pub struct DiffBuilder {
-     out: String,
-diff --git a/docker/sshd_config b/docker/sshd_config
-index 01f17da..506d0bc 100644
---- a/docker/sshd_config
-+++ b/docker/sshd_config
-@@ -1,4 +1,4 @@
--AuthorizedKeysFile	.ssh/authorized_keys
-+AuthorizedKeysFile .ssh/authorized_keys
- PasswordAuthentication no
- Subsystem sftp /usr/lib/ssh/sftp-server
- AcceptEnv GIT_PROTOCOL
-\ No newline at end of file"#;
-
-    const DELETION: &str = r#"diff --git a/website/themes/adidoks/content/privacy-policy/_index.md b/website/themes/adidoks/content/privacy-policy/_index.md
-deleted file mode 100644
-index d8050da..0000000
---- a/website/themes/adidoks/content/privacy-policy/_index.md
-+++ /dev/null
-@@ -1,27 +0,0 @@
--+++
--title = "Privacy Policy"
--description = "We do not use cookies and we do not collect any personal data."
--date = 2021-05-01T08:00:00+00:00
--updated = 2020-05-01T08:00:00+00:00
--draft = false
--
--[extra]
--class = "page single"
--+++
--
--__TLDR__: We do not use cookies and we do not collect any personal data.
--
--## Website visitors
--
--- No personal information is collected.
--- No information is stored in the browser.
--- No information is shared with, sent to or sold to third-parties.
--- No information is shared with advertising companies.
--- No information is mined and harvested for personal and behavioral trends.
--- No information is monetized.
--
--## Contact us
--
--[Contact us](https://github.com/aaranxu/adidoks) if you have any questions.
--
--Effective Date: _1st May 2021_"#;
-
-    const NEW_FILE: &str = r#"diff --git a/.github/dependabot.yaml b/.github/dependabot.yaml
-new file mode 100644
-index 0000000..c8ecc6a
---- /dev/null
-+++ b/.github/dependabot.yaml
-@@ -0,0 +1,8 @@
-+version: 2
-+updates:
-+  - package-ecosystem: cargo
-+    directory: /
-+    schedule:
-+      interval: daily
-+      time: "14:05"
-+    open-pull-requests-limit: 10
-\ No newline at end of file"#;
-
-    #[test]
-    fn diff2html() {
-        let diffs = super::diff2html(DIFF);
-        assert!(diffs.is_ok());
-    }
-
-    #[test]
-    fn diff2html_deletion_only() {
-        let diffs = super::diff2html(DELETION);
-        assert!(diffs.is_ok());
-    }
-
-    #[test]
-    fn diff2html_new_file_only() {
-        let diffs = super::diff2html(NEW_FILE);
+         None => writeln!(log_file, "branch not found")?,"#
+                    .to_string(),
+            ),
+        }];
+        let diffs = super::diff2html(&diffs);
         assert!(diffs.is_ok());
     }
 }

@@ -1,4 +1,5 @@
-use crate::repository::{Repository, RepositoryDigest};
+use crate::repository::digest::RepositoryDigest;
+use crate::repository::Repository;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
@@ -168,7 +169,8 @@ impl User {
                 r.ticket_tracked_by,
                 r.send_patches_to,
                 r.domain,
-                r.is_local
+                r.is_local,
+                r.item_count
             FROM users u
             JOIN repository r ON u.activity_pub_id = r.attributed_to
             WHERE r.name = $1 AND r.is_local

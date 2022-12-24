@@ -10,6 +10,7 @@ use std::fmt::Formatter;
 pub mod activity;
 pub mod blob;
 pub mod commits;
+pub mod compare;
 pub mod diff;
 pub mod issues;
 pub mod pulls;
@@ -20,6 +21,8 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository", get(tree::root))
         .route("/:owner/:repository/issues", get(issues::issues))
         .route("/:owner/:repository/pulls", get(pulls::pulls))
+        .route("/:owner/:repository/pulls/create", get(pulls::create))
+        .route("/:owner/:repository/compare", get(compare::compare))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
@@ -28,7 +31,8 @@ pub fn routes() -> Router<AppState> {
             get(commits::history),
         )
         .route("/:owner/:repository/commits/:branch", get(commits::history))
-        .route("/:owner/:repository/diff", get(diff::diff))
+        .route("/:owner/:repository/diff", get(diff::view))
+        .route("/:owner/:repository/get_diff", get(diff::get_diff))
         .route("/:owner/:repository/star", post(activity::star))
         .route("/:owner/:repository/watch", post(activity::watch))
 }

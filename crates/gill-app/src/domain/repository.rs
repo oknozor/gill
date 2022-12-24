@@ -1,4 +1,5 @@
-use gill_db::repository::{RepositoryDigest, RepositoryLight};
+use gill_db::repository::digest::RepositoryDigest;
+use gill_db::repository::digest::RepositoryLight;
 use sqlx::PgPool;
 
 #[derive(Debug)]
