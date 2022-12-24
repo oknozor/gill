@@ -1,4 +1,4 @@
-use gill_db::repository::{Repository};
+use gill_db::repository::Repository;
 use gill_db::PgPoolOptions;
 use gill_settings::SETTINGS;
 use std::env;

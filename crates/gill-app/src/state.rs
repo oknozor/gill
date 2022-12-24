@@ -2,15 +2,11 @@ use crate::instance::InstanceHandle;
 use async_session::MemoryStore;
 use axum::extract::FromRef;
 use oauth2::basic::BasicClient;
-use syntect::highlighting::Theme;
-use syntect::parsing::SyntaxSet;
 
 #[derive(Clone)]
 pub struct AppState {
     pub store: MemoryStore,
     pub oauth_client: BasicClient,
-    pub syntax_set: SyntaxSet,
-    pub theme: Theme,
     pub instance: InstanceHandle,
 }
 
@@ -23,17 +19,5 @@ impl FromRef<AppState> for MemoryStore {
 impl FromRef<AppState> for BasicClient {
     fn from_ref(state: &AppState) -> Self {
         state.oauth_client.clone()
-    }
-}
-
-impl FromRef<AppState> for SyntaxSet {
-    fn from_ref(state: &AppState) -> Self {
-        state.syntax_set.clone()
-    }
-}
-
-impl FromRef<AppState> for Theme {
-    fn from_ref(state: &AppState) -> Self {
-        state.theme.clone()
     }
 }
