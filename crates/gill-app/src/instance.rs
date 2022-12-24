@@ -22,8 +22,8 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
 use crate::state::AppState;
-use crate::syntax::{SYNTAX_SET, THEME};
 use gill_settings::SETTINGS;
+
 use url::Url;
 
 pub type InstanceHandle = Arc<Instance>;
@@ -79,8 +79,6 @@ impl Instance {
         let app_state = AppState {
             store,
             oauth_client,
-            syntax_set: SYNTAX_SET.clone(),
-            theme: THEME.clone(),
             instance: instance.clone(),
         };
 

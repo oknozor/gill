@@ -26,7 +26,9 @@
     </ul>
     {%- match readme -%}
     {%- when Some with (readme) -%}
-    <div class="rounded-md border border-slate-200 prose prose-stone max-w-none py-3 px-5">{{- readme|safe -}}</div>
+    <div class="rounded-md border border-slate-200 prose prose-stone max-w-none py-3 px-5">
+        {{- readme|safe -}}
+    </div>
     {%- when None -%}
     {%- endmatch -%}
 </div>

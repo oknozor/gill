@@ -1,12 +1,12 @@
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
-use crate::syntax::diff::diff2html;
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::{Path, Query};
 use axum::Extension;
 use gill_git::repository::GitRepository;
+use gill_syntax::diff::diff2html;
 use serde::Deserialize;
 use sqlx::PgPool;
 

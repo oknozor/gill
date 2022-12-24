@@ -1,11 +1,11 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
-use crate::syntax::highlight::highlight_blob;
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
 use askama::Template;
-use axum::extract::{Path, State};
+use axum::extract::{Path};
 use axum::Extension;
+use gill_syntax::highlight::highlight_blob;
 
 use crate::get_connected_user_username;
 
@@ -16,8 +16,6 @@ use std::fmt::Formatter;
 
 use crate::domain::repository::RepositoryStats;
 use std::fmt;
-use syntect::highlighting::Theme;
-use syntect::parsing::SyntaxSet;
 
 // Needed in template
 use crate::view::repository::blob::BlobDto::*;
@@ -53,8 +51,6 @@ pub async fn blob(
     Path((owner, repository, current_branch)): Path<(String, String, String)>,
     Path(path): Path<Vec<String>>,
     Extension(db): Extension<PgPool>,
-    State(syntax_set): State<SyntaxSet>,
-    State(theme): State<Theme>,
 ) -> Result<HtmlTemplate<GitBLobTemplate>, AppError> {
     let connected_username = get_connected_user_username(&db, user).await;
     let path = path.last().unwrap();
@@ -83,7 +79,7 @@ pub async fn blob(
             language
                 .as_ref()
                 .and_then(|language| {
-                    highlight_blob(&blob, language, syntax_set, &theme)
+                    highlight_blob(&blob, language)
                         .ok()
                         .map(|hl| (language, hl))
                 })

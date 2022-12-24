@@ -9,7 +9,6 @@ pub mod error;
 pub mod instance;
 pub mod oauth;
 pub mod state;
-pub mod syntax;
 pub mod view;
 pub mod webfinger;
 

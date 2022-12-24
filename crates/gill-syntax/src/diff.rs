@@ -1,11 +1,7 @@
-use crate::syntax::SYNTAX_SET;
-
-use std::fmt::{Write};
-
+use crate::SYNTAX_SET;
+use std::fmt::Write;
 use syntect::easy::HighlightLines;
-
 use syntect::html::{append_highlighted_html_for_styled_line, IncludeBackground};
-
 
 #[derive(Debug, PartialEq)]
 pub enum State<'a> {
@@ -249,7 +245,6 @@ fn extract_line_start_and_nth(line_info: &str) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
-    
 
     const DIFF: &str = r#"diff --git a/crates/gill-app/src/syntax/mod.rs b/crates/gill-app/src/syntax/mod.rs
 index d1f7f0f..300870e 100644

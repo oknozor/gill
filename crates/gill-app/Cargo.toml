@@ -23,11 +23,11 @@ thiserror.workspace = true
 activitypub_federation.workspace = true
 once_cell.workspace = true
 chrono.workspace = true
-syntect.workspace = true
 
 gill-db = { path = "../gill-db" }
 gill-git = { path = "../gill-git" }
 gill-settings = { path = "../gill-settings" }
+gill-syntax = { path = "../gill-syntax" }
 
 uuid = "1.2.2"
 enum_delegate = "0.2.0"

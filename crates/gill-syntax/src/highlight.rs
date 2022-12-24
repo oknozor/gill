@@ -1,33 +1,17 @@
 use anyhow::anyhow;
-use syntect::easy::HighlightLines;
+
 use syntect::highlighting::{Color, Theme};
 
+use crate::{highlighter_for_extension, SYNTAX_SET, THEME};
 use syntect::html::{append_highlighted_html_for_styled_line, IncludeBackground};
-use syntect::parsing::{SyntaxReference, SyntaxSet};
+
 use syntect::util::LinesWithEndings;
 
-pub fn highlight_blob(
-    blob_content: &str,
-    extension: &str,
-    syntax_set: SyntaxSet,
-    theme: &Theme,
-) -> anyhow::Result<String> {
-    let syntax = syntax_set
-        .find_syntax_by_extension(extension)
-        .ok_or_else(|| anyhow!("Syntax not found for extension {extension}"))?;
+pub fn highlight_blob(content: &str, extension: &str) -> anyhow::Result<String> {
+    let mut highlighter = highlighter_for_extension(extension)
+        .ok_or_else(|| anyhow!("syntax set not found for extension: {extension}"))?;
 
-    let html = highlighted_html_for_string(blob_content, &syntax_set, syntax, theme)?;
-    Ok(html)
-}
-
-fn highlighted_html_for_string(
-    content: &str,
-    syntax_set: &SyntaxSet,
-    syntax: &SyntaxReference,
-    theme: &Theme,
-) -> Result<String, syntect::Error> {
-    let mut highlighter = HighlightLines::new(syntax, theme);
-    let (mut output, bg) = start_highlighted_html(theme);
+    let (mut output, bg) = start_highlighted_html(&THEME);
     output.push_str("<tbody>");
     for (idx, line) in LinesWithEndings::from(content).enumerate() {
         let line_number = idx + 1;
@@ -36,7 +20,7 @@ fn highlighted_html_for_string(
             r#"<td class="px-3 bg-zinc-200">{line_number}</td>"#
         ));
         output.push_str("<td>");
-        let regions = highlighter.highlight_line(line, syntax_set)?;
+        let regions = highlighter.highlight_line(line, &SYNTAX_SET)?;
         append_highlighted_html_for_styled_line(
             &regions[..],
             IncludeBackground::IfDifferent(bg),
