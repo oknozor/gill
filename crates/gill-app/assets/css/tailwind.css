@@ -2415,6 +2415,10 @@ select {
   z-index: 50;
 }
 
+.m-5 {
+  margin: 1.25rem;
+}
+
 .block {
   display: block;
 }

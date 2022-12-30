@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
+<script src="/assets/js/boostrap.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -9,6 +10,8 @@
 <script>
     let base = '{{current_branch}}';
     let compare = '{{current_branch}}';
+    let owner = "{{owner}}";
+    let repository = "{{repository}}";
     const setBase = (element, branch) => {
         base = branch;
         let checkMark = document.getElementById("checkmark-base");
@@ -29,14 +32,31 @@
         getDiff();
     }
 
+    const disableButton = (button) => {
+        button.disabled = true;
+        button.classList.remove("border-blue-300")
+        button.classList.remove("bg-blue-200")
+        button.classList.add("border-slate-300")
+        button.classList.add("bg-slate-200")
+    }
+
+    const enableButton = (button) => {
+        button.disabled = false;
+        button.classList.remove("bg-slate-200")
+        button.classList.remove("border-slate-300")
+        button.classList.add("border-blue-300")
+        button.classList.add("bg-blue-200")
+    }
+
     const getDiff = () => {
         let diffContainer = document.getElementById("diff");
 
+        let button = document.getElementById("create-pull-request-button");
         if (base === compare) {
-            document.getElementById("create-pull-request-button").disabled = true;
+            disableButton(button);
             diffContainer.innerHTML = `<span>Nothing to compare</span>`
         } else {
-            document.getElementById("create-pull-request-button").disabled = false;
+            enableButton(button)
             let from = encodeURIComponent(base);
             let to = encodeURIComponent(compare);
             fetch(`/{{owner}}/{{repository}}/get_diff?from=${from}&to=${to}`, {
@@ -87,7 +107,6 @@
     <div class="flex items-center gap-4">
         <i class="text-slate-600 text-2xl ti ti-git-compare"></i>
         <div class="relative">
-            <!-- ONE -->
             <div id="base-dropdown-container" class="flex flex-row items-center space-around">
                 <button class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-zinc-300 bg-zinc-200 hover:bg-slate-200
                       rounded-lg px-3" type="button" data-bs-toggle="dropdown"
@@ -173,19 +192,23 @@
                 </div>
             </div>
         </div>
-        <button disabled id="create-pull-request-button" class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-blue-300 bg-blue-200 rounded-lg px-3" type="button" onclick="openCreatePullRequestForm()">
+        <button disabled id="create-pull-request-button"
+                class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-slate-300 bg-slate-200 rounded-lg px-3"
+                type="button" onclick="openCreatePullRequestForm()">
             Create pull request
         </button>
     </div>
 </div>
 
-<div id="create-pull-request-form" class="pb-2 hidden">
-    <form class="flex flex-col gap-2 px-5 py-3" action="/{{owner}}/{{repository}}/pulls/create">
+<div id="create-pull-request-form" class="pb-2 flex flex-row bg-stone-100 border-slate-400 rounded-md border hidden">
+    <form class="flex flex-col flex-1 gap-2 px-5 py-3"
+          action="/{{owner}}/{{repository}}/pulls/create">
         <label class="font-bold" for="title">Title</label><br>
         <input class="pb-2 rounded-md bg-gray-100" type="text" id="title" name="title"
                placeholder="Title"><br>
         <label class="font-bold" for="description">Description</label><br>
-        <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="description" name="description" placeholder="Describe your pull request"></textarea>
+        <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="description" name="description"
+                  placeholder="Describe your pull request"></textarea>
         <input class="max-w-lg drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-400 rounded-md"
                type="submit" value="Create pull request">
         <label for="base" class="hidden"></label>
@@ -193,6 +216,11 @@
         <input id="base" name="base" class="hidden" value="{{current_branch}}">
         <input id="compare" name="compare" class="hidden" value="{{current_branch}}">
     </form>
+    <div class="flex-1 m-5 bg-neutral-50 border border-slate-300 rounded-md">
+        <div id="preview-pull-request" class="prose prose-stone max-w-none px-2">
+
+        </div>
+    </div>
 </div>
 
 <div id="diff" class="flex flex-col gap-5"></div>
