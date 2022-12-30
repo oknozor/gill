@@ -28,13 +28,14 @@ gill-db = { path = "../gill-db" }
 gill-git = { path = "../gill-git" }
 gill-settings = { path = "../gill-settings" }
 gill-syntax = { path = "../gill-syntax" }
+gill-markdown = { path = "../gill-markdown" }
 
 uuid = "1.2.2"
 enum_delegate = "0.2.0"
 activitystreams-kinds = "0.2.1"
 webfinger = "0.5.1"
 tower = "0.4.13"
-url = "2.3.1"
+url.workspace = true
 base64 = "0.20.0"
 
 headers = "0.3"

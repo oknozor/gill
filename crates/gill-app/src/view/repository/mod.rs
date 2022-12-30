@@ -15,6 +15,7 @@ pub mod diff;
 pub mod issues;
 pub mod pulls;
 pub mod tree;
+pub mod user_content;
 
 pub fn routes() -> Router<AppState> {
     Router::new()
@@ -35,6 +36,7 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository/get_diff", get(diff::get_diff))
         .route("/:owner/:repository/star", post(activity::star))
         .route("/:owner/:repository/watch", post(activity::watch))
+        .route("/:owner/:repository/*path", get(user_content::image))
 }
 
 #[derive(Debug)]
