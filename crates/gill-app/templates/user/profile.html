@@ -2,24 +2,24 @@
 {% block head %}{% endblock %}
 {% block content_left %}{% endblock %}
 {% block content %}
-<div class="flex flex-row text-lg border-b-2 border-slate-300 justify-items-center pb-5">
+<div class="flex flex-row items-center justify-around border-b-2 border-slate-200 pb-2">
     <button
             id="tab-profile-button"
-            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
             onclick="openTab(this, 'profile')">
         <i class="ti ti-user-circle px-4"></i>
         Profile
     </button>
     <button
             id="tab-repositories-button"
-            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
             onclick="openTab(this, 'repositories')">
         <i class="ti ti-vocabulary px-4"></i>
         Repositories
     </button>
     <button
             id="tab-stars-button"
-            class="tab-button flex-1 p-2 flex items-center hover:bg-slate-200 hover:rounded-md py"
+            class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
             onclick="openTab(this, 'stars')">
         <i class="ti ti-file-star px-4"></i>
         Stars
