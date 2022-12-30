@@ -203,7 +203,7 @@ mod test {
             inner: git_repository::discover(".")?,
         };
 
-        let diffs = repo.diff("main", "testdiff").unwrap();
+        let _diffs = repo.diff("main", "testdiff").unwrap();
         Ok(())
     }
 }

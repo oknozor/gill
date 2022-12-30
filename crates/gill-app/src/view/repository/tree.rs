@@ -117,7 +117,6 @@ mod imp {
 
     use gill_git::repository::traversal::TreeMap;
     use gill_git::repository::GitRepository;
-    use pulldown_cmark::{html, Options, Parser};
     use sqlx::PgPool;
 
     pub(crate) async fn get_tree_root(
@@ -129,7 +128,7 @@ mod imp {
     ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
         let repo = GitRepository::open(owner, repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), None)?;
-        let readme = get_readme(&tree, &repo);
+        let readme = get_readme(&tree, &repo, owner, repository);
         let tree = TreeDto::from(tree);
         let user = User::by_user_name(owner, db).await?;
         let repo = user.get_local_repository_by_name(repository, db).await?;
@@ -172,7 +171,7 @@ mod imp {
     ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
         let repo = GitRepository::open(&owner, &repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), tree_path)?;
-        let readme = get_readme(&tree, &repo);
+        let readme = get_readme(&tree, &repo, &owner, &repository);
         let tree = TreeDto::from(tree);
         let branches = get_repository_branches(&owner, &repository, &current_branch, db).await?;
         let stats = RepositoryStats::get(&owner, &repository, db).await?;
@@ -191,16 +190,16 @@ mod imp {
         Ok(HtmlTemplate(template))
     }
 
-    pub fn get_readme(tree: &TreeMap, repo: &GitRepository) -> Option<String> {
+    pub fn get_readme(
+        tree: &TreeMap,
+        repo: &GitRepository,
+        owner: &str,
+        repository_name: &str,
+    ) -> Option<String> {
         tree.blobs
             .iter()
             .find(|blob| &blob.filename() == "README.md")
             .and_then(|blob| repo.blob_str(blob).ok())
-            .map(|readme| {
-                let parser = Parser::new_ext(&readme, Options::all());
-                let mut html = String::new();
-                html::push_html(&mut html, parser);
-                html
-            })
+            .map(|readme| gill_markdown::render(&readme, owner, repository_name))
     }
 }
