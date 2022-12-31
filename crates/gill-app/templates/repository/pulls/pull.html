@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script type="text/javascript" src="/assets/js/bootstrap.js"></script>
+{% endblock %}
+
+{% block content %}
+{% include "../header.html" %}
+{% include "../branch.html" %}
+<script>
+    // @formatter:off
+    window.addEventListener("WasmLoaded", () => {
+        {% match pull_request.description %}
+        {% when Some with (description) %}
+        let description = document.getElementById("pr-description");
+        description.innerHTML = render_markdown(`{{description}}`, "{{owner}}", "{{repository}}");
+        {% when None %}
+        {% endmatch %}
+
+        {% for comment in comments %}
+        document.getElementById("comment-{{comment.id}}").innerHTML = render_markdown('{{comment.content|safe}}', "{{owner}}", "{{repository}}");
+        {% endfor %}
+
+        let newComment = document.getElementById("new-comment");
+        newComment.oninput = () => {
+            let preview = document.getElementById("new-comment-preview");
+            preview.innerHTML = render_markdown(newComment.value, "{{owner}}", "{{repository}}");
+        }
+    });
+    // @formatter:on
+</script>
+<div class="flex flex-col space-around gap-5">
+    <h3 class="text-4xl">{{pull_request.title}} <span class="text-scale-600">#{{pull_request.number}}</span></h3>
+    <div class="flex flex-row items-center">
+        {%- match pull_request.state -%}
+        {%- when Open -%}
+        <div class="flex justify-center p-2 max-w-md rounded-lg bg-sky-400 gap-2">
+            <i class="ti ti-git-pull-request"></i>
+            <span>Open</span>
+        </div>
+
+        {%- when Closed -%}
+        <div class="flex justify-center p-2 max-w-md rounded-lg bg-red-400  gap-2">
+            <i class="ti ti-git-pull-request-closed"></i>
+            <span>Closed</span>
+        </div>
+        {%- when Merged -%}
+        <div class="flex justify-center p-2 max-w-md rounded-lg bg-pink-400  gap-2">
+            <i class="ti ti-git-merge"></i>
+            <span>Merged</span>
+        </div>
+        {%- endmatch -%}
+        &nbsp;
+        <p>
+            <a class="text-sky-600" href='/{{pull_request.opened_by}}'>{{pull_request.opened_by}}</a> wants to merge
+            <a id="compare-branch" class="text-sky-600" href=''>{{pull_request.compare}}</a> into
+            <a id="base-branch" class="text-sky-600" href=''>{{pull_request.base}}</a>
+            <script>
+                let base = encodeURIComponent("{{pull_request.compare}}");
+                let compare = encodeURIComponent("{{pull_request.base}}");
+                document.getElementById("compare-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${compare}`);
+                document.getElementById("base-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${base}`);
+            </script>
+        </p>
+    </div>
+    <div class="flex flex-col border-2 border-slate-200 rounded-md">
+        <div class="px-3 flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200">
+            {{pull_request.opened_by}}
+        </div>
+        {%- match pull_request.description -%}
+        {%- when Some with (description) -%}
+        <div id="pr-description" class="rounded-md prose prose-stone max-w-none py-3 px-5">
+        </div>
+        {%- when None -%}
+        <p>No description provided. </p>
+        {%- endmatch -%}
+    </div>
+
+    {% for comment in comments %}
+    <div class="flex flex-col border-2 border-slate-200 rounded-md">
+        <div class="px-3 flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200">
+            {{comment.created_by}}
+        </div>
+        <div id="comment-{{comment.id}}" class="rounded-md prose prose-stone max-w-none py-3 px-5">
+        </div>
+    </div>
+    {% endfor %}
+
+    <span class="border-b-2 border-slate-200"></span>
+
+    {%- match user -%}
+    {%- when Some with (user) -%}
+    <div class="flex flex-col border-2 border-slate-200 rounded-md">
+        <div class="flex flex-row items-center p-2 justify-items-start border-b-2 border-slate-200">
+            <span>Write</span>
+            <span>Preview</span>
+        </div>
+        <form action="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/comment">
+            <label for="new-comment"></label>
+            <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="new-comment" name="comment"></textarea>
+            <input
+                    class="max-w-lg drop-shadow-sm border border-blue-300 py-2 px-3 items-center bg-blue-400 hover:bg-blue-300 rounded-md"
+                    type="submit"
+                    value="Comment"
+            >
+        </form>
+        {%- if "{:?}"|format(user) == "{:?}"|format(owner) -%}
+        <button class="max-w-lg drop-shadow-sm border border-red-300 py-2 px-3 items-center bg-red-400 hover:bg-red-300 rounded-md">
+            Close with comment
+        </button>
+        {%- endif -%}
+        <div id="new-comment-preview" class="rounded-md prose prose-stone max-w-none py-3 px-5">
+        </div>
+
+        {%- if "{:?}"|format(user) == "{:?}"|format(owner) -%}
+        <div class="flex flex-col gap-2">
+            <script>
+                const mergePullRequest = () => {
+
+                }
+
+                const rebasePullRequest = () => {
+
+                }
+                const closePullRequest = () => {
+
+                }
+            </script>
+            <button
+                    onclick="mergePullRequest()"
+                    class="max-w-lg drop-shadow-sm border border-blue-300 py-2 px-3 items-center bg-blue-400 hover:bg-blue-300 rounded-md">
+                Merge
+            </button>
+            <button
+                    onclick="rebasePullRequest()"
+                    class="max-w-lg drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-300 rounded-md">
+                Rebase
+            </button>
+            <button
+                    onclick="closePullRequest()"
+                    class="max-w-lg drop-shadow-sm border border-red-300 py-2 px-3 items-center bg-red-400 hover:bg-red-300 rounded-md">
+                Close
+            </button>
+        </div>
+        {%- endif -%}
+        {%- when None -%}
+        {%- endmatch -%}
+    </div>
+</div>
+
+{% endblock %}
+

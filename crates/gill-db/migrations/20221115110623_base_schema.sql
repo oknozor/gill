@@ -73,6 +73,7 @@ CREATE TABLE pull_request
 (
     number        INT                            NOT NULL,
     repository_id INT REFERENCES repository (id) NOT NULL,
+    opened_by     INT REFERENCES users (id)      NOT NULL,
     title         VARCHAR(255)                   NOT NULL,
     description   TEXT,
     base          VARCHAR(255)                   NOT NULL,
@@ -80,6 +81,16 @@ CREATE TABLE pull_request
     state         pull_request_state             NOT NULL DEFAULT 'Open',
     CONSTRAINT base_key FOREIGN KEY (base, repository_id) REFERENCES branch (name, repository_id),
     PRIMARY KEY (number, repository_id)
+);
+
+CREATE TABLE pull_request_comment
+(
+    id SERIAL,
+    number        INT                            NOT NULL,
+    repository_id INT REFERENCES repository (id) NOT NULL,
+    created_by    INT REFERENCES users (id)      NOT NULL,
+    content       TEXT                           NOT NULL,
+    CONSTRAINT pull_request_key FOREIGN KEY (number, repository_id) REFERENCES pull_request (number, repository_id)
 );
 
 CREATE TYPE issue_state AS ENUM ('Open', 'Closed');
@@ -90,7 +101,7 @@ CREATE TABLE issue
     repository_id INT REFERENCES repository (id) NOT NULL,
     title         VARCHAR(255)                   NOT NULL,
     content       TEXT                           NOT NULL,
-    state         issue_state             NOT NULL DEFAULT 'Open',
+    state         issue_state                    NOT NULL DEFAULT 'Open',
     PRIMARY KEY (number, repository_id)
 );
 

@@ -10,7 +10,7 @@ use axum::Extension;
 use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
 
-use gill_git::repository::commits::OwnedCommit;
+use gill_git::commits::OwnedCommit;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -31,7 +31,7 @@ pub async fn history(
     Extension(db): Extension<PgPool>,
 ) -> Result<HtmlTemplate<CommitHistoryTemplate>, AppError> {
     let connected_username = get_connected_user_username(&db, user).await;
-    let commits = gill_git::repository::commits::history(&owner, &repository)?;
+    let commits = gill_git::commits::history(&owner, &repository)?;
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 

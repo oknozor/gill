@@ -7,7 +7,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::repository::traversal::TreeMap;
+use gill_git::traversal::TreeMap;
 
 use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
@@ -115,8 +115,8 @@ mod imp {
     use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;
 
-    use gill_git::repository::traversal::TreeMap;
-    use gill_git::repository::GitRepository;
+    use gill_git::traversal::TreeMap;
+    use gill_git::GitRepository;
     use sqlx::PgPool;
 
     pub(crate) async fn get_tree_root(

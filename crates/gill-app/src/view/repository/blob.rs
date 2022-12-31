@@ -9,8 +9,8 @@ use gill_syntax::highlight::highlight_blob;
 
 use crate::get_connected_user_username;
 
-use gill_git::repository::traversal::BlobMime;
-use gill_git::repository::GitRepository;
+use gill_git::traversal::BlobMime;
+use gill_git::GitRepository;
 use sqlx::PgPool;
 use std::fmt::Formatter;
 
