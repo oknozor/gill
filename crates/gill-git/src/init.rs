@@ -1,4 +1,4 @@
-use crate::repository::REPO_DIR;
+use crate::REPO_DIR;
 use git_repository::Repository;
 use std::fs;
 use std::path::PathBuf;

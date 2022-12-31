@@ -1,5 +1,5 @@
 use crate::SYNTAX_SET;
-use gill_git::repository::diff::Diff;
+use gill_git::diff::Diff;
 use syntect::easy::HighlightLines;
 use syntect::html::{append_highlighted_html_for_styled_line, IncludeBackground};
 

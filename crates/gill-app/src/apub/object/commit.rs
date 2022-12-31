@@ -7,7 +7,7 @@ use crate::apub::object::repository::RepositoryWrapper;
 use crate::apub::object::user::UserWrapper;
 use axum::async_trait;
 
-use gill_git::repository::commits::OwnedCommit;
+use gill_git::commits::OwnedCommit;
 use serde::{Deserialize, Serialize};
 use url::Url;
 

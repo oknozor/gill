@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
-<script src="/assets/js/boostrap.js"></script>
+<script src="/assets/js/bootstrap.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -12,6 +12,15 @@
     let compare = '{{current_branch}}';
     let owner = "{{owner}}";
     let repository = "{{repository}}";
+
+    window.addEventListener("WasmLoaded", () => {
+        let input = document.getElementById("description");
+
+        input.oninput = () => {
+            document.getElementById("preview-pull-request").innerHTML = render_markdown(input.value, owner, repository);
+        };
+    });
+
     const setBase = (element, branch) => {
         base = branch;
         let checkMark = document.getElementById("checkmark-base");

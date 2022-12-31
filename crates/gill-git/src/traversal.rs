@@ -1,4 +1,4 @@
-use crate::repository::{ref_to_tree, GitRepository};
+use crate::{ref_to_tree, GitRepository};
 
 use git_repository::ObjectId;
 
@@ -89,7 +89,7 @@ impl BlobInfo {
 }
 
 mod imp {
-    use crate::repository::traversal::{BlobInfo, TreeMap};
+    use crate::traversal::{BlobInfo, TreeMap};
     use anyhow::anyhow;
     use git_repository::bstr::{BStr, BString, ByteSlice, ByteVec};
     use git_repository::objs::tree::EntryRef;

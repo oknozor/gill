@@ -5,7 +5,7 @@ use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::{Path, Query};
 use axum::Extension;
-use gill_git::repository::GitRepository;
+use gill_git::GitRepository;
 use gill_syntax::diff::diff2html;
 use serde::Deserialize;
 use sqlx::PgPool;

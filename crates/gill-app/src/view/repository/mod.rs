@@ -21,7 +21,12 @@ pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/:owner/:repository", get(tree::root))
         .route("/:owner/:repository/issues", get(issues::issues))
-        .route("/:owner/:repository/pulls", get(pulls::pulls))
+        .route("/:owner/:repository/pulls", get(pulls::list_view))
+        .route("/:owner/:repository/pulls/:number", get(pulls::view))
+        .route(
+            "/:owner/:repository/pulls/:number/comment",
+            get(pulls::comment),
+        )
         .route("/:owner/:repository/pulls/create", get(pulls::create))
         .route("/:owner/:repository/compare", get(compare::compare))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))

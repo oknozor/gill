@@ -2,8 +2,8 @@ use crate::error::AppError;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::repository::Repository;
-use gill_git::repository::traversal::BlobMime;
-use gill_git::repository::GitRepository;
+use gill_git::traversal::BlobMime;
+use gill_git::GitRepository;
 use sqlx::PgPool;
 
 pub async fn image(

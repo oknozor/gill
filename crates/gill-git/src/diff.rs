@@ -1,4 +1,4 @@
-use crate::repository::{ref_to_tree, GitRepository};
+use crate::{ref_to_tree, GitRepository};
 use git_repository::bstr::ByteSlice;
 use git_repository::object::tree::diff::change::Event;
 use git_repository::object::tree::diff::{Action, Change};

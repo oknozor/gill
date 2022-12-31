@@ -67,6 +67,6 @@ pub async fn init(
     let create_repository_command = repository.map_to_db(&user)?;
     let repository = Repository::create(&create_repository_command, &pool).await?;
     // #[cfg(not(feature = "integration"))]
-    gill_git::repository::init::init_bare(&user.username, &repository.name)?;
+    gill_git::init::init_bare(&user.username, &repository.name)?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

@@ -1,4 +1,4 @@
-use crate::repository::REPO_DIR;
+use crate::REPO_DIR;
 use git_repository::Commit;
 use std::path::PathBuf;
 
@@ -54,7 +54,7 @@ impl TryFrom<Commit<'_>> for OwnedCommit {
 }
 
 mod imp {
-    use crate::repository::commits::OwnedCommit;
+    use crate::commits::OwnedCommit;
     use anyhow::Result;
     use git_repository::{ObjectId, Repository};
 
@@ -79,7 +79,7 @@ mod imp {
 
 #[cfg(test)]
 mod test {
-    use crate::repository::commits::imp::{find_commit, list_commits};
+    use crate::commits::imp::{find_commit, list_commits};
 
     #[test]
     // TODO: Make some actual assertion here
