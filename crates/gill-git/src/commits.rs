@@ -1,6 +1,5 @@
 use crate::GitRepository;
 use git_repository::Commit;
-use std::path::PathBuf;
 
 impl GitRepository {
     pub fn by_sha(&self, sha: &str) -> anyhow::Result<OwnedCommit> {
@@ -53,7 +52,7 @@ mod imp {
     use crate::commits::OwnedCommit;
     use crate::GitRepository;
     use anyhow::Result;
-    use git_repository::{ObjectId, Repository};
+    use git_repository::ObjectId;
 
     impl GitRepository {
         pub fn find_commit(&self, sha: &str) -> Result<OwnedCommit> {

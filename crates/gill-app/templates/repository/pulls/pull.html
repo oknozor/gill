@@ -114,33 +114,24 @@
 
         {%- if "{:?}"|format(user) == "{:?}"|format(owner) -%}
         <div class="flex flex-col gap-2">
-            <script>
-                const mergePullRequest = () => {
-
-                }
-
-                const rebasePullRequest = () => {
-
-                }
-                const closePullRequest = () => {
-
-                }
-            </script>
-            <button
-                    onclick="mergePullRequest()"
-                    class="max-w-lg drop-shadow-sm border border-blue-300 py-2 px-3 items-center bg-blue-400 hover:bg-blue-300 rounded-md">
-                Merge
-            </button>
-            <button
-                    onclick="rebasePullRequest()"
-                    class="max-w-lg drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-300 rounded-md">
-                Rebase
-            </button>
-            <button
-                    onclick="closePullRequest()"
-                    class="max-w-lg drop-shadow-sm border border-red-300 py-2 px-3 items-center bg-red-400 hover:bg-red-300 rounded-md">
-                Close
-            </button>
+            <form action="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/merge">
+                <input
+                        type="submit"
+                        value="Merge"
+                        class="max-w-md drop-shadow-sm border border-blue-300 py-2 px-3 items-center bg-blue-400 hover:bg-blue-300 rounded-md">
+            </form>
+            <form action="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/rebase">
+                <input
+                        type="submit"
+                        value="Rebase"
+                        class="max-w-md drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-300 rounded-md">
+            </form>
+            <form action="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/close">
+                <input
+                        type="submit"
+                        value="Close"
+                        class="max-w-md drop-shadow-sm border border-red-300 py-2 px-3 items-center bg-red-400 hover:bg-red-300 rounded-md">
+            </form>
         </div>
         {%- endif -%}
         {%- when None -%}

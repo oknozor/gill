@@ -1,5 +1,5 @@
 use crate::{GitRepository, REPO_DIR};
-use git_repository::Repository;
+
 use std::fs;
 use std::path::PathBuf;
 
@@ -31,7 +31,7 @@ impl GitRepository {
 
 mod imp {
     use crate::GitRepository;
-    use git_repository::Repository;
+
     use std::path::PathBuf;
 
     impl GitRepository {
@@ -52,10 +52,10 @@ mod imp {
     #[cfg(test)]
     mod test {
         use crate::GitRepository;
-        use cmd_lib::{init_builtin_logger, run_cmd};
+        use cmd_lib::run_cmd;
         use sealed_test::prelude::*;
         use speculoos::prelude::*;
-        use std::env;
+
         use std::path::PathBuf;
 
         #[sealed_test]

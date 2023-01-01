@@ -27,6 +27,12 @@ pub fn routes() -> Router<AppState> {
             "/:owner/:repository/pulls/:number/comment",
             get(pulls::comment),
         )
+        .route("/:owner/:repository/pulls/:number/merge", get(pulls::merge))
+        .route(
+            "/:owner/:repository/pulls/:number/rebase",
+            get(pulls::rebase),
+        )
+        .route("/:owner/:repository/pulls/:number/close", get(pulls::close))
         .route("/:owner/:repository/pulls/create", get(pulls::create))
         .route("/:owner/:repository/compare", get(compare::compare))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))

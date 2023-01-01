@@ -196,7 +196,7 @@ impl GitRepository {
 mod test {
     use crate::GitRepository;
     use anyhow::Result;
-    use cmd_lib::{init_builtin_logger, run_cmd};
+    use cmd_lib::run_cmd;
     use sealed_test::prelude::*;
     use speculoos::prelude::*;
     use std::fs;
