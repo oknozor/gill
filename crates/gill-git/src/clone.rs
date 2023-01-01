@@ -1,10 +1,15 @@
 use crate::GitRepository;
+use cmd_lib::run_cmd;
 use git_repository::clone::PrepareFetch;
 use git_repository::progress::Discard;
 use git_repository::{create, interrupt, open, worktree};
 
 impl GitRepository {
-    pub(crate) fn get_or_create_non_bare(&self) -> anyhow::Result<GitRepository> {
+    pub(crate) fn get_or_create_non_bare(
+        &self,
+        username: &str,
+        email: &str,
+    ) -> anyhow::Result<GitRepository> {
         // If the non bare copy already exist, returns it early
         if self.has_non_bare_clone() {
             let mut path = self.path();
@@ -56,6 +61,12 @@ impl GitRepository {
             }
         }
 
+        run_cmd!(
+            cd $dest_copy;
+            git config user.email $email;
+            git config user.name $username;
+        )?;
+
         Ok(GitRepository {
             inner: git_repository::open(dest_copy)?,
         })
@@ -102,7 +113,7 @@ mod test {
         };
 
         // Act
-        let non_bare = repository.get_or_create_non_bare()?;
+        let non_bare = repository.get_or_create_non_bare("gill", "gill@test.org")?;
 
         // Assert
         let commits = non_bare.list_commits()?;

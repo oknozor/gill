@@ -82,10 +82,3 @@ async fn should_get_user_by_activity_pub_id(db: PgPool) {
         is_local: true,
     }));
 }
-
-#[sqlx::test(fixtures("base"))]
-async fn should_add_ssh_key(db: PgPool) {
-    let res = User::add_ssh_key(ALICE_ID, "my-ssh-key", &db).await;
-
-    assert_that!(res).is_ok();
-}

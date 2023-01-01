@@ -1,35 +1,99 @@
 use crate::GitRepository;
-use cmd_lib::{init_builtin_logger, run_cmd};
+
+use std::process::Command;
 
 impl GitRepository {
-    pub fn merge(&self, base: &str, compare: &str) -> anyhow::Result<()> {
-        let non_bare = self.get_or_create_non_bare()?;
+    pub fn merge(
+        &self,
+        base: &str,
+        compare: &str,
+        username: &str,
+        email: &str,
+    ) -> anyhow::Result<()> {
+        let non_bare = self.get_or_create_non_bare(username, email)?;
         let path = non_bare.path();
 
         // TODO: Merge is not yet implemented in git-oxide
         //  this should be replaced when ready
-        run_cmd!(
-            cd $path;
-            git checkout $base;
-            git merge --no-ff origin/$compare;
-            git push -u origin $base;
-        )?;
+        Command::new("git")
+            .current_dir(&path)
+            .args(["checkout", base])
+            .output()
+            .expect("Failed to checkout branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["fetch"])
+            .output()
+            .expect("Failed to fetch branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["reset", "--hard", &format!("origin/{base}")])
+            .output()
+            .expect("Failed to reset branch to bare state");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args([
+                "merge",
+                "--no-ff",
+                "--no-edit",
+                &format!("origin/{compare}"),
+            ])
+            .output()
+            .expect("Failed to merge branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["push", "-u", "origin", base])
+            .output()
+            .expect("Failed to sync bare repo");
 
         Ok(())
     }
 
-    pub fn rebase(&self, base: &str, compare: &str) -> anyhow::Result<()> {
-        let non_bare = self.get_or_create_non_bare()?;
+    pub fn rebase(
+        &self,
+        base: &str,
+        compare: &str,
+        username: &str,
+        email: &str,
+    ) -> anyhow::Result<()> {
+        let non_bare = self.get_or_create_non_bare(username, email)?;
         let path = non_bare.path();
 
         // TODO: Rebase is not yet implemented in git-oxide
         //  this should be replaced when ready
-        run_cmd!(
-            cd $path;
-            git checkout $base;
-            git rebase origin/$compare;
-            git push -u origin $base;
-        )?;
+        Command::new("git")
+            .current_dir(&path)
+            .args(["checkout", base])
+            .output()
+            .expect("Failed to checkout branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["fetch"])
+            .output()
+            .expect("Failed to fetch branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["reset", "--hard", &format!("origin/{base}")])
+            .output()
+            .expect("Failed to reset branch to bare state");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["rebase", &format!("origin/{compare}")])
+            .output()
+            .expect("Failed to rebase branch");
+
+        Command::new("git")
+            .current_dir(&path)
+            .args(["push", "-u", "origin", base])
+            .output()
+            .expect("Failed to sync bare repo");
 
         Ok(())
     }
@@ -69,7 +133,7 @@ mod test {
             inner: git_repository::open("repo")?,
         };
 
-        let merge = repo.merge("master", "other");
+        let _merge = repo.merge("master", "other", "gill", "gill@test.org");
 
         assert_that!(repo.inner.is_bare()).is_true();
         println!("{:?}", repo.list_commits());
@@ -104,10 +168,9 @@ mod test {
             inner: git_repository::open("repo")?,
         };
 
-        let merge = repo.rebase("master", "other");
+        let _merge = repo.rebase("master", "other", "gill", "gill@test.org");
 
         assert_that!(repo.inner.is_bare()).is_true();
-        println!("{:?}", repo.list_commits());
         assert_that!(repo.list_commits()).is_ok().has_length(2);
 
         Ok(())

@@ -287,7 +287,7 @@ fn extract_line_start_and_nth(line_info: &str) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
-    use gill_git::repository::diff::Diff;
+    use gill_git::diff::Diff;
 
     #[test]
     fn diff2html() {

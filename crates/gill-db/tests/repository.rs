@@ -34,6 +34,7 @@ async fn should_get_repository_by_namespace(db: PgPool) {
         domain: "".to_string(),
         summary: None,
         is_local: false,
+        item_count: 0,
     });
 }
 
@@ -142,6 +143,7 @@ mod fixtures {
             domain: "instance.org".to_string(),
             summary: None,
             is_local: false,
+            item_count: 0,
         }
     }
 
@@ -168,6 +170,7 @@ mod fixtures {
             domain: "instance.org".to_string(),
             summary: None,
             is_local: false,
+            item_count: 0,
         }
     }
 

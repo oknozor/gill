@@ -13,6 +13,7 @@ use gill_db::repository::Repository;
 use serde::Deserialize;
 
 use gill_db::repository::pull_request::{PullRequest, PullRequestComment};
+use gill_git::GitRepository;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -162,17 +163,95 @@ pub async fn rebase(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
-) -> Result<(), AppError> {
-    let Some(_) = get_connected_user(&db, user).await else {
+) -> Result<Redirect, AppError> {
+    let Some(user) = get_connected_user(&db, user).await else {
         return Err(AppError::Unauthorized);
     };
 
-    Repository::by_namespace(&owner, &repository, &db)
-        .await?
+    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
+
+    if repository_entity.attributed_to != user.activity_pub_id {
+        return Err(AppError::Unauthorized);
+    };
+
+    let pull_request = repository_entity
+        .get_pull_request(pull_request_number, &db)
+        .await?;
+
+    let git_repository = GitRepository::open(&owner, &repository)?;
+
+    git_repository.rebase(
+        &pull_request.base,
+        &pull_request.compare,
+        &user.username,
+        user.email.as_ref().unwrap(),
+    )?;
+
+    pull_request.close(&db).await?;
+
+    Ok(Redirect::to(&format!(
+        "/{owner}/{repository}/pulls/{pull_request_number}"
+    )))
+}
+
+pub async fn merge(
+    user: Option<Oauth2User>,
+    Extension(db): Extension<PgPool>,
+    Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
+) -> Result<Redirect, AppError> {
+    let Some(user) = get_connected_user(&db, user).await else {
+        return Err(AppError::Unauthorized);
+    };
+
+    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
+
+    if repository_entity.attributed_to != user.activity_pub_id {
+        return Err(AppError::Unauthorized);
+    };
+
+    let pull_request = repository_entity
+        .get_pull_request(pull_request_number, &db)
+        .await?;
+
+    let git_repository = GitRepository::open(&owner, &repository)?;
+
+    // TODO: make email mandatory
+    git_repository.merge(
+        &pull_request.base,
+        &pull_request.compare,
+        &user.username,
+        user.email.as_ref().unwrap(),
+    )?;
+
+    pull_request.close(&db).await?;
+
+    Ok(Redirect::to(&format!(
+        "/{owner}/{repository}/pulls/{pull_request_number}"
+    )))
+}
+
+pub async fn close(
+    user: Option<Oauth2User>,
+    Extension(db): Extension<PgPool>,
+    Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
+) -> Result<Redirect, AppError> {
+    let Some(user) = get_connected_user(&db, user).await else {
+        return Err(AppError::Unauthorized);
+    };
+
+    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
+
+    if repository_entity.attributed_to != user.activity_pub_id {
+        return Err(AppError::Unauthorized);
+    };
+
+    repository_entity
         .get_pull_request(pull_request_number, &db)
         .await?
         .close(&db)
         .await?;
 
-    Ok(())
+    Ok(Redirect::to(&format!(
+        "/{owner}/{repository}/pulls/{pull_request_number}"
+    )))
 }
