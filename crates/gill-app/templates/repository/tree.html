@@ -7,22 +7,36 @@
 {% include "header.html" %}
 {% include "branch.html" %}
 <div class="flex flex-col space-around gap-5">
-    <ul class="rounded-md border border-slate-200 divide-y divide-slate-200">
-        {% for dir in tree.trees %}
-        <li class="px-6 py-4">
-            <i class="text-xl ti ti-folder"></i>
-            <a id="{{dir}}">{{dir}}</a>
-        </li>
-        <script>generateTreeLink("{{dir}}", "tree", "{{current_branch}}");</script>
-        {% endfor %}
-        {% for blob in tree.blobs %}
-        <li class="px-6 py-4">
-            <i class="text-xl ti ti-file-code"></i>
-            <a id="{{blob}}">{{blob}}</a>
-            <script>generateTreeLink("{{blob}}", "blob", "{{current_branch}}"); </script>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="rounded-md border-t border-x border-slate-200">
+        <table class="w-full border-collapse">
+            <tbody>
+            {% for dir in tree.trees %}
+            <tr class="border-b border-slate-200">
+                <td class="px-6 py-4 border-b border-slate-200">
+                    <i class="text-xl ti ti-folder"></i>
+                    <a id="{{dir.filename}}">{{dir.filename}}</a>
+                </td>
+                <td class="border-b border-slate-200">
+                    <a>{{dir.commit_summary}}</a>
+                </td>
+                <script>generateTreeLink("{{dir.filename}}", "tree", "{{current_branch}}");</script>
+            </tr>
+            {% endfor %}
+            {% for blob in tree.blobs %}
+            <tr>
+                <td class="px-6 py-4 border-b border-slate-200">
+                    <i class="text-xl ti ti-file-code"></i>
+                    <a id="{{blob.filename}}">{{blob.filename}}</a>
+                </td>
+                <td class="border-b border-slate-200">
+                    <a>{{blob.commit_summary}}</a>
+                </td>
+                <script>generateTreeLink("{{blob.filename}}", "blob", "{{current_branch}}"); </script>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {%- match readme -%}
     {%- when Some with (readme) -%}
     <div class="rounded-md border border-slate-200 prose prose-stone max-w-none py-3 px-5">

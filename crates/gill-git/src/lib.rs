@@ -1,4 +1,4 @@
-use git_repository::{Repository, Tree};
+use git_repository::{Commit, Id, Repository, Tree};
 use std::io::Write;
 use std::path::PathBuf;
 use std::{fs, io};
@@ -50,7 +50,7 @@ impl GitRepository {
     }
 }
 
-pub fn ref_to_tree<'repo>(
+pub(crate) fn ref_to_tree<'repo>(
     reference: Option<&str>,
     repo: &'repo Repository,
 ) -> anyhow::Result<Tree<'repo>> {
@@ -63,6 +63,13 @@ pub fn ref_to_tree<'repo>(
             .tree()?,
         None => repo.head()?.peel_to_commit_in_place()?.tree()?,
     })
+}
+
+pub(crate) fn id_to_commit<'a>(id: &'a Id) -> anyhow::Result<Commit<'a>> {
+    let object = id.try_object()?;
+    let object = object.expect("empty");
+    let commit = object.try_into_commit()?;
+    Ok(commit)
 }
 
 #[cfg(test)]

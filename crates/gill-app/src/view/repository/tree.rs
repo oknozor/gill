@@ -7,7 +7,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::user::User;
-use gill_git::traversal::TreeMap;
+use gill_git::traversal::{BlobInfo, TreeEntry, TreeInfo};
 
 use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
@@ -16,16 +16,53 @@ use sqlx::PgPool;
 #[derive(Debug)]
 struct TreeDto {
     pub filename: String,
-    pub blobs: Vec<String>,
-    pub trees: Vec<String>,
+    pub blobs: Vec<BlobDto>,
+    pub trees: Vec<TreeEntryDto>,
 }
 
-impl From<TreeMap> for TreeDto {
-    fn from(tree: TreeMap) -> Self {
-        let mut trees: Vec<String> = tree.trees.into_values().map(|tree| tree.filename).collect();
-        trees.sort();
-        let mut blobs: Vec<String> = tree.blobs.into_iter().map(|blob| blob.filename).collect();
-        blobs.sort();
+#[derive(Debug)]
+struct BlobDto {
+    filename: String,
+    commit_summary: String,
+    commit_sha: String,
+}
+
+#[derive(Debug)]
+struct TreeEntryDto {
+    filename: String,
+    commit_summary: String,
+    commit_sha: String,
+}
+
+impl From<BlobInfo> for BlobDto {
+    fn from(blob: BlobInfo) -> Self {
+        BlobDto {
+            filename: blob.filename,
+            commit_summary: blob.commit.summary,
+            commit_sha: blob.commit.id,
+        }
+    }
+}
+
+impl From<TreeInfo> for TreeEntryDto {
+    fn from(entry: TreeInfo) -> Self {
+        TreeEntryDto {
+            filename: entry.name,
+            commit_summary: entry.commit.summary,
+            commit_sha: entry.commit.id,
+        }
+    }
+}
+
+impl From<TreeEntry> for TreeDto {
+    fn from(tree: TreeEntry) -> Self {
+        let mut trees: Vec<_> = tree.trees.into_iter().map(TreeEntryDto::from).collect();
+
+        trees.sort_by(|a, b| a.filename.cmp(&b.filename));
+
+        let mut blobs: Vec<BlobDto> = tree.blobs.into_iter().map(BlobDto::from).collect();
+
+        blobs.sort_by(|a, b| a.filename.cmp(&b.filename));
 
         Self {
             filename: tree.filename,
@@ -115,7 +152,7 @@ mod imp {
     use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;
 
-    use gill_git::traversal::TreeMap;
+    use gill_git::traversal::TreeEntry;
     use gill_git::GitRepository;
     use sqlx::PgPool;
 
@@ -191,7 +228,7 @@ mod imp {
     }
 
     pub fn get_readme(
-        tree: &TreeMap,
+        tree: &TreeEntry,
         repo: &GitRepository,
         owner: &str,
         repository_name: &str,

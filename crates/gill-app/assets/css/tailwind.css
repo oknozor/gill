@@ -2516,6 +2516,12 @@ select {
   border-collapse: collapse;
 }
 
+.border-spacing-2 {
+  --tw-border-spacing-x: 0.5rem;
+  --tw-border-spacing-y: 0.5rem;
+  border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
+}
+
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
@@ -2644,6 +2650,10 @@ select {
   align-self: flex-end;
 }
 
+.self-center {
+  align-self: center;
+}
+
 .justify-self-end {
   justify-self: end;
 }
@@ -2678,6 +2688,16 @@ select {
   border-width: 2px;
 }
 
+.border-y {
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+}
+
+.border-x {
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+
 .border-b-2 {
   border-bottom-width: 2px;
 }
@@ -2688,6 +2708,14 @@ select {
 
 .border-l-4 {
   border-left-width: 4px;
+}
+
+.border-b {
+  border-bottom-width: 1px;
+}
+
+.border-t {
+  border-top-width: 1px;
 }
 
 .border-slate-300 {
