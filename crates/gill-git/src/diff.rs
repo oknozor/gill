@@ -98,8 +98,6 @@ impl GitRepository {
                 let location = changes.location.to_str().expect("bstr to str");
 
                 match changes.event {
-                    // TODO: get modification mix and match then convert to htlm with modification line
-                    //  marked. We probably want to take a look at git delta to do this (they use syntect too)
                     Event::Modification {
                         previous_entry_mode,
                         previous_id,
@@ -111,8 +109,6 @@ impl GitRepository {
                         | (EntryMode::BlobExecutable, EntryMode::Blob)
                         | (EntryMode::BlobExecutable, EntryMode::BlobExecutable) => {
                             let object = repository.find_object(previous_id)?;
-                            // Todo: Any chance we could avoid allocation here ?
-                            //      Maybe we need to collect all git objects in a upper structure and handle the writing there ?
                             let data = object.detach().data;
                             let previous_content = String::from_utf8(data).ok();
                             let object = repository.find_object(id)?;
