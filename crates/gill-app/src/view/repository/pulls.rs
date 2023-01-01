@@ -9,11 +9,10 @@ use askama::Template;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::{Extension, Form};
+use gill_db::repository::pull_request::{PullRequest, PullRequestComment, PullRequestState};
 use gill_db::repository::Repository;
-use serde::Deserialize;
-
-use gill_db::repository::pull_request::{PullRequest, PullRequestComment};
 use gill_git::GitRepository;
+use serde::Deserialize;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -187,7 +186,7 @@ pub async fn rebase(
         user.email.as_ref().unwrap(),
     )?;
 
-    pull_request.close(&db).await?;
+    pull_request.merged(&db).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/pulls/{pull_request_number}"
@@ -223,7 +222,7 @@ pub async fn merge(
         user.email.as_ref().unwrap(),
     )?;
 
-    pull_request.close(&db).await?;
+    pull_request.merged(&db).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/pulls/{pull_request_number}"

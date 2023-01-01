@@ -33,13 +33,13 @@
     <h3 class="text-4xl">{{pull_request.title}} <span class="text-scale-600">#{{pull_request.number}}</span></h3>
     <div class="flex flex-row items-center">
         {%- match pull_request.state -%}
-        {%- when Open -%}
+        {%- when PullRequestState::Open -%}
         <div class="flex justify-center p-2 max-w-md rounded-lg bg-sky-400 gap-2">
             <i class="ti ti-git-pull-request"></i>
             <span>Open</span>
         </div>
 
-        {%- when Closed -%}
+        {%- when PullRequestState::OpenClosed -%}
         <div class="flex justify-center p-2 max-w-md rounded-lg bg-red-400  gap-2">
             <i class="ti ti-git-pull-request-closed"></i>
             <span>Closed</span>

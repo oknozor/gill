@@ -188,4 +188,20 @@ impl PullRequest {
 
         Ok(())
     }
+
+    pub async fn merged(&self, db: &PgPool) -> sqlx::Result<()> {
+        sqlx::query!(
+            // language=PostgreSQL
+            r#"
+           UPDATE pull_request SET state = 'Merged'
+            WHERE pull_request.number = $1 AND repository_id = $2;
+           "#,
+            self.number,
+            self.repository_id
+        )
+        .execute(db)
+        .await?;
+
+        Ok(())
+    }
 }
