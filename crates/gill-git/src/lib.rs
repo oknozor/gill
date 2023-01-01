@@ -38,6 +38,16 @@ impl GitRepository {
             inner: git_repository::open(path)?,
         })
     }
+
+    pub(crate) fn path(&self) -> PathBuf {
+        if self.inner.is_bare() {
+            self.inner.path().to_path_buf()
+        } else {
+            let mut path = self.inner.path().to_path_buf();
+            path.pop();
+            path
+        }
+    }
 }
 
 pub fn ref_to_tree<'repo>(
@@ -53,4 +63,37 @@ pub fn ref_to_tree<'repo>(
             .tree()?,
         None => repo.head()?.peel_to_commit_in_place()?.tree()?,
     })
+}
+
+#[cfg(test)]
+mod test {
+    use crate::GitRepository;
+    use cmd_lib::run_cmd;
+    use sealed_test::prelude::*;
+    use speculoos::prelude::*;
+    use std::path::PathBuf;
+
+    #[sealed_test]
+    fn should_get_repository_path() -> anyhow::Result<()> {
+        run_cmd!(git init repo;)?;
+
+        let repository = GitRepository {
+            inner: git_repository::open("repo")?,
+        };
+
+        assert_that!(repository.path()).is_equal_to(&PathBuf::from("repo"));
+        Ok(())
+    }
+
+    #[sealed_test]
+    fn should_get_bare_repository_path() -> anyhow::Result<()> {
+        run_cmd!(git init --bare repo;)?;
+
+        let repository = GitRepository {
+            inner: git_repository::open("repo")?,
+        };
+
+        assert_that!(repository.path()).is_equal_to(&PathBuf::from("repo"));
+        Ok(())
+    }
 }

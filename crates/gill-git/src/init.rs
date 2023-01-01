@@ -1,44 +1,21 @@
-use crate::REPO_DIR;
+use crate::{GitRepository, REPO_DIR};
 use git_repository::Repository;
 use std::fs;
 use std::path::PathBuf;
 
-pub fn init_bare(namespace: &str, name: &str) -> anyhow::Result<Repository> {
+pub fn init_bare(namespace: &str, name: &str) -> anyhow::Result<GitRepository> {
     let path = PathBuf::from(REPO_DIR).join(namespace);
 
     if !path.exists() {
         fs::create_dir(&path).expect("Failed to create dir");
     }
 
-    imp::init_bare(path, name)
+    GitRepository::init_bare(path, name)
 }
 
-pub fn list_branch(namespace: &str, name: &str) -> anyhow::Result<Vec<String>> {
-    let name = format!("{name}.git");
-    let path = PathBuf::from(REPO_DIR).join(namespace).join(name);
-    imp::list_branches(path)
-}
-
-mod imp {
-
-    use git_repository::Repository;
-    use std::path::PathBuf;
-
-    pub fn init_bare(base: PathBuf, name: &str) -> anyhow::Result<Repository> {
-        let path = base.join(format!("{name}.git"));
-        tracing::debug!("Initializing repository {:?}", path);
-        let repository = git_repository::init_bare(path)?;
-        let hook_path = repository.path().join("hooks");
-        std::os::unix::fs::symlink(
-            "/home/git/hooks/post-receive",
-            hook_path.join("post-receive"),
-        )?;
-        Ok(repository)
-    }
-
-    pub fn list_branches(path: PathBuf) -> anyhow::Result<Vec<String>> {
-        let repo = git_repository::open(path)?;
-        let refs = repo.references()?;
+impl GitRepository {
+    pub fn list_branches(&self) -> anyhow::Result<Vec<String>> {
+        let refs = self.inner.references()?;
         let mut branches = vec![];
         for branch in refs.local_branches()? {
             let branch = branch.map(|branch| branch.name().shorten().to_string());
@@ -50,11 +27,32 @@ mod imp {
 
         Ok(branches)
     }
+}
+
+mod imp {
+    use crate::GitRepository;
+    use git_repository::Repository;
+    use std::path::PathBuf;
+
+    impl GitRepository {
+        pub fn init_bare(base: PathBuf, name: &str) -> anyhow::Result<GitRepository> {
+            let path = base.join(format!("{name}.git"));
+            tracing::debug!("Initializing repository {:?}", path);
+            let repository = git_repository::init_bare(path)?;
+            let hook_path = repository.path().join("hooks");
+            std::os::unix::fs::symlink(
+                "/home/git/hooks/post-receive",
+                hook_path.join("post-receive"),
+            )?;
+
+            Ok(GitRepository { inner: repository })
+        }
+    }
 
     #[cfg(test)]
     mod test {
-        use super::init_bare;
-        use crate::repository::init::imp::list_branches;
+        use crate::GitRepository;
+        use cmd_lib::{init_builtin_logger, run_cmd};
         use sealed_test::prelude::*;
         use speculoos::prelude::*;
         use std::env;
@@ -62,22 +60,31 @@ mod imp {
 
         #[sealed_test]
         fn should_init_bare() -> anyhow::Result<()> {
-            let repository = init_bare(PathBuf::from("."), "repo")?;
-            assert_that!(repository.path().to_string_lossy()).ends_with("repo.git");
+            let repository = GitRepository::init_bare(PathBuf::from("."), "repo")?;
+            assert_that!(repository.inner.path().to_string_lossy()).ends_with("repo.git");
             Ok(())
         }
 
-        #[test]
+        #[sealed_test]
         fn should_list_branches() -> anyhow::Result<()> {
-            let current = env::var("CARGO_MANIFEST_DIR")?;
-            let mut current = PathBuf::from(current);
-            // FIXME: we need some test suite tools like in cocogitto
-            current.pop();
-            current.pop();
-            let branches = list_branches(current);
-            assert_that!(branches)
-                .is_ok()
-                .contains_all_of(&[&"main".to_string(), &"feat-test".to_string()]);
+            run_cmd!(
+                git init;
+                git commit --allow-empty -m "First commit";
+                git checkout -b A;
+                git checkout -b B;
+
+            )?;
+
+            let repo = GitRepository {
+                inner: git_repository::open(".")?,
+            };
+            let branches = repo.list_branches();
+
+            assert_that!(branches).is_ok().contains_all_of(&[
+                &"master".to_string(),
+                &"A".to_string(),
+                &"B".to_string(),
+            ]);
 
             Ok(())
         }
