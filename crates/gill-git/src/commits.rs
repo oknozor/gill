@@ -22,10 +22,10 @@ pub struct OwnedCommit {
     pub authored_at: u32,
 }
 
-impl TryFrom<Commit<'_>> for OwnedCommit {
+impl TryFrom<&Commit<'_>> for OwnedCommit {
     type Error = anyhow::Error;
 
-    fn try_from(commit: Commit<'_>) -> Result<Self, Self::Error> {
+    fn try_from(commit: &Commit<'_>) -> Result<Self, Self::Error> {
         let message_ref = commit.message()?;
         let id = commit.id.to_string();
         let summary = message_ref.summary().to_string();
@@ -58,7 +58,7 @@ mod imp {
         pub fn find_commit(&self, sha: &str) -> Result<OwnedCommit> {
             let object_id = ObjectId::from_hex(sha.as_bytes())?;
             let commit = self.inner.find_object(object_id)?.try_into_commit()?;
-            OwnedCommit::try_from(commit)
+            OwnedCommit::try_from(&commit)
         }
 
         pub fn list_commits(&self) -> Result<Vec<OwnedCommit>> {
@@ -66,7 +66,7 @@ mod imp {
             let mut commits = vec![];
             for commit in head.ancestors().all()? {
                 let commit = commit?.object()?.try_into_commit()?;
-                let commit = OwnedCommit::try_from(commit)?;
+                let commit = OwnedCommit::try_from(&commit)?;
                 commits.push(commit);
             }
 
