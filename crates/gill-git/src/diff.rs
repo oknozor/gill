@@ -194,16 +194,39 @@ impl GitRepository {
 
 #[cfg(test)]
 mod test {
-    use crate::repository::GitRepository;
+    use crate::GitRepository;
     use anyhow::Result;
+    use cmd_lib::{init_builtin_logger, run_cmd};
+    use sealed_test::prelude::*;
+    use speculoos::prelude::*;
+    use std::fs;
 
-    #[test]
-    fn test() -> Result<()> {
+    #[sealed_test]
+    fn should_get_diff() -> Result<()> {
+        // Arrange
+        run_cmd!(git init;)?;
+        fs::write("file", "changes")?;
+        run_cmd!(
+            git add .;
+            git commit -m "first commit";
+            git checkout -b other;
+        )?;
+        fs::write("file2", "changes")?;
+        run_cmd!(
+            git add .;
+            git commit -m "second commit";
+        )?;
+
         let repo = GitRepository {
-            inner: git_repository::discover(".")?,
+            inner: git_repository::open(".")?,
         };
 
-        let _diffs = repo.diff("main", "testdiff").unwrap();
+        // Act
+        let diffs = repo.diff("master", "other");
+
+        // Assert
+        assert_that!(diffs).is_ok().has_length(1);
+
         Ok(())
     }
 }

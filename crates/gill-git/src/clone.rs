@@ -1,15 +1,28 @@
 use crate::GitRepository;
 use git_repository::clone::PrepareFetch;
 use git_repository::progress::Discard;
-use git_repository::remote::fetch::Status;
-use git_repository::{create, interrupt, open, remote, worktree};
+use git_repository::{create, interrupt, open, worktree};
 
 impl GitRepository {
-    fn clone(&self) -> anyhow::Result<()> {
+    pub(crate) fn get_or_create_non_bare(&self) -> anyhow::Result<GitRepository> {
+        // If the non bare copy already exist, returns it early
+        if self.has_non_bare_clone() {
+            let mut path = self.path();
+            path.pop();
+            let path = path.join("non-bare-copy");
+            let non_bare = GitRepository {
+                inner: git_repository::open(path)?,
+            };
+
+            return Ok(non_bare);
+        };
+
+        // else we create the non bare repo
         let repository_path = self.inner.path();
         let mut dest = self.inner.path().to_path_buf();
         dest.pop();
         let dest = dest.join("non-bare-copy");
+        let dest_copy = dest.clone();
         let mut prepare = PrepareFetch::new(
             repository_path,
             dest,
@@ -21,44 +34,81 @@ impl GitRepository {
                 opts
             },
         )?;
-        let (mut checkout, fetch_outcome) =
-            prepare.fetch_then_checkout(Discard, &interrupt::IS_INTERRUPTED)?;
+        let (mut checkout, _) = prepare.fetch_then_checkout(Discard, &interrupt::IS_INTERRUPTED)?;
 
-        let (repo, outcome) = checkout.main_worktree(Discard, &interrupt::IS_INTERRUPTED)?;
-
-        match fetch_outcome.status {
-            Status::NoPackReceived { .. } => {
-                unreachable!("clone always has changes")
-            }
-            Status::DryRun { .. } => unreachable!("dry-run unsupported"),
-            Status::Change { update_refs, .. } => {
-                let remote = repo
-                    .find_default_remote(remote::Direction::Fetch)
-                    .expect("one origin remote")?;
-                let ref_specs = remote.refspecs(remote::Direction::Fetch);
-            }
-        };
+        let (_, outcome) = checkout.main_worktree(Discard, &interrupt::IS_INTERRUPTED)?;
 
         if let worktree::index::checkout::Outcome {
             collisions, errors, ..
         } = outcome
         {
             if !(collisions.is_empty() && errors.is_empty()) {
-                let mut messages = Vec::new();
                 if !errors.is_empty() {
-                    messages.push(format!("kept going through {} errors(s)", errors.len()));
                     for record in errors {
                         eprintln!("{}: {}", record.path, record.error);
                     }
                 }
                 if !collisions.is_empty() {
-                    messages.push(format!("encountered {} collision(s)", collisions.len()));
                     for col in collisions {
                         eprintln!("{}: collision ({:?})", col.path, col.error_kind);
                     }
                 }
             }
         }
+
+        Ok(GitRepository {
+            inner: git_repository::open(dest_copy)?,
+        })
+    }
+
+    pub(crate) fn has_non_bare_clone(&self) -> bool {
+        let mut path = self.inner.path().to_path_buf();
+        path.pop();
+        path.join("non-bare-copy").exists()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::GitRepository;
+    use cmd_lib::run_cmd;
+    use sealed_test::prelude::*;
+    use speculoos::prelude::*;
+    use std::fs;
+    use std::path::PathBuf;
+
+    #[sealed_test]
+    fn non_bare_copy() -> anyhow::Result<()> {
+        // Arrange
+        run_cmd!(
+            git init --bare repository;
+            git init base_repository;
+            cd base_repository;
+        )?;
+
+        fs::write("base_repository/files", "changes")?;
+
+        run_cmd!(
+            cd base_repository;
+            git add .;
+            git commit -m "first commit";
+            git remote add bare ../repository;
+            git push -u bare master;
+            cd ..;
+        )?;
+
+        let repository = GitRepository {
+            inner: git_repository::open("repository")?,
+        };
+
+        // Act
+        let non_bare = repository.get_or_create_non_bare()?;
+
+        // Assert
+        let commits = non_bare.list_commits()?;
+        assert_that!(non_bare.path()).is_equal_to(&PathBuf::from("non-bare-copy"));
+        assert_that!(repository.has_non_bare_clone()).is_true();
+        assert_that!(commits).has_length(1);
 
         Ok(())
     }

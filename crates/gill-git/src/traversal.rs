@@ -235,8 +235,8 @@ mod imp {
 
 #[cfg(test)]
 mod test {
-    use crate::repository::traversal::BlobInfo;
-    use crate::repository::GitRepository;
+    use crate::traversal::BlobInfo;
+    use crate::GitRepository;
     use speculoos::prelude::*;
 
     #[test]

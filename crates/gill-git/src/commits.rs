@@ -1,19 +1,15 @@
-use crate::REPO_DIR;
+use crate::GitRepository;
 use git_repository::Commit;
 use std::path::PathBuf;
 
-pub fn by_sha<'a>(namespace: &'a str, name: &'a str, sha: &'a str) -> anyhow::Result<OwnedCommit> {
-    let path = PathBuf::from(REPO_DIR).join(namespace).join(name);
-    let repo = git_repository::open(path)?;
-    imp::find_commit(&repo, sha)
-}
+impl GitRepository {
+    pub fn by_sha(&self, sha: &str) -> anyhow::Result<OwnedCommit> {
+        self.find_commit(sha)
+    }
 
-pub fn history<'a>(namespace: &'a str, name: &'a str) -> anyhow::Result<Vec<OwnedCommit>> {
-    let path = PathBuf::from(REPO_DIR)
-        .join(namespace)
-        .join(format!("{name}.git"));
-    let repo = git_repository::open(path)?;
-    imp::list_commits(&repo)
+    pub fn history(&self) -> anyhow::Result<Vec<OwnedCommit>> {
+        self.list_commits()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -55,51 +51,92 @@ impl TryFrom<Commit<'_>> for OwnedCommit {
 
 mod imp {
     use crate::commits::OwnedCommit;
+    use crate::GitRepository;
     use anyhow::Result;
     use git_repository::{ObjectId, Repository};
 
-    pub fn find_commit(repo: &Repository, sha: &str) -> Result<OwnedCommit> {
-        let object_id = ObjectId::from_hex(sha.as_bytes())?;
-        let commit = repo.find_object(object_id)?.try_into_commit()?;
-        OwnedCommit::try_from(commit)
-    }
-
-    pub fn list_commits(repo: &Repository) -> Result<Vec<OwnedCommit>> {
-        let head = repo.head_commit()?;
-        let mut commits = vec![];
-        for commit in head.ancestors().all()? {
-            let commit = commit?.object()?.try_into_commit()?;
-            let commit = OwnedCommit::try_from(commit)?;
-            commits.push(commit);
+    impl GitRepository {
+        pub fn find_commit(&self, sha: &str) -> Result<OwnedCommit> {
+            let object_id = ObjectId::from_hex(sha.as_bytes())?;
+            let commit = self.inner.find_object(object_id)?.try_into_commit()?;
+            OwnedCommit::try_from(commit)
         }
 
-        Ok(commits)
+        pub fn list_commits(&self) -> Result<Vec<OwnedCommit>> {
+            let head = self.inner.head_commit()?;
+            let mut commits = vec![];
+            for commit in head.ancestors().all()? {
+                let commit = commit?.object()?.try_into_commit()?;
+                let commit = OwnedCommit::try_from(commit)?;
+                commits.push(commit);
+            }
+
+            Ok(commits)
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::commits::imp::{find_commit, list_commits};
+    use crate::commits::OwnedCommit;
+    use crate::GitRepository;
+    use anyhow::anyhow;
+    use cmd_lib::{run_cmd, run_fun};
+    use sealed_test::prelude::*;
+    use speculoos::prelude::*;
 
-    #[test]
-    // TODO: Make some actual assertion here
-    //  need sealed test to setup a fake repository
+    // Helper function to create a commit and get its sha1
+    fn git_commit(message: &str) -> anyhow::Result<String> {
+        run_fun!(
+            git commit --allow-empty -q -m $message;
+            git log --format=%H -n 1;
+        )
+        .map_err(|e| anyhow!(e))
+    }
+
+    #[sealed_test]
     fn list_repository_commits() -> anyhow::Result<()> {
-        let repo = git_repository::open("/home/okno/Code/gill")?;
-        let commits = list_commits(&repo)?;
-        for x in commits {
-            println!("{x:#?}");
-        }
+        // Arrange
+        run_cmd!(
+            git init;
+            git commit --allow-empty -m "one";
+            git commit --allow-empty -m "two";
+            git commit --allow-empty -m "three";
+        )?;
+
+        let repo = GitRepository {
+            inner: git_repository::open(".")?,
+        };
+
+        // Act
+        let commits = repo.list_commits()?;
+
+        // Assert
+        assert_that!(commits).has_length(3);
         Ok(())
     }
 
-    #[test]
-    // TODO: Make some actual assertion here
-    //  need sealed test to setup a fake repository
+    #[sealed_test]
     fn find_commit_ok() -> anyhow::Result<()> {
-        let repo = git_repository::open("/home/okno/Code/gill")?;
-        let commit = find_commit(&repo, "4dfecc6603e9332279a83f045b7afbd4c6f5816e");
-        assert!(commit.is_ok());
+        // Arrange
+        run_cmd!(git init;)?;
+        git_commit("one")?;
+        let sha1 = git_commit("two")?;
+        git_commit("three")?;
+
+        let repo = GitRepository {
+            inner: git_repository::open(".")?,
+        };
+
+        // Act
+        let commit = repo.find_commit(&sha1);
+
+        // Assert
+        assert_that!(commit)
+            .is_ok()
+            .map(|commit: &OwnedCommit| &commit.summary)
+            .is_equal_to(&"two".to_string());
+
         Ok(())
     }
 }
