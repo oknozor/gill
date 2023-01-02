@@ -144,10 +144,10 @@ pub async fn root(
 mod imp {
     use super::GitTreeTemplate;
     use crate::error::AppError;
-    use crate::view::repository::tree::{BranchDto, TreeDto};
+    use crate::view::repository::tree::{TreeDto};
     use crate::view::HtmlTemplate;
 
-    use gill_db::user::User;
+    
 
     use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;
@@ -167,20 +167,7 @@ mod imp {
         let tree = repo.get_tree_for_path(Some(&current_branch), None)?;
         let readme = get_readme(&tree, &repo, owner, repository);
         let tree = TreeDto::from(tree);
-        let user = User::by_user_name(owner, db).await?;
-        let repo = user.get_local_repository_by_name(repository, db).await?;
-        let branches = repo.list_branches(20, 0, db).await?;
-        let branches = branches
-            .into_iter()
-            .map(|branch| {
-                let is_current = branch.name == current_branch;
-                BranchDto {
-                    name: branch.name,
-                    is_default: branch.is_default,
-                    is_current,
-                }
-            })
-            .collect();
+        let branches = get_repository_branches(owner, repository, &current_branch, db).await?;
 
         let stats = RepositoryStats::get(owner, repository, db).await?;
 
