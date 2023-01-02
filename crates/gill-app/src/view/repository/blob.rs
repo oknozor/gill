@@ -1,6 +1,6 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
-use crate::view::repository::{get_repository_branches, BranchDto};
+use crate::view::repository::{get_repository_branches, tree_and_blob_from_query, BranchDto};
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::Path;
@@ -54,16 +54,7 @@ pub async fn blob(
 ) -> Result<HtmlTemplate<GitBLobTemplate>, AppError> {
     let connected_username = get_connected_user_username(&db, user).await;
     let path = path.last().unwrap();
-    let (tree, blob_name) = match path.rsplit_once('/') {
-        None => (None, path.as_str()),
-        Some((tree, blob_name)) => {
-            if !tree.is_empty() {
-                (Some(tree), blob_name)
-            } else {
-                (None, blob_name)
-            }
-        }
-    };
+    let (tree, blob_name) = tree_and_blob_from_query(path);
 
     let repo = GitRepository::open(&owner, &repository)?;
     let tree = repo.get_tree_for_path(Some(&current_branch), tree)?;

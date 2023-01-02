@@ -1,4 +1,5 @@
 use crate::error::AppError;
+use crate::view::repository::tree_and_blob_from_query;
 use axum::extract::Path;
 use axum::Extension;
 use gill_db::repository::Repository;
@@ -12,16 +13,7 @@ pub async fn image(
     Extension(db): Extension<PgPool>,
 ) -> Result<Vec<u8>, AppError> {
     let path = path.last().unwrap();
-    let (tree, blob_name) = match path.rsplit_once('/') {
-        None => (None, path.as_str()),
-        Some((tree, blob_name)) => {
-            if !tree.is_empty() {
-                (Some(tree), blob_name)
-            } else {
-                (None, blob_name)
-            }
-        }
-    };
+    let (tree, blob_name) = tree_and_blob_from_query(path);
     let repo = GitRepository::open(&owner, &repository)?;
     let repo_entity = Repository::by_namespace(&owner, &repository, &db).await?;
     let branch = repo_entity

@@ -82,6 +82,19 @@ async fn get_repository_branches(
     Ok(branches)
 }
 
+pub fn tree_and_blob_from_query(path: &String) -> (Option<&str>, &str) {
+    match path.rsplit_once('/') {
+        None => (None, path.as_str()),
+        Some((tree, blob_name)) => {
+            if !tree.is_empty() {
+                (Some(tree), blob_name)
+            } else {
+                (None, blob_name)
+            }
+        }
+    }
+}
+
 impl fmt::Display for BranchDto {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         writeln!(f, "{self:?}")
