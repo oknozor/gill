@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-{% include "header.html" %}
+{% include "../header.html" %}
 
 <script>
     let base = '{{current_branch}}';
@@ -61,7 +61,7 @@
         let diffContainer = document.getElementById("diff");
 
         let button = document.getElementById("create-pull-request-button");
-        if (base === compare) {
+        if (base === compare || diffContainer.innerHTML.length === 0) {
             disableButton(button);
             diffContainer.innerHTML = `<span>Nothing to compare</span>`
         } else {
@@ -81,7 +81,7 @@
 
     const dropDownBranches = (dropDownId) => {
         let branchesMenu = document.getElementById(dropDownId)
-        branchesMenu.classList.remove("invisible");
+        branchesMenu.classList.remove("hidden");
         branchesMenu.classList.replace("opacity-0", "opacity-100");
     }
 
@@ -124,10 +124,9 @@
                     <p id="button-base-value" class="truncate ...">{{current_branch}}</p>
                     <i class="font-medium text-sm ti ti-arrow-down pl-1 pr-2"></i>
                 </button>
-                <div id="base-dropdown" class="
-           bg-zinc-200
-           absolute -bottom-32 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
-           transform transition-all duration-150 ease-out opacity-0">
+                <div id="base-dropdown" class="shadow-md bg-zinc-200
+                    absolute -bottom-44 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 hidden
+                    transform transition-all duration-150 ease-out opacity-0">
                     <div class="flex flex-col divide-y divide-slate-300 text-sm">
                         <div class="flex flex-row justify-between items-center p-3">
                             <span class="text-md pr-8">Switch branches</span>
@@ -169,10 +168,9 @@
                     <p id="button-compare-value" class="truncate ...">{{current_branch}}</p>
                     <i class="font-medium text-sm ti ti-arrow-down pl-1 pr-2"></i>
                 </button>
-                <div id="compare-dropdown" class="
-           bg-zinc-200
-           absolute absolute -bottom-32 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
-           transform transition-all duration-150 ease-out opacity-0">
+                <div id="compare-dropdown" class="shadow-md bg-zinc-200
+                        absolute absolute -bottom-44 left-0 z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 hidden
+                        transform transition-all duration-150 ease-out opacity-0">
                     <div class="flex flex-col divide-y divide-slate-300 text-sm">
                         <div class="flex flex-row justify-between items-center p-3">
                             <span class="text-md pr-8">Switch branches</span>

@@ -6,4 +6,6 @@ async function run() {
     window.dispatchEvent(new CustomEvent("WasmLoaded", {}));
 }
 
-run().catch(err => console.error("failed to init wasm module: " + err));
+run()
+    .then(() => "Wasm loaded event")
+    .catch(err => console.error("failed to init wasm module: " + err));
