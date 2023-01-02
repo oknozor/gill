@@ -10,31 +10,16 @@ use std::fmt::Formatter;
 pub mod activity;
 pub mod blob;
 pub mod commits;
-pub mod compare;
 pub mod diff;
 pub mod issues;
-pub mod pulls;
+pub mod pull_request;
 pub mod tree;
 pub mod user_content;
 
 pub fn routes() -> Router<AppState> {
-    Router::new()
+    let router = Router::new()
         .route("/:owner/:repository", get(tree::root))
         .route("/:owner/:repository/issues", get(issues::issues))
-        .route("/:owner/:repository/pulls", get(pulls::list_view))
-        .route("/:owner/:repository/pulls/:number", get(pulls::view))
-        .route(
-            "/:owner/:repository/pulls/:number/comment",
-            get(pulls::comment),
-        )
-        .route("/:owner/:repository/pulls/:number/merge", get(pulls::merge))
-        .route(
-            "/:owner/:repository/pulls/:number/rebase",
-            get(pulls::rebase),
-        )
-        .route("/:owner/:repository/pulls/:number/close", get(pulls::close))
-        .route("/:owner/:repository/pulls/create", get(pulls::create))
-        .route("/:owner/:repository/compare", get(compare::compare))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
@@ -47,7 +32,9 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository/get_diff", get(diff::get_diff))
         .route("/:owner/:repository/star", post(activity::star))
         .route("/:owner/:repository/watch", post(activity::watch))
-        .route("/:owner/:repository/*path", get(user_content::image))
+        .route("/:owner/:repository/*path", get(user_content::image));
+
+    router.merge(pull_request::router())
 }
 
 #[derive(Debug)]

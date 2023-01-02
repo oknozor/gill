@@ -144,10 +144,8 @@ pub async fn root(
 mod imp {
     use super::GitTreeTemplate;
     use crate::error::AppError;
-    use crate::view::repository::tree::{TreeDto};
+    use crate::view::repository::tree::TreeDto;
     use crate::view::HtmlTemplate;
-
-    
 
     use crate::domain::repository::RepositoryStats;
     use crate::view::repository::get_repository_branches;

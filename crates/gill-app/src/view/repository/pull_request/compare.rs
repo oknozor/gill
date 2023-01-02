@@ -13,7 +13,7 @@ use crate::domain::repository::RepositoryStats;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
-#[template(path = "repository/compare.html")]
+#[template(path = "repository/pulls/compare.html")]
 pub struct CompareTemplate {
     user: Option<String>,
     owner: String,

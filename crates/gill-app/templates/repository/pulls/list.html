@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+{% include "../header.html" %}
+
+<script>
+    const openPull = () => {
+        window.location.href = "/{{owner}}/{{repository}}/compare"
+    }
+    const goToPull = (number) => {
+        window.location.href = `/{{owner}}/{{repository}}/pulls/${number}`
+    }
+
+</script>
+<div class="flex flex-col gap-3">
+    <div class="flex flex-row justify-end">
+        <button
+                onclick="openPull()"
+                class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-blue-300 bg-blue-200 rounded-lg px-3">
+            New pull request
+        </button>
+    </div>
+
+    {%- match pull_requests -%}
+    {%- when Some with (pulls) -%}
+    <div class="rounded-md border border-slate-200 divide-y divide-slate-200">
+        {%- for pr in pulls -%}
+        <div onclick="goToPull('{{pr.number}}')"
+             class="flex flex-col gap-2 hover:bg-slate-200 px-3 py-2">
+            <div class="flex flex-row items-center gap-2">
+                {% match pr.state %}
+                {% when PullRequestState::Open %}
+                <i class="text-slate-600 text-2xl ti ti-git-pull-request text-sky-500"></i>
+                {% when PullRequestState::Closed %}
+                <i class="text-slate-600 text-2xl ti ti-git-pull-request-closed text-red-500"></i>
+                {% when PullRequestState::Merged %}
+                <i class="text-slate-600 text-2xl ti ti-git-merge text-fuchsia-500"></i>
+                {% endmatch %}
+                <span>{{pr.title}}</span>
+            </div>
+            <div class="flex flex-row items-center gap-2 text-xs text-gray-400">
+                <span>#{{pr.number}}</span>
+                <span>Opened by {{pr.opened_by}}</span>
+            </div>
+        </div>
+        {%- endfor -%}
+    </div>
+    {%- when None -%}
+    <span class="text-xl">No opened pull requests</span>
+    {%- endmatch -%}
+</div>
+
+{% endblock %}
+

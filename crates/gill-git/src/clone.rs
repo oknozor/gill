@@ -43,20 +43,19 @@ impl GitRepository {
 
         let (_, outcome) = checkout.main_worktree(Discard, &interrupt::IS_INTERRUPTED)?;
 
-        if let worktree::index::checkout::Outcome {
+        let worktree::index::checkout::Outcome {
             collisions, errors, ..
-        } = outcome
-        {
-            if !(collisions.is_empty() && errors.is_empty()) {
-                if !errors.is_empty() {
-                    for record in errors {
-                        eprintln!("{}: {}", record.path, record.error);
-                    }
+        } = outcome;
+
+        if !(collisions.is_empty() && errors.is_empty()) {
+            if !errors.is_empty() {
+                for record in errors {
+                    eprintln!("{}: {}", record.path, record.error);
                 }
-                if !collisions.is_empty() {
-                    for col in collisions {
-                        eprintln!("{}: collision ({:?})", col.path, col.error_kind);
-                    }
+            }
+            if !collisions.is_empty() {
+                for col in collisions {
+                    eprintln!("{}: collision ({:?})", col.path, col.error_kind);
                 }
             }
         }
