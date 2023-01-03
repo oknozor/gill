@@ -27,7 +27,10 @@
     </div>
     {%- match readme -%}
     {%- when Some with (readme) -%}
-    <div class="rounded-md border border-slate-200 prose prose-stone max-w-none py-3 px-5">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <div class="prose prose-slate max-w-none
+                rounded-md border border-slate-200 py-3 px-5">
         {{- readme|safe -}}
     </div>
     {%- when None -%}

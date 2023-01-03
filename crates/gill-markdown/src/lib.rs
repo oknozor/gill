@@ -21,12 +21,9 @@ fn render_html(
     repository: &str,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let mut reader = Reader::from_str(html_input);
-    reader.expand_empty_elements(true);
-    reader.trim_text(true);
     reader.check_end_names(false);
     let mut out = vec![];
     let mut writer = Writer::new(Cursor::new(&mut out));
-
     loop {
         match reader.read_event() {
             Ok(HtmlEvent::Start(img)) if img.name().as_ref() == b"img" => {
@@ -55,10 +52,36 @@ fn render_html(
                     None => writer.write_event(HtmlEvent::Start(img))?,
                 };
             }
+            Ok(HtmlEvent::Empty(img)) if img.name().as_ref() == b"img" => {
+                match img.try_get_attribute("src")? {
+                    Some(src) => {
+                        let link = &src.value;
+                        let link = String::from_utf8_lossy(link);
+                        let link = link.as_ref();
+                        if is_relative(link) {
+                            let link = prepend_namespace(link, owner, repository);
+                            let src = Attribute::from(("src", link.as_str()));
+                            let mut new_img = BytesStart::new("img");
+                            let attributes: Vec<Attribute> = img
+                                .attributes()
+                                .map(|attr| attr.expect("Valid attribute"))
+                                .filter(|attr| attr.key != QName(b"src"))
+                                .collect();
+
+                            new_img.extend_attributes(attributes);
+                            new_img.push_attribute(src);
+                            writer.write_event(HtmlEvent::Empty(new_img))?
+                        } else {
+                            writer.write_event(HtmlEvent::Empty(img))?
+                        }
+                    }
+                    None => writer.write_event(HtmlEvent::Empty(img))?,
+                };
+            }
             Ok(HtmlEvent::Eof) => break,
             Ok(e) => writer.write_event(e)?,
-            Err(_err) => {
-                // Silently ignored
+            Err(err) => {
+                println!("{}", err);
             }
         }
     }
