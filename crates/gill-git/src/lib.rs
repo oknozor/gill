@@ -40,13 +40,23 @@ impl GitRepository {
     }
 
     pub(crate) fn path(&self) -> PathBuf {
-        if self.inner.is_bare() {
-            self.inner.path().to_path_buf()
-        } else {
-            let mut path = self.inner.path().to_path_buf();
-            path.pop();
-            path
+        self.inner.path().to_path_buf()
+    }
+
+    pub(crate) fn non_bare_path(&self) -> PathBuf {
+        let mut path = self.inner.path().to_path_buf();
+        if !self.inner.is_bare() {
+            return self.path();
         }
+
+        let filename = path
+            .file_name()
+            .expect("filename")
+            .to_string_lossy()
+            .to_string();
+        path.pop();
+        let path = path.join(format!("non-bare-copy-{filename}"));
+        path
     }
 }
 
