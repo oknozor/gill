@@ -10,8 +10,8 @@ impl GitRepository {
         username: &str,
         email: &str,
     ) -> anyhow::Result<()> {
-        let non_bare = self.get_or_create_non_bare(username, email)?;
-        let path = non_bare.path();
+        self.get_or_create_non_bare(username, email)?;
+        let path = self.non_bare_path();
 
         // TODO: Merge is not yet implemented in git-oxide
         //  this should be replaced when ready
@@ -60,8 +60,8 @@ impl GitRepository {
         username: &str,
         email: &str,
     ) -> anyhow::Result<()> {
-        let non_bare = self.get_or_create_non_bare(username, email)?;
-        let path = non_bare.path();
+        self.get_or_create_non_bare(username, email)?;
+        let path = self.non_bare_path();
 
         // TODO: Rebase is not yet implemented in git-oxide
         //  this should be replaced when ready

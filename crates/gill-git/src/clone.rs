@@ -5,28 +5,16 @@ use git_repository::progress::Discard;
 use git_repository::{create, interrupt, open, worktree};
 
 impl GitRepository {
-    pub(crate) fn get_or_create_non_bare(
-        &self,
-        username: &str,
-        email: &str,
-    ) -> anyhow::Result<GitRepository> {
+    pub(crate) fn get_or_create_non_bare(&self, username: &str, email: &str) -> anyhow::Result<()> {
         // If the non bare copy already exist, returns it early
-        if self.has_non_bare_clone() {
-            let mut path = self.path();
-            path.pop();
-            let path = path.join("non-bare-copy");
-            let non_bare = GitRepository {
-                inner: git_repository::open(path)?,
-            };
-
-            return Ok(non_bare);
+        let non_bare = self.non_bare_path();
+        if non_bare.exists() {
+            return Ok(());
         };
 
         // else we create the non bare repo
         let repository_path = self.inner.path();
-        let mut dest = self.inner.path().to_path_buf();
-        dest.pop();
-        let dest = dest.join("non-bare-copy");
+        let dest = self.non_bare_path();
         let dest_copy = dest.clone();
         let mut prepare = PrepareFetch::new(
             repository_path,
@@ -39,10 +27,9 @@ impl GitRepository {
                 opts
             },
         )?;
+
         let (mut checkout, _) = prepare.fetch_then_checkout(Discard, &interrupt::IS_INTERRUPTED)?;
-
         let (_, outcome) = checkout.main_worktree(Discard, &interrupt::IS_INTERRUPTED)?;
-
         let worktree::index::checkout::Outcome {
             collisions, errors, ..
         } = outcome;
@@ -66,15 +53,7 @@ impl GitRepository {
             git config user.name $username;
         )?;
 
-        Ok(GitRepository {
-            inner: git_repository::open(dest_copy)?,
-        })
-    }
-
-    pub(crate) fn has_non_bare_clone(&self) -> bool {
-        let mut path = self.inner.path().to_path_buf();
-        path.pop();
-        path.join("non-bare-copy").exists()
+        Ok(())
     }
 }
 
@@ -112,12 +91,15 @@ mod test {
         };
 
         // Act
-        let non_bare = repository.get_or_create_non_bare("gill", "gill@test.org")?;
+        repository.get_or_create_non_bare("gill", "gill@test.org")?;
 
         // Assert
+        let non_bare = GitRepository {
+            inner: git_repository::open("non-bare-copy-repository")?,
+        };
         let commits = non_bare.list_commits()?;
-        assert_that!(non_bare.path()).is_equal_to(&PathBuf::from("non-bare-copy"));
-        assert_that!(repository.has_non_bare_clone()).is_true();
+        assert_that!(non_bare.path()).is_equal_to(&PathBuf::from("non-bare-copy-repository"));
+        assert_that!(repository.non_bare_path()).exists();
         assert_that!(commits).has_length(1);
 
         Ok(())

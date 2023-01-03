@@ -81,7 +81,7 @@ fn render_html(
             Ok(HtmlEvent::Eof) => break,
             Ok(e) => writer.write_event(e)?,
             Err(err) => {
-                println!("{}", err);
+                println!("{err}");
             }
         }
     }
