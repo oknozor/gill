@@ -73,7 +73,7 @@ impl From<TreeEntry> for TreeDto {
 }
 
 #[derive(Template, Debug)]
-#[template(path = "repository/tree.html")]
+#[template(path = "repository/tree/tree.html")]
 pub struct GitTreeTemplate {
     repository: String,
     owner: String,
