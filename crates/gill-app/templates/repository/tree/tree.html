@@ -4,8 +4,8 @@
 {% endblock %}
 
 {% block content %}
-{% include "header.html" %}
-{% include "branch.html" %}
+{% include "../header.html" %}
+{% include "../branch.html" %}
 <div class="flex flex-col space-around gap-5">
     <div class="flex flex-col rounded-md border border-slate-200 divide-y divide-slate-200">
         {% for dir in tree.trees %}

@@ -21,7 +21,7 @@ use std::fmt;
 use crate::view::repository::blob::BlobDto::*;
 
 #[derive(Template)]
-#[template(path = "repository/blob.html")]
+#[template(path = "repository/tree/blob.html")]
 pub struct GitBLobTemplate {
     repository: String,
     owner: String,

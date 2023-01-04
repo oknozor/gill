@@ -4,8 +4,8 @@
 {% endblock %}
 
 {% block content %}
-{% include "header.html" %}
-{% include "branch.html" %}
+{% include "../header.html" %}
+{% include "../branch.html" %}
 <div id="code-container">
     {%- match blob -%}
     {%- when Highlighted with {content, language} -%}
