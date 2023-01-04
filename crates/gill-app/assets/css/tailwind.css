@@ -2438,8 +2438,7 @@ select {
 /* code line */
 
 .c {
-  width: -moz-max-content;
-  width: max-content;
+  width: 100%;
   padding-left: 1.25rem;
 }
 

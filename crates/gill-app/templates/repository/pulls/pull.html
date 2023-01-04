@@ -13,7 +13,7 @@
         {% match pull_request.description %}
         {% when Some with (description) %}
         let description = document.getElementById("pr-description");
-        description.innerHTML = render_markdown(`{{description}}`, "{{owner}}", "{{repository}}");
+        description.innerHTML = render_markdown('{{description|safe}}', "{{owner}}", "{{repository}}");
         {% when None %}
         {% endmatch %}
 

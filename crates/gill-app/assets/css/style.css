@@ -32,7 +32,7 @@
 
     /* code line */
     .c {
-        @apply pl-5 w-max;
+        @apply pl-5 w-full;
     }
 }
 
