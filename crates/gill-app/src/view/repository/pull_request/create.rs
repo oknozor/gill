@@ -30,7 +30,7 @@ pub async fn create(
     repo.create_pull_request(
         user.id,
         &input.title,
-        Some(&input.description),
+        Some(&input.description.escape_default().to_string()),
         &input.base,
         &input.compare,
         &db,
