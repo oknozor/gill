@@ -85,7 +85,7 @@ CREATE TABLE pull_request
 
 CREATE TABLE pull_request_comment
 (
-    id SERIAL,
+    id            SERIAL,
     number        INT                            NOT NULL,
     repository_id INT REFERENCES repository (id) NOT NULL,
     created_by    INT REFERENCES users (id)      NOT NULL,
@@ -102,7 +102,18 @@ CREATE TABLE issue
     title         VARCHAR(255)                   NOT NULL,
     content       TEXT                           NOT NULL,
     state         issue_state                    NOT NULL DEFAULT 'Open',
+    opened_by     INT REFERENCES users (id)      NOT NULL,
     PRIMARY KEY (number, repository_id)
+);
+
+CREATE TABLE issue_comment
+(
+    id            SERIAL,
+    number        INT                            NOT NULL,
+    repository_id INT REFERENCES repository (id) NOT NULL,
+    created_by    INT REFERENCES users (id)      NOT NULL,
+    content       TEXT                           NOT NULL,
+    CONSTRAINT issue_key FOREIGN KEY (number, repository_id) REFERENCES issue (number, repository_id)
 );
 
 CREATE TABLE repository_star

@@ -7,5 +7,4 @@ async function run() {
 }
 
 run()
-    .then(() => "Wasm loaded event")
     .catch(err => console.error("failed to init wasm module: " + err));

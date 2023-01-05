@@ -57,9 +57,9 @@
     }
 </script>
 <div class="flex flex-col gap-8">
-    <div class="flex flex-row justify-between pb-4">
+    <div class="flex flex-row justify-between items-center pb-4">
         <div class="items-center">
-            <i class="text-lg ti ti-book-2 pr-2"></i>
+            <i class="text-lg ti ti-book-2 pr-1"></i>
             <a
                     href="/{{owner}}"
                     class="text-lg text-sky-600 font-bold hover:underline">{{owner}}</a>
@@ -71,23 +71,23 @@
         <div class="flex flex-row space-around gap-x-10">
             <button
                     onclick="watch()"
-                    class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2 h-12">
-                <i class="text-lg ti ti-eye pr-2"></i>
-                <span>Watch</span>
+                    class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
+                <i class="text-lg ti ti-eye"></i>
+                <span class="pt-1">Watch</span>
                 <span id="watch-count" class="rounded-full p-1 bg border border-slate-200">{{stats.watch_count}}</span>
             </button>
 
-            <button class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2 h-12">
-                <i class="text-lg ti ti-git-fork pr-2"></i>
-                <span>Fork</span>
+            <button class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
+                <i class="text-lg ti ti-git-fork"></i>
+                <span class="pt-1">Fork</span>
                 <span id="fork-count" class="rounded-full p-1 bg border border-slate-200">{{stats.fork_count}}</span>
             </button>
 
             <button
                     onclick="star()"
-                    class="flex items-center rounded-md drop-shadow-sm border bg-neutral-50 px-5 py-2 hover:bg-slate-200 gap-2 h-12">
-                <i class="text-lg ti ti-star pr-2"></i>
-                <span>Star</span>
+                    class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
+                <i class="text-lg ti ti-star"></i>
+                <span class="pt-1">Star</span>
                 <span id="star-count" class="rounded-full p-1 bg border border-slate-200">{{stats.star_count}}</span>
             </button>
         </div>
@@ -98,21 +98,21 @@
                 class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
                 onclick="gotToCode()">
             <i class="px-2 ti ti-code"></i>
-            Code
+            <span class="pt-1">Code</span>
         </button>
         <button
                 id="issues"
                 class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
                 onclick="goToIssues()">
             <i class="px-2 ti ti-ticket"></i>
-            Issues
+            <span class="pt-1">Issues</span>
         </button>
         <button
                 id="pulls"
                 class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
                 onclick="goToPullRequest()">
             <i class="px-2 ti ti-git-pull-request"></i>
-            Pull requests
+            <span class="pt-1">Pull requests<span>
         </button>
     </div>
 </div>

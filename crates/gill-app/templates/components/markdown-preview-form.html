@@ -1,0 +1,91 @@
+<script>
+    const showWriteComment = () => {
+        let commentButton = document.getElementById("write-comment-button");
+        let previewButton = document.getElementById("preview-comment-button");
+        let sideBySideButton = document.getElementById("side-by-side-view-button");
+        let preview = document.getElementById("new-comment-preview");
+        let textInput = document.getElementById("new-comment");
+        activeTab(commentButton);
+        inactiveTab(previewButton);
+        inactiveTab(sideBySideButton);
+        preview.classList.add("collapse");
+        textInput.classList.remove("collapse");
+    }
+    const showPreviewComment = () => {
+        let commentButton = document.getElementById("write-comment-button");
+        let previewButton = document.getElementById("preview-comment-button");
+        let sideBySideButton = document.getElementById("side-by-side-view-button");
+        let preview = document.getElementById("new-comment-preview");
+        let textInput = document.getElementById("new-comment");
+        activeTab(previewButton);
+        inactiveTab(commentButton);
+        inactiveTab(sideBySideButton);
+        preview.classList.remove("collapse");
+        textInput.classList.add("collapse");
+    }
+
+    const showSideBySideComment = () => {
+        let commentButton = document.getElementById("write-comment-button");
+        let previewButton = document.getElementById("preview-comment-button");
+        let sideBySideButton = document.getElementById("side-by-side-view-button");
+        let preview = document.getElementById("new-comment-preview");
+        let textInput = document.getElementById("new-comment");
+        activeTab(sideBySideButton);
+        inactiveTab(previewButton);
+        inactiveTab(commentButton);
+        preview.classList.remove("collapse");
+        textInput.classList.remove("collapse");
+    }
+
+    const activeTab = (button) => {
+        button.classList.add("border-b-4");
+        button.classList.add("border-red-300");
+    }
+
+    const inactiveTab = (button) => {
+        button.classList.remove("border-b-4");
+        button.classList.remove("border-red-300");
+    }
+    const onInput = (newComment) => {
+        let preview = document.getElementById("new-comment-preview");
+        preview.innerHTML = render_markdown(newComment.value, "{{owner}}", "{{repository}}");
+    };
+</script>
+<div class="flex flex-col border border-slate-200 rounded-md gap-2 p-3">
+    <div class="flex flex-row items-center justify-items-start border-b-2 border-slate-200 pb-2">
+        <button id="write-comment-button"
+                onclick="showWriteComment()"
+                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md border-b-4 border-red-300">
+            Write
+        </button>
+        <button id="preview-comment-button"
+                onclick="showPreviewComment()"
+                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
+            Preview
+        </button>
+        <button id="side-by-side-view-button"
+                onclick="showSideBySideComment()"
+                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
+            Side by Side
+        </button>
+    </div>
+    <form class="flex flex-col gap-2"
+          action="{{action_href}}">
+        <div class="flex flex-row gap-2">
+            <label for="new-comment">
+            </label>
+            <textarea id="new-comment"
+                      oninput="onInput(this)"
+                      class="resize-none h-48 max-h-full flex-1 rounded-md bg-gray-100 pb-2" type="text" name="comment">
+                </textarea>
+            <div id="new-comment-preview" class="flex-1 prose prose-slate max-w-none py-3 px-5 collapse">
+            </div>
+        </div>
+        <input
+                class="self-end max-w-lg shadow-sm drop-shadow-sm border
+                    border-blue-300 bg-blue-200 py-2 px-3 items-center hover:bg-blue-300 rounded-md"
+                type="submit"
+                value="{{submit_value}}"
+        >
+    </form>
+</div>

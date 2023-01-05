@@ -19,7 +19,6 @@ pub mod user_content;
 pub fn routes() -> Router<AppState> {
     let router = Router::new()
         .route("/:owner/:repository", get(tree::root))
-        .route("/:owner/:repository/issues", get(issues::issues))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
@@ -34,7 +33,7 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository/watch", post(activity::watch))
         .route("/:owner/:repository/*path", get(user_content::image));
 
-    router.merge(pull_request::router())
+    router.merge(pull_request::router()).merge(issues::router())
 }
 
 #[derive(Debug)]

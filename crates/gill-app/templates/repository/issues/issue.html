@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script type="text/javascript" src="/assets/js/bootstrap.js"></script>
+{% endblock %}
+
+{% block content %}
+{% include "../header.html" %}
+
+<script>
+    // @formatter:off
+    window.addEventListener("WasmLoaded", () => {
+        let description = document.getElementById("issue-content");
+        description.innerHTML = render_markdown('{{issue.content|safe}}', "{{owner}}", "{{repository}}");
+            {% for comment in comments %}
+            document.getElementById("comment-{{comment.id}}").innerHTML =
+                render_markdown('{{comment.content|safe}}', "{{owner}}", "{{repository}}");
+            {% endfor %}
+    });
+    // @formatter:on
+</script>
+
+<div class="flex flex-col space-around gap-5">
+    <h3 class="text-4xl">{{issue.title}}
+        <span class="text-scale-600">
+            #{{issue.number}}
+        </span>
+    </h3>
+    <div class="flex flex-row items-center">
+        {%- match issue.state -%}
+        {%- when IssueState::Open -%}
+        <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-sky-400 gap-2">
+            <i class="ti ti-dots-circle-horizontal"></i>
+            <span class="pt-1">Open</span>
+        </div>
+
+        {%- when IssueState::Closed -%}
+        <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-red-400  gap-2">
+            <i class="ti ti-circle-check"></i>
+            <span class="pt-1">Closed</span>
+        </div>
+        {%- endmatch -%}
+        &nbsp;
+        <p>
+            opened by
+            <a class="text-sky-600" href='/{{issue.opened_by}}'>{{issue.opened_by}}</a>
+        </p>
+    </div>
+    <div class="flex flex-col border border-slate-200 rounded-md">
+        <div class="px-3 flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200">
+            {{issue.opened_by}}
+        </div>
+        <div id="issue-content" class="rounded-md prose prose-slate max-w-none py-3 px-5">
+        </div>
+    </div>
+
+    {% for comment in comments %}
+    <div class="flex flex-col border border-slate-200 rounded-md">
+        <div class="px-3 flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200">
+            {{comment.created_by}}
+        </div>
+        <div id="comment-{{comment.id}}" class="rounded-md prose prose-slate max-w-none py-3 px-5">
+        </div>
+    </div>
+    {% endfor %}
+
+    <span class="border-b-2 border-slate-200"></span>
+
+    {%- match user -%}
+    {%- when Some with (user) -%}
+    {{markdown_preview_form|safe}}
+
+    {%- if user.as_str() == owner -%}
+    <span class="border-b-2 border-slate-200"></span>
+    <div class="flex flex-row gap-2 p-2 border-slate-200 border rounded-md justify-end">
+        <form action="/{{owner}}/{{repository}}/issues/{{issue.number}}/close">
+            <input
+                    id="close-issue-button"
+                    type="submit"
+                    value="Close"
+                    class="max-w-md shadow-sm drop-shadow-sm border border-red-300 py-2 px-3 items-center bg-red-200 hover:bg-blue-500 rounded-md">
+        </form>
+    </div>
+    {%- endif -%}
+    {%- when None -%}
+    {%- endmatch -%}
+</div>
+
+{% endblock %}
+
