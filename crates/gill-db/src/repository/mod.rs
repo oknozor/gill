@@ -7,6 +7,7 @@ pub mod branch;
 pub mod create;
 pub mod digest;
 pub mod fork;
+pub mod issue;
 pub mod pull_request;
 pub mod star;
 pub mod watch;

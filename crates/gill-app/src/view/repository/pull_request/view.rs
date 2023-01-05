@@ -1,6 +1,7 @@
 use crate::domain::repository::RepositoryStats;
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
+use crate::view::component::MarkdownPreviewForm;
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
 use crate::{get_connected_user, get_connected_user_username};
@@ -26,6 +27,7 @@ pub struct PullRequestTemplate {
     branches: Vec<BranchDto>,
     current_branch: String,
     comments: Vec<PullRequestComment>,
+    markdown_preview_form: MarkdownPreviewForm,
 }
 
 pub async fn view(
@@ -45,16 +47,26 @@ pub async fn view(
 
     let current_branch = current_branch.name;
     let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
+    let action_href = format!(
+        "/{owner}/{repository}/pulls/{}/comment",
+        pull_request.number
+    );
 
     Ok(HtmlTemplate(PullRequestTemplate {
         user: connected_username,
-        owner,
-        repository,
+        owner: owner.clone(),
+        repository: repository.clone(),
         pull_request,
         stats,
         branches,
         current_branch,
         comments,
+        markdown_preview_form: MarkdownPreviewForm {
+            action_href,
+            submit_value: "Comment".to_string(),
+            owner,
+            repository,
+        },
     }))
 }
 

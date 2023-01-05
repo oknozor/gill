@@ -9,6 +9,7 @@ use axum::response::{Html, IntoResponse};
 use axum::routing::get;
 use axum::Router;
 
+pub mod component;
 pub mod dto;
 pub mod follow;
 pub mod index;
