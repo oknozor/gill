@@ -1,4 +1,3 @@
-use crate::apub::object::user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 use crate::error::AppError;
 use crate::instance::{Instance, InstanceHandle};
 use activitypub_federation::core::axum::inbox::receive_activity;
@@ -7,7 +6,7 @@ use activitypub_federation::core::axum::{verify_request_payload, DigestVerified}
 
 use activitypub_federation::data::Data;
 use activitypub_federation::deser::context::WithContext;
-use activitypub_federation::traits::ApubObject;
+use activitypub_federation::traits::{ActivityHandler, ApubObject};
 
 use axum::extract::{OriginalUri, Path, State};
 use axum::response::IntoResponse;
@@ -15,16 +14,22 @@ use axum::routing::{get, post};
 use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method};
 
+use activitypub_federation::core::activity_queue::send_activity;
+use activitypub_federation::core::signatures::PublicKey;
+use activitypub_federation::LocalInstance;
+use axum::async_trait;
+use repository::{ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper};
+use serde::Serialize;
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
+use url::{ParseError, Url};
+use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 
-use crate::apub::object::repository::{
-    ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper,
-};
-
-pub mod activities;
-pub mod object;
+pub mod commit;
+pub mod repository;
+pub mod ticket;
+pub mod user;
 
 pub fn router(instance: Arc<Instance>) -> Router {
     let public = Router::new()
@@ -108,4 +113,48 @@ async fn repository_inbox(
         uri,
     )
     .await
+}
+
+#[async_trait]
+pub trait GillApubObject {
+    fn view_uri(&self) -> String;
+
+    fn followers_url(&self) -> Result<Url, AppError>;
+
+    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError>;
+
+    fn local_id(&self) -> i32;
+
+    fn activity_pub_id(&self) -> &str;
+
+    fn public_key_with_owner(&self) -> Result<PublicKey, ParseError>;
+
+    fn private_key(&self) -> Option<String>;
+
+    fn activity_pub_id_as_url(&self) -> Result<Url, ParseError> {
+        Url::parse(self.activity_pub_id())
+    }
+
+    async fn send<Activity>(
+        &self,
+        activity: Activity,
+        recipients: Vec<Url>,
+        local_instance: &LocalInstance,
+    ) -> Result<(), <Activity as ActivityHandler>::Error>
+    where
+        Activity: ActivityHandler + Serialize + Send + Sync,
+        <Activity as ActivityHandler>::Error:
+            From<anyhow::Error> + From<serde_json::Error> + From<AppError> + From<ParseError>,
+    {
+        let activity = WithContext::new_default(activity);
+        send_activity(
+            activity,
+            self.public_key_with_owner()?,
+            self.private_key().expect("has private key"),
+            recipients,
+            local_instance,
+        )
+        .await?;
+        Ok(())
+    }
 }

@@ -1,23 +1,23 @@
-use crate::apub::activities::follow::Follow;
+use crate::apub::repository::watch::Watch;
+use crate::apub::repository::RepositoryWrapper;
+use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
-use activitypub_federation::{
-    core::{object_id::ObjectId, signatures::PublicKey},
-    data::Data,
-    traits::{ActivityHandler, Actor, ApubObject},
-};
+use activitypub_federation::core::object_id::ObjectId;
+use activitypub_federation::core::signatures::PublicKey;
+use activitypub_federation::data::Data;
+use activitypub_federation::traits::{ActivityHandler, Actor, ApubObject};
 use activitystreams_kinds::actor::PersonType;
-use std::str::FromStr;
-
-use crate::apub::activities::watch::Watch;
-use crate::apub::object::repository::RepositoryWrapper;
-use crate::apub::object::GillApubObject;
-use axum::async_trait;
+use async_session::async_trait;
+use follow::Follow;
 use gill_db::user::{CreateUser, User};
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use url::{ParseError, Url};
 use uuid::Uuid;
+
+pub mod follow;
 
 #[derive(Debug, Clone)]
 pub struct UserWrapper(User);
