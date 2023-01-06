@@ -1,15 +1,16 @@
+use crate::apub::repository::RepositoryWrapper;
+use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
-use activitypub_federation::{core::object_id::ObjectId, traits::ApubObject};
+use activitypub_federation::core::object_id::ObjectId;
+use activitypub_federation::traits::ApubObject;
 use activitystreams_kinds::kind;
-
-use crate::apub::object::repository::RepositoryWrapper;
-use crate::apub::object::user::UserWrapper;
-use axum::async_trait;
-
+use async_session::async_trait;
 use gill_git::commits::OwnedCommit;
 use serde::{Deserialize, Serialize};
 use url::Url;
+
+kind!(CommitType, Commit);
 
 #[derive(Debug, Clone)]
 pub struct CommitWrapper {
@@ -17,8 +18,6 @@ pub struct CommitWrapper {
     owner: String,
     commit: OwnedCommit,
 }
-
-kind!(CommitType, Commit);
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

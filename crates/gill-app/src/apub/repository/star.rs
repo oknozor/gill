@@ -1,45 +1,42 @@
-use crate::apub::object::repository::RepositoryWrapper;
-use crate::apub::object::user::UserWrapper;
-use crate::apub::object::GillApubObject;
+use crate::apub::repository::RepositoryWrapper;
+use crate::apub::user::UserWrapper;
+use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
 use activitypub_federation::data::Data;
 use activitypub_federation::traits::ActivityHandler;
-use activitystreams_kinds::activity::CreateType;
+use activitystreams_kinds::activity::LikeType;
 use axum::async_trait;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Fork {
+pub struct Star {
     id: Url,
+    pub user: ObjectId<UserWrapper>,
     pub repository: ObjectId<RepositoryWrapper>,
-    pub fork: ObjectId<RepositoryWrapper>,
-    pub forked_by: ObjectId<UserWrapper>,
-    r#type: CreateType,
+    r#type: LikeType,
 }
 
-impl Fork {
+impl Star {
     pub fn new(
-        forked_by: ObjectId<UserWrapper>,
+        user: ObjectId<UserWrapper>,
         repository: ObjectId<RepositoryWrapper>,
-        fork: ObjectId<RepositoryWrapper>,
         id: Url,
-    ) -> Fork {
-        Fork {
+    ) -> Star {
+        Star {
             id,
+            user,
             repository,
-            fork,
-            forked_by,
             r#type: Default::default(),
         }
     }
 }
 
 #[async_trait]
-impl ActivityHandler for Fork {
+impl ActivityHandler for Star {
     type DataType = InstanceHandle;
     type Error = AppError;
 
@@ -48,7 +45,7 @@ impl ActivityHandler for Fork {
     }
 
     fn actor(&self) -> &Url {
-        self.forked_by.inner()
+        self.user.inner()
     }
 
     async fn verify(
@@ -64,7 +61,7 @@ impl ActivityHandler for Fork {
         data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let user = ObjectId::<UserWrapper>::new(self.forked_by)
+        let user = ObjectId::<UserWrapper>::new(self.user)
             .dereference_local(data)
             .await?;
 
@@ -72,13 +69,7 @@ impl ActivityHandler for Fork {
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
-        let fork = ObjectId::<RepositoryWrapper>::new(self.fork)
-            .dereference(data, data.local_instance(), &mut 0)
-            .await?;
-
-        repository
-            .add_fork(fork.local_id(), user.local_id(), data)
-            .await?;
+        repository.add_star(user.local_id(), data).await?;
         Ok(())
     }
 }

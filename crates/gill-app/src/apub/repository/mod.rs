@@ -1,25 +1,28 @@
+use crate::apub::user::UserWrapper;
+use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
-use activitypub_federation::{
-    core::{object_id::ObjectId, signatures::PublicKey},
-    traits::{ActivityHandler, Actor, ApubObject},
-};
-use activitystreams_kinds::kind;
-use std::str::FromStr;
-
-use crate::apub::activities::fork::Fork;
-use crate::apub::activities::star::Star;
-use crate::apub::activities::watch::Watch;
-
-use crate::apub::object::user::UserWrapper;
-use crate::apub::object::GillApubObject;
+use activitypub_federation::core::object_id::ObjectId;
+use activitypub_federation::core::signatures::PublicKey;
 use activitypub_federation::data::Data;
-use axum::async_trait;
+use activitypub_federation::traits::{ActivityHandler, Actor, ApubObject};
+use activitystreams_kinds::kind;
+use async_session::async_trait;
+use fork::Fork;
 use gill_db::repository::create::CreateRepository;
 use gill_db::repository::Repository;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
+use star::Star;
+use std::str::FromStr;
 use url::{ParseError, Url};
+use watch::Watch;
+
+pub mod fork;
+pub mod star;
+pub mod watch;
+
+kind!(RepositoryType, Repository);
 
 #[derive(Debug, Clone)]
 pub struct RepositoryWrapper(Repository);
@@ -39,8 +42,6 @@ impl From<Repository> for RepositoryWrapper {
         RepositoryWrapper(repository)
     }
 }
-
-kind!(RepositoryType, Repository);
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

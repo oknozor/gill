@@ -1,3 +1,5 @@
+extern crate core;
+
 use crate::oauth::Oauth2User;
 use gill_db::user::User;
 use sqlx::PgPool;
