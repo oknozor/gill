@@ -90,7 +90,7 @@
                             })
                         }
 
-                        const star = (element) => {
+                        const star = () => {
                             fetch('/{{repo.owner}}/{{repo.name}}/star', {
                                 method: 'POST',
                             }).then(() => {

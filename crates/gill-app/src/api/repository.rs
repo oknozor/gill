@@ -22,15 +22,11 @@ pub struct CreateRepositoryCommand {
 
 impl CreateRepositoryCommand {
     fn map_to_db(self, user: &User) -> Result<CreateRepository, io::Error> {
-        let scheme = if gill_settings::debug_mod() {
-            "http://"
-        } else {
-            "https://"
-        };
+        let protocol = &SETTINGS.protocol();
         let user_name = user.username.clone();
         let domain = &SETTINGS.domain;
         let apub_id = format!(
-            "{scheme}{domain}/apub/users/{user_name}/repositories/{}",
+            "{protocol}://{domain}/apub/users/{user_name}/repositories/{}",
             self.name
         );
         let clone_uri = format!("git@{domain}:{user_name}/{}.git", self.name);

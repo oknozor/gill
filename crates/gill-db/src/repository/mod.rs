@@ -1,3 +1,4 @@
+use crate::user::User;
 use branch::Branch;
 use create::CreateRepository;
 use serde::{Deserialize, Serialize};

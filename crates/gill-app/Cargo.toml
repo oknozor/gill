@@ -54,7 +54,6 @@ integration = []
 tower = "0.4.13"
 speculoos.workspace = true
 
-
 [[test]]
 name = "integration"
 path = "tests/integration.rs"

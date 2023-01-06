@@ -1,5 +1,7 @@
+use crate::apub::repository::star::Star;
 use crate::apub::repository::watch::Watch;
 use crate::apub::repository::RepositoryWrapper;
+use crate::apub::ticket::create::CreateTicket;
 use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
@@ -34,21 +36,22 @@ impl From<User> for UserWrapper {
 #[enum_delegate::implement(ActivityHandler)]
 pub enum PersonAcceptedActivities {
     Follow(Follow),
+    CreateIssue(CreateTicket),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApubUser {
     #[serde(rename = "type")]
-    kind: PersonType,
-    id: ObjectId<UserWrapper>,
-    email: Option<String>,
-    username: String,
-    outbox: Url,
-    inbox: Url,
-    domain: String,
-    followers: Url,
-    public_key: PublicKey,
+    pub kind: PersonType,
+    pub id: ObjectId<UserWrapper>,
+    pub email: Option<String>,
+    pub username: String,
+    pub outbox: Url,
+    pub inbox: Url,
+    pub domain: String,
+    pub followers: Url,
+    pub public_key: PublicKey,
 }
 
 #[async_trait]
@@ -67,7 +70,7 @@ impl GillApubObject for UserWrapper {
 
         let followers = followers
             .into_iter()
-            .map(|follower| follower.activity_pub_id)
+            .map(|follower| follower.inbox_url)
             .filter_map(|url| Url::parse(&url).ok())
             .collect();
 
@@ -147,11 +150,12 @@ impl UserWrapper {
         let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
         let activity_id = Url::parse(&activity_id)?;
         let watch = Watch::new(watcher, watching, activity_id);
-        println!("{other:?}");
+
         tracing::debug!(
             "Sending watch activity to repository inbox {}",
             other.shared_inbox_or_inbox()
         );
+
         self.send(
             watch,
             vec![other.shared_inbox_or_inbox()],
@@ -171,7 +175,7 @@ impl UserWrapper {
         let hostname = instance.local_instance().hostname();
         let activity_id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
         let activity_id = Url::parse(&activity_id)?;
-        let star = Watch::new(starred_by, starred, activity_id);
+        let star = Star::new(starred_by, starred, activity_id);
         tracing::debug!(
             "Sending star activity to repository inbox {}",
             other.shared_inbox_or_inbox()

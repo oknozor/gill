@@ -97,12 +97,29 @@ CREATE TYPE issue_state AS ENUM ('Open', 'Closed');
 
 CREATE TABLE issue
 (
-    number        INT                            NOT NULL,
-    repository_id INT REFERENCES repository (id) NOT NULL,
-    title         VARCHAR(255)                   NOT NULL,
-    content       TEXT                           NOT NULL,
-    state         issue_state                    NOT NULL DEFAULT 'Open',
-    opened_by     INT REFERENCES users (id)      NOT NULL,
+    -- Local
+    number          INT                                             NOT NULL,
+    repository_id   INT REFERENCES repository (id)                  NOT NULL,
+    title           VARCHAR(255)                                    NOT NULL,
+    content         TEXT                                            NOT NULL,
+    state           issue_state                                     NOT NULL DEFAULT 'Open',
+    opened_by       INT REFERENCES users (id)                       NOT NULL,
+
+    -- Federated
+    activity_pub_id VARCHAR(255)                                    NOT NULL UNIQUE,
+    context         VARCHAR(255)                                    NOT NULL,
+    attributed_to   VARCHAR(255) references users (activity_pub_id) NOT NULL,
+    media_type      VARCHAR(255)                                    NOT NULL,
+    published       TIMESTAMP                                       NOT NULL DEFAULT now(),
+    followers_url   VARCHAR(255)                                    NOT NULL,
+    team            VARCHAR(255)                                    NOT NULL,
+    replies         VARCHAR(255)                                    NOT NULL,
+    history         VARCHAR(255)                                    NOT NULL,
+    dependants      VARCHAR(255)                                    NOT NULL,
+    dependencies    VARCHAR(255)                                    NOT NULL,
+    resolved_by     VARCHAR(255) REFERENCES users (activity_pub_id),
+    resolved        TIMESTAMP,
+    is_local        BOOLEAN                                         NOT NULL,
     PRIMARY KEY (number, repository_id)
 );
 
@@ -114,6 +131,15 @@ CREATE TABLE issue_comment
     created_by    INT REFERENCES users (id)      NOT NULL,
     content       TEXT                           NOT NULL,
     CONSTRAINT issue_key FOREIGN KEY (number, repository_id) REFERENCES issue (number, repository_id)
+);
+
+CREATE TABLE issue_subscriber
+(
+    number        INT                       NOT NULL,
+    repository_id INT                       NOT NULL,
+    subscriber    INT REFERENCES users (id) NOT NULL,
+    CONSTRAINT issue_key FOREIGN KEY (number, repository_id) REFERENCES issue (number, repository_id),
+    PRIMARY KEY (number, repository_id, subscriber)
 );
 
 CREATE TABLE repository_star
@@ -136,13 +162,6 @@ CREATE TABLE repository_watch
     repository_id INT REFERENCES repository (id) NOT NULL,
     watched_by    INT REFERENCES users (id)      NOT NULL,
     PRIMARY KEY (watched_by, repository_id)
-);
-
-CREATE TABLE org_repository
-(
-    id     SERIAL PRIMARY KEY,
-    name   VARCHAR(100),
-    org_id INT REFERENCES organisation (id) NOT NULL
 );
 
 CREATE TABLE ssh_key

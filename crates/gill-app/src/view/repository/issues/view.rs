@@ -11,7 +11,7 @@ use askama::Template;
 use axum::extract::Path;
 
 use axum::Extension;
-use gill_db::repository::issue::{Issue, IssueComment, IssueState};
+use gill_db::repository::issue::{IssueComment, IssueDigest, IssueState};
 
 use gill_db::repository::Repository;
 
@@ -23,7 +23,7 @@ pub struct IssueTemplate {
     user: Option<String>,
     owner: String,
     repository: String,
-    issue: Issue,
+    issue: IssueDigest,
     stats: RepositoryStats,
     branches: Vec<BranchDto>,
     current_branch: String,

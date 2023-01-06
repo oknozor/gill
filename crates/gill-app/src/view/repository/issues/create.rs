@@ -1,7 +1,9 @@
+use crate::domain::issue::CreateIssueCommand;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
-use axum::extract::Path;
+use crate::state::AppState;
+use axum::extract::{Path, State};
 use axum::response::Redirect;
 use axum::{Extension, Form};
 use gill_db::repository::Repository;
@@ -16,21 +18,18 @@ pub struct CreateIssueForm {
 
 pub async fn create(
     connected_user: Option<Oauth2User>,
-    Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-    Form(input): Form<CreateIssueForm>,
+    State(state): State<AppState>,
+    Form(form): Form<CreateIssueForm>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, connected_user).await else {
+    let db = state.instance.database();
+    let Some(user) = get_connected_user(db, connected_user).await else {
         return Err(AppError::Unauthorized);
     };
 
-    let repo = Repository::by_namespace(&owner, &repository, &db).await?;
-    repo.create_issue(
-        user.id,
-        &input.title,
-        &input.content.escape_default().to_string(),
-        &db,
-    )
-    .await?;
+    let command = CreateIssueCommand::from(form);
+    command
+        .execute(&repository, &owner, user, &state.instance)
+        .await?;
     Ok(Redirect::to(&format!("/{owner}/{repository}/issues")))
 }
