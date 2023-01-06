@@ -20,14 +20,10 @@ pub async fn create(
     Json(user): Json<CreateUserCommand>,
 ) -> Result<Response, AppError> {
     let keys = generate_actor_keypair()?;
-    let scheme = if gill_settings::debug_mod() {
-        "http://"
-    } else {
-        "https://"
-    };
+    let protocol = SETTINGS.protocol();
     let domain = &SETTINGS.domain;
     let username = user.username;
-    let apub_id = format!("{scheme}{domain}/apub/users/{username}");
+    let apub_id = format!("{protocol}://{domain}/apub/users/{username}");
     let user = CreateUser {
         username: username.clone(),
         email: Some(user.email),

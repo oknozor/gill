@@ -13,6 +13,7 @@ use gill_db::repository::create::CreateRepository;
 use gill_db::repository::Repository;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 use star::Star;
 use std::str::FromStr;
 use url::{ParseError, Url};
@@ -80,7 +81,7 @@ impl GillApubObject for RepositoryWrapper {
 
         let followers = followers
             .into_iter()
-            .map(|follower| follower.activity_pub_id)
+            .map(|follower| follower.inbox_url)
             .filter_map(|url| Url::parse(&url).ok())
             .collect();
 
@@ -154,6 +155,10 @@ impl RepositoryWrapper {
         ))?;
         Ok(ObjectId::new(url))
     }
+
+    pub fn next_item_number(&self) -> i32 {
+        self.0.item_count + 1
+    }
 }
 
 #[async_trait]
@@ -210,7 +215,6 @@ impl ApubObject for RepositoryWrapper {
         data: &Self::DataType,
         _request_counter: &mut i32,
     ) -> Result<Self, Self::Error> {
-        println!("{apub:?}");
         let db = data.database();
         let id = Url::from(apub.id);
         let repository = Repository::by_activity_pub_id(id.as_str(), db).await?;
