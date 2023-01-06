@@ -14,15 +14,18 @@ use axum::routing::{get, post};
 use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method};
 
+use crate::apub::ticket::{ApubTicket, IssueWrapper};
 use activitypub_federation::core::activity_queue::send_activity;
 use activitypub_federation::core::signatures::PublicKey;
 use activitypub_federation::LocalInstance;
 use axum::async_trait;
 use repository::{ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
+use tracing::log::info;
 use url::{ParseError, Url};
 use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 
@@ -34,7 +37,11 @@ pub mod user;
 pub fn router(instance: Arc<Instance>) -> Router {
     let public = Router::new()
         .route("/users/:user", get(user))
-        .route("/users/:user/repositories/:repository", get(repository));
+        .route("/users/:user/repositories/:repository", get(repository))
+        .route(
+            "/users/:user/repositories/:repository/issues/:number",
+            get(issue),
+        );
 
     let private = Router::new()
         .route("/users/:user/inbox", post(user_inbox))
@@ -73,6 +80,17 @@ async fn repository(
     let repository = repository.into_apub(&data).await;
     let repository = WithContext::new_default(repository?);
     Ok(ApubJson(repository))
+}
+
+async fn issue(
+    State(data): State<InstanceHandle>,
+    Path((user, repository, issue_number)): Path<(String, String, i32)>,
+) -> Result<ApubJson<WithContext<ApubTicket>>, AppError> {
+    let object_id = IssueWrapper::activity_pub_id_from_namespace(&user, &repository, issue_number)?;
+    let ticket = object_id.dereference_local(&data).await?;
+    let ticket = ticket.into_apub(&data).await;
+    let ticket = WithContext::new_default(ticket?);
+    Ok(ApubJson(ticket))
 }
 
 async fn user_inbox(
@@ -115,13 +133,19 @@ async fn repository_inbox(
     .await
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub enum CreateOrUpdateType {
+    Create,
+    Update,
+}
+
 #[async_trait]
 pub trait GillApubObject {
     fn view_uri(&self) -> String;
 
     fn followers_url(&self) -> Result<Url, AppError>;
 
-    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError>;
+    async fn followers(&self, db: &InstanceHandle) -> Result<Vec<Url>, AppError>;
 
     fn local_id(&self) -> i32;
 

@@ -8,7 +8,7 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::repository::issue::{Issue, IssueState};
+use gill_db::repository::issue::{IssueDigest, IssueState};
 
 use gill_db::repository::Repository;
 use sqlx::PgPool;
@@ -20,7 +20,7 @@ pub struct IssuesTemplate {
     user: Option<String>,
     owner: String,
     repository: String,
-    issues: Option<Vec<Issue>>,
+    issues: Option<Vec<IssueDigest>>,
     stats: RepositoryStats,
     branches: Vec<BranchDto>,
     current_branch: String,

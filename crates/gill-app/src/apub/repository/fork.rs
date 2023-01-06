@@ -79,6 +79,7 @@ impl ActivityHandler for Fork {
         repository
             .add_fork(fork.local_id(), user.local_id(), data)
             .await?;
+
         Ok(())
     }
 }

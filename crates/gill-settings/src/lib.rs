@@ -6,10 +6,6 @@ use std::path::PathBuf;
 
 pub static SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
 
-pub fn debug_mod() -> bool {
-    SETTINGS.debug
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub domain: String,
@@ -74,6 +70,13 @@ impl Settings {
 }
 
 impl Settings {
+    pub fn protocol(&self) -> &str {
+        if self.debug {
+            "http"
+        } else {
+            "https"
+        }
+    }
     pub(crate) fn get() -> Result<Self, config::ConfigError> {
         // TODO
         let config_path = PathBuf::from("/home/git/config.toml");
