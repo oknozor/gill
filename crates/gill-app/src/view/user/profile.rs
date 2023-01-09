@@ -4,11 +4,11 @@ use askama::Template;
 use axum::extract::{Path, Query};
 
 use axum::Extension;
-use gill_db::user::User;
 
 use crate::view::dto::RepositoryDto;
 
 use crate::get_connected_user_username;
+use gill_db::user::User;
 use serde::Deserialize;
 use sqlx::PgPool;
 

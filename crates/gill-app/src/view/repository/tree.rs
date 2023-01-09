@@ -6,11 +6,11 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::user::User;
 use gill_git::traversal::{BlobInfo, TreeEntry, TreeInfo};
 
 use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
+use gill_db::user::User;
 use sqlx::PgPool;
 
 #[derive(Debug)]

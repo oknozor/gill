@@ -3,12 +3,13 @@ use gill_db::repository::branch::Branch;
 use gill_db::repository::Repository;
 use speculoos::prelude::*;
 use sqlx::PgPool;
+use gill_db::Insert;
 
 #[sqlx::test(fixtures("base"))]
 async fn should_create_repository(db: PgPool) {
     let repo = create_repository();
 
-    let res = Repository::create(&repo, &db).await;
+    let res = repo.insert(&db).await;
     assert_that!(res).is_ok();
 }
 

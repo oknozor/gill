@@ -5,6 +5,7 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use gill_db::user::{CreateSSHKey, CreateUser, User};
+use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::Deserialize;
 use sqlx::PgPool;
@@ -16,7 +17,7 @@ pub struct CreateUserCommand {
 }
 
 pub async fn create(
-    pool: Extension<PgPool>,
+    Extension(db): Extension<PgPool>,
     Json(user): Json<CreateUserCommand>,
 ) -> Result<Response, AppError> {
     let keys = generate_actor_keypair()?;
@@ -37,7 +38,7 @@ pub async fn create(
         is_local: true,
     };
 
-    User::create(user, &pool.0).await?;
+    user.insert(&db).await?;
     Ok((StatusCode::NO_CONTENT, ()).into_response())
 }
 

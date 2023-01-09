@@ -11,10 +11,10 @@ use askama::Template;
 use axum::extract::Path;
 
 use axum::Extension;
-use gill_db::repository::issue::{IssueComment, IssueDigest, IssueState};
-
 use gill_db::repository::Repository;
 
+use gill_db::repository::issue::comment::{IssueCommentDigest};
+use gill_db::repository::issue::{IssueDigest, IssueState};
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -27,7 +27,7 @@ pub struct IssueTemplate {
     stats: RepositoryStats,
     branches: Vec<BranchDto>,
     current_branch: String,
-    comments: Vec<IssueComment>,
+    comments: Vec<IssueCommentDigest>,
     markdown_preview_form: MarkdownPreviewForm,
 }
 
@@ -39,7 +39,7 @@ pub async fn view(
     let connected_username = get_connected_user_username(&db, user).await;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
-    let issue = repo.get_issue(issue_number, &db).await?;
+    let issue = repo.get_issue_digest(issue_number, &db).await?;
     let comments = issue.get_comments(&db).await?;
     let current_branch = repo
         .get_default_branch(&db)

@@ -7,7 +7,6 @@ use axum::Extension;
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::view::dto::{FederatedRepositoryDto, RepositoryDto};
-use gill_db::activity::Activity;
 use gill_db::repository::digest::RepositoryDigest;
 use sqlx::PgPool;
 
@@ -19,7 +18,6 @@ struct LandingPageTemplate {
     user: Option<String>,
     local_repositories: Vec<RepositoryDto>,
     federated_repositories: Vec<FederatedRepositoryDto>,
-    activities: Vec<Activity>,
 }
 
 pub async fn index(
@@ -43,7 +41,6 @@ pub async fn index(
         user: username,
         local_repositories,
         federated_repositories,
-        activities: vec![],
     };
 
     Ok(HtmlTemplate(template))

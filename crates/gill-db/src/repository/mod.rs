@@ -1,6 +1,7 @@
-use crate::user::User;
+
+
 use branch::Branch;
-use create::CreateRepository;
+
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
@@ -36,53 +37,6 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub async fn create(repository: &CreateRepository, db: &PgPool) -> sqlx::Result<Repository> {
-        let repository = sqlx::query_as!(
-            Repository,
-            // language=PostgreSQL
-            r#"
-            insert into repository(
-                activity_pub_id,
-                name,
-                summary,
-                private,
-                inbox_url,
-                outbox_url,
-                followers_url,
-                attributed_to,
-                clone_uri,
-                public_key,
-                private_key,
-                ticket_tracked_by,
-                send_patches_to,
-                domain,
-                is_local
-            )
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-            returning *;
-        "#,
-            repository.activity_pub_id,
-            repository.name,
-            repository.summary,
-            repository.private,
-            repository.inbox_url,
-            repository.outbox_url,
-            repository.followers_url,
-            repository.attributed_to,
-            repository.clone_uri,
-            repository.public_key,
-            repository.private_key,
-            repository.ticket_tracked_by,
-            repository.send_patches_to,
-            repository.domain,
-            repository.is_local,
-        )
-        .fetch_one(db)
-        .await?;
-
-        Ok(repository)
-    }
-
     pub async fn by_namespace(owner: &str, name: &str, db: &PgPool) -> sqlx::Result<Repository> {
         let repository = sqlx::query_as!(
             Repository,

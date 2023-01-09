@@ -1,23 +1,22 @@
+use crate::apub::common::GillApubObject;
 use crate::apub::repository::RepositoryWrapper;
 use crate::apub::ticket::create::CreateTicket;
 use crate::apub::ticket::IssueWrapper;
 use crate::apub::user::UserWrapper;
-use crate::apub::GillApubObject;
 use crate::error::AppError;
-use crate::instance::{Instance, InstanceHandle};
+use crate::instance::InstanceHandle;
 use crate::view::repository::issues::create::CreateIssueForm;
-use activitypub_federation::core::activity_queue::send_activity;
 use activitypub_federation::core::object_id::ObjectId;
 use activitypub_federation::traits::ApubObject;
-use activitypub_federation::LocalInstance;
-use chrono::{NaiveDateTime, Utc};
+use chrono::Utc;
 use gill_db::repository::issue::{Issue, IssueState};
 use gill_db::repository::Repository;
 use gill_db::user::User;
-use gill_settings::SETTINGS;
-use sqlx::PgPool;
+use gill_db::Insert;
 use url::Url;
 use uuid::Uuid;
+
+pub mod comment;
 
 pub struct CreateIssueCommand {
     title: String,
@@ -42,7 +41,7 @@ impl CreateIssueCommand {
         instance: &InstanceHandle,
     ) -> Result<(), AppError> {
         let db = instance.database();
-        let repo = Repository::by_namespace(&owner, &repository, &db).await?;
+        let repo = Repository::by_namespace(owner, repository, db).await?;
         let number = repo.item_count + 1;
         let activity_pub_id = format!("{}/issues/{}", repo.activity_pub_id, number);
         let context = repo.activity_pub_id.to_owned();
@@ -78,19 +77,19 @@ impl CreateIssueCommand {
             is_local: true,
         };
 
-        let issue = new_issue.insert(&db).await?;
+        let issue = new_issue.insert(db).await?;
 
         // Add the author to the list of subscriber
-        issue.add_subscriber(user.id, &db).await?;
+        issue.add_subscriber(user.id, db).await?;
 
         // If author is not the repository owner, add the owner to
         // the list of subscriber
         if repo.attributed_to != user.activity_pub_id {
-            let owner = User::by_activity_pub_id(&repo.attributed_to, &db)
+            let owner = User::by_activity_pub_id(&repo.attributed_to, db)
                 .await?
                 .expect("local user must a have an apub identifier");
 
-            issue.add_subscriber(owner.id, &db).await?;
+            issue.add_subscriber(owner.id, db).await?;
         }
 
         let user = UserWrapper::from(user);
@@ -101,8 +100,8 @@ impl CreateIssueCommand {
 
         let create_event = CreateTicket {
             actor: ObjectId::new(user.activity_pub_id_as_url()?),
-            to: repo.followers(&instance).await?,
-            object: issue.into_apub(&instance).await?,
+            to: repo.followers(instance).await?,
+            object: issue.into_apub(instance).await?,
             cc: vec![],
             kind: Default::default(),
             id: Url::parse(&id)?,

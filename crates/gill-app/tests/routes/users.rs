@@ -1,7 +1,7 @@
 use axum::http::header::CONTENT_TYPE;
 use axum::http::Request;
 use axum::http::StatusCode;
-use gill_app::api::user::User;
+use gill_db::users::User;
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;

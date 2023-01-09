@@ -2,8 +2,9 @@ use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
 
+use crate::apub::ticket::comment::ApubIssueComment;
 
-use crate::apub::ticket::{ApubTicket};
+
 use crate::apub::user::UserWrapper;
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
@@ -15,11 +16,11 @@ use url::Url;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateTicket {
+pub struct CreateTicketComment {
     pub(crate) actor: ObjectId<UserWrapper>,
     #[serde(deserialize_with = "deserialize_one_or_many")]
     pub(crate) to: Vec<Url>,
-    pub(crate) object: ApubTicket,
+    pub(crate) object: ApubIssueComment,
     #[serde(deserialize_with = "deserialize_one_or_many")]
     pub(crate) cc: Vec<Url>,
     #[serde(rename = "type")]
@@ -28,7 +29,7 @@ pub struct CreateTicket {
 }
 
 #[async_trait]
-impl ActivityHandler for CreateTicket {
+impl ActivityHandler for CreateTicketComment {
     type DataType = InstanceHandle;
     type Error = AppError;
 
