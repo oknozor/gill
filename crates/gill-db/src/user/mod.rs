@@ -1,7 +1,12 @@
 use crate::repository::digest::RepositoryDigest;
 use crate::repository::Repository;
+use crate::Insert;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
+
+pub mod follow;
+pub mod ssh_keys;
 
 #[derive(Deserialize, Serialize)]
 pub struct CreateSSHKey {
@@ -39,8 +44,11 @@ pub struct User {
     pub is_local: bool,
 }
 
-impl User {
-    pub async fn create(user: CreateUser, pool: &PgPool) -> sqlx::Result<User> {
+#[async_trait]
+impl Insert for CreateUser {
+    type Output = User;
+
+    async fn insert(self, db: &PgPool) -> sqlx::Result<Self::Output> {
         let user = sqlx::query_as!(
             User,
             // language=PostgreSQL
@@ -59,23 +67,25 @@ impl User {
             values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             returning *;
         "#,
-            user.username,
-            user.email,
-            user.domain,
-            user.inbox_url,
-            user.outbox_url,
-            user.followers_url,
-            user.private_key,
-            user.public_key,
-            user.is_local,
-            user.activity_pub_id,
+            self.username,
+            self.email,
+            self.domain,
+            self.inbox_url,
+            self.outbox_url,
+            self.followers_url,
+            self.private_key,
+            self.public_key,
+            self.is_local,
+            self.activity_pub_id,
         )
-        .fetch_one(pool)
+        .fetch_one(db)
         .await?;
 
         Ok(user)
     }
+}
 
+impl User {
     pub async fn by_email(email: &str, pool: &PgPool) -> sqlx::Result<User> {
         let user = sqlx::query_as!(
             User,

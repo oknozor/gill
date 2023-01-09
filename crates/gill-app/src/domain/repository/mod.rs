@@ -1,6 +1,32 @@
-use gill_db::repository::digest::RepositoryDigest;
-use gill_db::repository::digest::RepositoryLight;
+use gill_db::repository::digest::{RepositoryDigest, RepositoryLight};
 use sqlx::PgPool;
+use serde::{Serialize, Deserialize};
+use crate::apub::repository::RepositoryWrapper;
+use crate::apub::user::UserWrapper;
+use crate::domain::ActivityPubId;
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Repository {
+    pub id: i32,
+    pub activity_pub_id: ActivityPubId<RepositoryWrapper>,
+    pub name: String,
+    pub summary: Option<String>,
+    pub private: bool,
+    pub inbox_url: String,
+    pub outbox_url: String,
+    pub followers_url: String,
+    pub attributed_to: ActivityPubId<UserWrapper>,
+    pub clone_uri: String,
+    pub public_key: String,
+    pub private_key: Option<String>,
+    pub published: chrono::NaiveDateTime,
+    pub ticket_tracked_by: ActivityPubId<RepositoryWrapper>,
+    pub send_patches_to: String,
+    pub domain: String,
+    pub item_count: i32,
+    pub is_local: bool,
+}
+
 
 #[derive(Debug)]
 pub struct RepositoryStats {

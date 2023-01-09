@@ -2,7 +2,7 @@ use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
-use crate::apub::GillApubObject;
+use crate::apub::common::GillApubObject;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::FollowType;
 use axum::async_trait;

@@ -1,5 +1,5 @@
+use crate::apub::common::GillApubObject;
 use crate::apub::user::UserWrapper;
-use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -11,9 +11,12 @@ use async_session::async_trait;
 use fork::Fork;
 use gill_db::repository::create::CreateRepository;
 use gill_db::repository::Repository;
+use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+
+use crate::apub::ticket::comment::create::CreateTicketComment;
+use crate::apub::ticket::offer::OfferTicket;
 use star::Star;
 use std::str::FromStr;
 use url::{ParseError, Url};
@@ -36,6 +39,8 @@ pub enum RepositoryAcceptedActivities {
     Watch(Watch),
     Star(Star),
     Fork(Fork),
+    OfferIssue(OfferTicket),
+    CreateIssueComment(CreateTicketComment),
 }
 
 impl From<Repository> for RepositoryWrapper {
@@ -239,7 +244,7 @@ impl ApubObject for RepositoryWrapper {
                 domain: id.domain().expect("No domain").to_string(),
             };
 
-            let repository = Repository::create(&repository, db).await?;
+            let repository = repository.insert(db).await?;
             Ok(RepositoryWrapper(repository))
         }
     }

@@ -33,7 +33,9 @@ async fn main() -> anyhow::Result<()> {
     let words = shellwords::split(&cmd)?;
     let verb = &words[0];
     let repo_path = &words[1];
-    let (owner, repo_name) = repo_path.split_once('/').expect("/ in repo path");
+    let (owner, repo_name) = repo_path.rsplit_once('/').expect("/ in repo path");
+    // Ensure we are stripping out any absolute path components
+    let owner = owner.split('/').last().expect("owner");
     let repo_name = repo_name.strip_suffix(".git").expect(".git prefix");
 
     if Repository::by_namespace(owner, repo_name, &db)

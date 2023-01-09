@@ -6,7 +6,7 @@ use activitypub_federation::core::axum::{verify_request_payload, DigestVerified}
 
 use activitypub_federation::data::Data;
 use activitypub_federation::deser::context::WithContext;
-use activitypub_federation::traits::{ActivityHandler, ApubObject};
+use activitypub_federation::traits::ApubObject;
 
 use axum::extract::{OriginalUri, Path, State};
 use axum::response::IntoResponse;
@@ -15,21 +15,20 @@ use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method};
 
 use crate::apub::ticket::{ApubTicket, IssueWrapper};
-use activitypub_federation::core::activity_queue::send_activity;
-use activitypub_federation::core::signatures::PublicKey;
-use activitypub_federation::LocalInstance;
-use axum::async_trait;
+
 use repository::{ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper};
-use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
-use tracing::log::info;
-use url::{ParseError, Url};
+
+use uuid::Uuid;
+
+use crate::apub::ticket::comment::{ApubIssueComment, IssueCommentWrapper};
 use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 
 pub mod commit;
+pub mod common;
 pub mod repository;
 pub mod ticket;
 pub mod user;
@@ -41,6 +40,10 @@ pub fn router(instance: Arc<Instance>) -> Router {
         .route(
             "/users/:user/repositories/:repository/issues/:number",
             get(issue),
+        )
+        .route(
+            "/users/:user/repositories/:repository/issues/:number/comments/:uuid",
+            get(comment),
         );
 
     let private = Router::new()
@@ -93,6 +96,22 @@ async fn issue(
     Ok(ApubJson(ticket))
 }
 
+async fn comment(
+    State(data): State<InstanceHandle>,
+    Path((user, repository, issue_number, uuid)): Path<(String, String, i32, Uuid)>,
+) -> Result<ApubJson<WithContext<ApubIssueComment>>, AppError> {
+    let object_id = IssueCommentWrapper::activity_pub_id_from_namespace(
+        &user,
+        &repository,
+        issue_number,
+        uuid,
+    )?;
+    let comment = object_id.dereference_local(&data).await?;
+    let comment = comment.into_apub(&data).await;
+    let comment = WithContext::new_default(comment?);
+    Ok(ApubJson(comment))
+}
+
 async fn user_inbox(
     headers: HeaderMap,
     method: Method,
@@ -131,54 +150,4 @@ async fn repository_inbox(
         uri,
     )
     .await
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub enum CreateOrUpdateType {
-    Create,
-    Update,
-}
-
-#[async_trait]
-pub trait GillApubObject {
-    fn view_uri(&self) -> String;
-
-    fn followers_url(&self) -> Result<Url, AppError>;
-
-    async fn followers(&self, db: &InstanceHandle) -> Result<Vec<Url>, AppError>;
-
-    fn local_id(&self) -> i32;
-
-    fn activity_pub_id(&self) -> &str;
-
-    fn public_key_with_owner(&self) -> Result<PublicKey, ParseError>;
-
-    fn private_key(&self) -> Option<String>;
-
-    fn activity_pub_id_as_url(&self) -> Result<Url, ParseError> {
-        Url::parse(self.activity_pub_id())
-    }
-
-    async fn send<Activity>(
-        &self,
-        activity: Activity,
-        recipients: Vec<Url>,
-        local_instance: &LocalInstance,
-    ) -> Result<(), <Activity as ActivityHandler>::Error>
-    where
-        Activity: ActivityHandler + Serialize + Send + Sync,
-        <Activity as ActivityHandler>::Error:
-            From<anyhow::Error> + From<serde_json::Error> + From<AppError> + From<ParseError>,
-    {
-        let activity = WithContext::new_default(activity);
-        send_activity(
-            activity,
-            self.public_key_with_owner()?,
-            self.private_key().expect("has private key"),
-            recipients,
-            local_instance,
-        )
-        .await?;
-        Ok(())
-    }
 }

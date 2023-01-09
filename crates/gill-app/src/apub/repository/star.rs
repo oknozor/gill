@@ -1,6 +1,6 @@
+use crate::apub::common::GillApubObject;
 use crate::apub::repository::RepositoryWrapper;
 use crate::apub::user::UserWrapper;
-use crate::apub::GillApubObject;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;

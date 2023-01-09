@@ -1,7 +1,11 @@
 use crate::pagination::Pagination;
 use crate::repository::Repository;
+use crate::Insert;
+use async_trait::async_trait;
+
 use sqlx::PgPool;
-use std::fmt::Debug;
+
+pub mod comment;
 
 #[derive(Debug, sqlx::Type, Eq, PartialEq)]
 #[sqlx(type_name = "pull_request_state")]
@@ -44,8 +48,11 @@ pub struct Issue {
     pub is_local: bool,
 }
 
-impl Issue {
-    pub async fn insert(self, db: &PgPool) -> Result<Issue, sqlx::Error> {
+#[async_trait]
+impl Insert for Issue {
+    type Output = Issue;
+
+    async fn insert(self, db: &PgPool) -> sqlx::Result<Self::Output> {
         let mut transaction = db.begin().await?;
         sqlx::query!(
             // language=PostgreSQL
@@ -126,7 +133,8 @@ impl Issue {
 
         Ok(issue)
     }
-
+}
+impl Issue {
     pub async fn by_activity_pub_id(
         activity_pub_id: &str,
         db: &PgPool,
@@ -168,12 +176,22 @@ impl Issue {
     }
 }
 
-#[derive(Debug, sqlx::FromRow)]
-pub struct IssueComment {
-    pub id: i32,
-    pub repository_id: i32,
-    pub created_by: String,
-    pub content: String,
+impl IssueDigest {
+    pub async fn close(&self, db: &PgPool) -> sqlx::Result<()> {
+        sqlx::query!(
+            // language=PostgreSQL
+            r#"
+           UPDATE issue SET state = 'Closed'
+            WHERE issue.number = $1 AND repository_id = $2;
+           "#,
+            self.number,
+            self.repository_id
+        )
+        .execute(db)
+        .await?;
+
+        Ok(())
+    }
 }
 
 impl Repository {
@@ -206,48 +224,7 @@ impl Repository {
         Ok(pull_requests)
     }
 
-    pub async fn create_issue(
-        &self,
-        user_id: i32,
-        title: &str,
-        content: &str,
-        db: &PgPool,
-    ) -> sqlx::Result<()> {
-        let mut transaction = db.begin().await?;
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-                UPDATE repository
-                SET item_count = $1
-                WHERE id = $2
-                "#,
-            self.item_count + 1,
-            self.id,
-        )
-        .execute(&mut transaction)
-        .await?;
-
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-            INSERT INTO issue (number, repository_id, opened_by, title, content)
-            VALUES ($1, $2, $3, $4, $5);
-            "#,
-            self.item_count + 1,
-            self.id,
-            user_id,
-            title,
-            content,
-        )
-        .execute(&mut transaction)
-        .await?;
-
-        transaction.commit().await?;
-
-        Ok(())
-    }
-
-    pub async fn get_issue(&self, number: i32, db: &PgPool) -> sqlx::Result<IssueDigest> {
+    pub async fn get_issue_digest(&self, number: i32, db: &PgPool) -> sqlx::Result<IssueDigest> {
         let issue = sqlx::query_as!(
             IssueDigest,
             // language=PostgreSQL
@@ -271,59 +248,42 @@ impl Repository {
 
         Ok(issue)
     }
-}
 
-impl IssueDigest {
-    pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
+    pub async fn get_issue(&self, number: i32, db: &PgPool) -> sqlx::Result<Issue> {
+        let issue = sqlx::query_as!(
+            Issue,
             // language=PostgreSQL
             r#"
-           INSERT INTO issue_comment (number, repository_id, created_by, content)
-           VALUES ($1, $2, $3, $4);
-           "#,
-            self.number,
-            self.repository_id,
-            user_id,
-            comment,
+                SELECT
+                    repository_id,
+                    opened_by,
+                    title,
+                    content,
+                    state as "state: IssueState",
+                    activity_pub_id,
+                    context,
+                    attributed_to,
+                    media_type,
+                    published,
+                    followers_url,
+                    team,
+                    replies,
+                    history,
+                    dependants,
+                    dependencies,
+                    resolved_by,
+                    resolved,
+                    number,
+                    is_local
+                FROM issue
+                WHERE number = $1 AND repository_id = $2
+            "#,
+            number,
+            self.id,
         )
-        .execute(db)
+        .fetch_one(db)
         .await?;
 
-        Ok(())
-    }
-
-    pub async fn get_comments(&self, db: &PgPool) -> sqlx::Result<Vec<IssueComment>> {
-        let comments = sqlx::query_as!(
-            IssueComment,
-            // language=PostgreSQL
-            r#"
-           SELECT c.id, c.repository_id, u.username as created_by, c.content FROM issue_comment c
-                JOIN users u on u.id = c.created_by
-                WHERE c.repository_id = $1
-                AND c.number = $2;
-           "#,
-            self.repository_id,
-            self.number,
-        )
-        .fetch_all(db)
-        .await?;
-
-        Ok(comments)
-    }
-
-    pub async fn close(&self, db: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-           UPDATE issue SET state = 'Closed'
-            WHERE issue.number = $1 AND repository_id = $2;
-           "#,
-            self.number,
-            self.repository_id
-        )
-        .execute(db)
-        .await?;
-
-        Ok(())
+        Ok(issue)
     }
 }

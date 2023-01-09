@@ -5,10 +5,9 @@ use crate::oauth::Oauth2User;
 use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::response::Redirect;
-use axum::{Extension, Form};
-use gill_db::repository::Repository;
+use axum::Form;
+
 use serde::Deserialize;
-use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct CreateIssueForm {

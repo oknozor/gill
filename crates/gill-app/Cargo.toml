@@ -53,6 +53,7 @@ integration = []
 [dev-dependencies]
 tower = "0.4.13"
 speculoos.workspace = true
+archunit_rs = { git = "https://github.com/oknozor/archunit_rs.git", branch = "feat/layer-rules" }
 
 [[test]]
 name = "integration"

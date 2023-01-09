@@ -7,8 +7,9 @@ use axum::response::{IntoResponse, Response};
 use axum::Extension;
 use axum::Json;
 use gill_db::repository::create::CreateRepository;
-use gill_db::repository::Repository;
+
 use gill_db::user::User;
+use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::Deserialize;
 use sqlx::PgPool;
@@ -55,13 +56,13 @@ impl CreateRepositoryCommand {
 }
 
 pub async fn init(
-    Extension(pool): Extension<PgPool>,
+    Extension(db): Extension<PgPool>,
     Extension(user): Extension<User>,
     Json(repository): Json<CreateRepositoryCommand>,
 ) -> Result<Response, AppError> {
     // TODO: handle database error
     let create_repository_command = repository.map_to_db(&user)?;
-    let repository = Repository::create(&create_repository_command, &pool).await?;
+    let repository = create_repository_command.insert(&db).await?;
     // #[cfg(not(feature = "integration"))]
     gill_git::init::init_bare(&user.username, &repository.name)?;
     Ok(StatusCode::NO_CONTENT.into_response())

@@ -20,7 +20,7 @@ pub struct CompareTemplate {
     repository: String,
     stats: RepositoryStats,
     branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
 }
 
 pub async fn compare(
@@ -45,6 +45,6 @@ pub async fn compare(
         repository,
         stats,
         branches,
-        current_branch,
+        current_branch: Some(current_branch),
     }))
 }

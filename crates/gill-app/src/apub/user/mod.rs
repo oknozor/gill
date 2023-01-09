@@ -1,8 +1,9 @@
+use crate::apub::common::GillApubObject;
 use crate::apub::repository::star::Star;
 use crate::apub::repository::watch::Watch;
 use crate::apub::repository::RepositoryWrapper;
-use crate::apub::ticket::create::CreateTicket;
-use crate::apub::GillApubObject;
+use crate::apub::ticket::comment::create::CreateTicketComment;
+use crate::apub::ticket::offer::OfferTicket;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -13,11 +14,13 @@ use activitystreams_kinds::actor::PersonType;
 use async_session::async_trait;
 use follow::Follow;
 use gill_db::user::{CreateUser, User};
+use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use url::{ParseError, Url};
 use uuid::Uuid;
+use crate::apub::ticket::accept::AcceptTicket;
 
 pub mod follow;
 
@@ -36,7 +39,8 @@ impl From<User> for UserWrapper {
 #[enum_delegate::implement(ActivityHandler)]
 pub enum PersonAcceptedActivities {
     Follow(Follow),
-    CreateIssue(CreateTicket),
+    AcceptTicket(AcceptTicket),
+    CreateIssueComment(CreateTicketComment),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -254,7 +258,7 @@ impl ApubObject for UserWrapper {
                 is_local: false,
             };
 
-            let user = User::create(user, db).await?;
+            let user = user.insert(db).await?;
             Ok(UserWrapper(user))
         }
     }

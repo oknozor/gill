@@ -25,3 +25,20 @@ async fn get_connected_user(db: &PgPool, user: Option<Oauth2User>) -> Option<Use
         None => None,
     }
 }
+
+#[cfg(test)]
+mod test {
+    use archunit_rs::{ExludeModules, Modules};
+    use archunit_rs::rule::{ArchRuleBuilder, CheckRule};
+
+    #[test]
+    fn only_domain_should_access_database() {
+        Modules::that(ExludeModules::cfg_test())
+            .does_not_reside_in_a_module("gill_app::domain*")
+            .should()
+            .only_have_dependency_module()
+            .that()
+            .does_not_have_simple_name("gill_db")
+            .check();
+    }
+}
