@@ -1,12 +1,13 @@
+use crate::domain::issue::comment::CreateIssueCommentCommand;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
-use axum::extract::Path;
+use crate::state::AppState;
+use axum::extract::{Path, State};
 use axum::response::Redirect;
-use axum::{Extension, Form};
-use gill_db::repository::Repository;
+use axum::Form;
+
 use serde::Deserialize;
-use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct IssueCommentForm {
@@ -15,21 +16,24 @@ pub struct IssueCommentForm {
 
 pub async fn comment(
     user: Option<Oauth2User>,
-    Extension(db): Extension<PgPool>,
     Path((owner, repository, issue_number)): Path<(String, String, i32)>,
+    State(state): State<AppState>,
     Form(input): Form<IssueCommentForm>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, user).await else {
+    let db = state.instance.database();
+    let Some(user) = get_connected_user(db, user).await else {
         return Err(AppError::Unauthorized);
     };
 
-    let comment = input.comment.escape_default().to_string();
-    Repository::by_namespace(&owner, &repository, &db)
-        .await?
-        .get_issue(issue_number, &db)
-        .await?
-        .comment(&comment, user.id, &db)
-        .await?;
+    let create_comment = CreateIssueCommentCommand {
+        owner: &owner,
+        repository: &repository,
+        author_id: user.id,
+        issue_number,
+        content: input.comment,
+    };
+
+    create_comment.execute(&state.instance).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/issues/{issue_number}"

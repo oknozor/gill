@@ -2,16 +2,15 @@ use crate::domain::repository::RepositoryStats;
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::view::component::MarkdownPreviewForm;
-use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
 use crate::{get_connected_user, get_connected_user_username};
-use anyhow::anyhow;
+
 use askama::Template;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::Extension;
-use gill_db::repository::pull_request::PullRequestState;
-use gill_db::repository::pull_request::{PullRequest, PullRequestComment};
+use gill_db::repository::pull_request::comment::PullRequestComment;
+use gill_db::repository::pull_request::{PullRequest, PullRequestState};
 use gill_db::repository::Repository;
 use gill_git::GitRepository;
 use sqlx::PgPool;
@@ -24,8 +23,7 @@ pub struct PullRequestTemplate {
     repository: String,
     pull_request: PullRequest,
     stats: RepositoryStats,
-    branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
     comments: Vec<PullRequestComment>,
     markdown_preview_form: MarkdownPreviewForm,
 }
@@ -40,13 +38,8 @@ pub async fn view(
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
     let pull_request = repo.get_pull_request(pull_request_number, &db).await?;
     let comments = pull_request.get_comments(&db).await?;
-    let current_branch = repo
-        .get_default_branch(&db)
-        .await
-        .ok_or_else(|| anyhow!("No default branch"))?;
+    let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 
-    let current_branch = current_branch.name;
-    let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
     let action_href = format!(
         "/{owner}/{repository}/pulls/{}/comment",
         pull_request.number
@@ -58,7 +51,6 @@ pub async fn view(
         repository: repository.clone(),
         pull_request,
         stats,
-        branches,
         current_branch,
         comments,
         markdown_preview_form: MarkdownPreviewForm {

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>gill</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/assets/css/tailwind.css"/>
+    <link rel="stylesheet" href="/assets/css/tabler-icons.css">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+{% include "navbar.html" %}
+<main class="container-md flex flex-row gap-4 px-20">
+    <section class="flex-none w-2/12">
+        {% block content_left %}{% endblock %}
+    </section>
+    <section class="flex flex-col grow gap-5 mb-12">
+        {% match current_branch %}
+        {% when Some with (current_branch) %}
+        {% let current_branch = current_branch %}
+        {% include "repository/header.html" %}
+        {% when None %}
+        {% include "repository/federated/header.html" %}
+        {% endmatch %}
+        {% block content %}{% endblock %}
+    </section>
+    <section class="flex-none w-2/12">
+        {% block content_right %}{% endblock %}
+    </section>
+</main>
+</body>
+</html>

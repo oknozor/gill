@@ -23,7 +23,7 @@ pub async fn close(
     };
 
     repository_entity
-        .get_issue(issue_number, &db)
+        .get_issue_digest(issue_number, &db)
         .await?
         .close(&db)
         .await?;

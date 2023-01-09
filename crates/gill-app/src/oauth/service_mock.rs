@@ -1,9 +1,9 @@
-use crate::api::user::User;
 use axum::{
     http::{Request, StatusCode},
     middleware::Next,
     response::Response,
 };
+use gill_db::users::User;
 
 pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
     tracing::debug!("Getting mock user for test");

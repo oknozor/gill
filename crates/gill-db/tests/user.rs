@@ -1,6 +1,7 @@
 mod follower;
 
 use gill_db::user::{CreateUser, User};
+use gill_db::Insert;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -21,7 +22,7 @@ async fn should_create_user(db: PgPool) {
         domain: "myinstance.org".to_string(),
     };
 
-    let res = User::create(bob, &db).await;
+    let res = bob.insert(&db).await;
 
     assert_that!(res).is_ok();
 }

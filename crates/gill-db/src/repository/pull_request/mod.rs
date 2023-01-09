@@ -1,6 +1,9 @@
 use crate::pagination::Pagination;
 use crate::repository::Repository;
+use comment::PullRequestComment;
 use sqlx::PgPool;
+
+pub mod comment;
 
 #[derive(Debug, sqlx::Type)]
 #[sqlx(type_name = "pull_request_state")]
@@ -22,12 +25,75 @@ pub struct PullRequest {
     pub state: PullRequestState,
 }
 
-#[derive(Debug, sqlx::FromRow)]
-pub struct PullRequestComment {
-    pub id: i32,
-    pub repository_id: i32,
-    pub created_by: String,
-    pub content: String,
+impl PullRequest {
+    pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> sqlx::Result<()> {
+        sqlx::query!(
+            // language=PostgreSQL
+            r#"
+           INSERT INTO pull_request_comment (number, repository_id, created_by, content)
+           VALUES ($1, $2, $3, $4);
+           "#,
+            self.number,
+            self.repository_id,
+            user_id,
+            comment,
+        )
+        .execute(db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_comments(&self, db: &PgPool) -> sqlx::Result<Vec<PullRequestComment>> {
+        let comments = sqlx::query_as!(
+            PullRequestComment,
+           // language=PostgreSQL
+           r#"
+           SELECT c.id, c.repository_id, u.username as created_by, c.content FROM pull_request_comment c
+                JOIN users u on u.id = c.created_by
+                WHERE c.repository_id = $1
+                AND c.number = $2;
+           "#,
+           self.repository_id,
+           self.number,
+       )
+            .fetch_all(db)
+            .await?;
+
+        Ok(comments)
+    }
+
+    pub async fn close(&self, db: &PgPool) -> sqlx::Result<()> {
+        sqlx::query!(
+            // language=PostgreSQL
+            r#"
+           UPDATE pull_request SET state = 'Closed'
+            WHERE pull_request.number = $1 AND repository_id = $2;
+           "#,
+            self.number,
+            self.repository_id
+        )
+        .execute(db)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn merged(&self, db: &PgPool) -> sqlx::Result<()> {
+        sqlx::query!(
+            // language=PostgreSQL
+            r#"
+           UPDATE pull_request SET state = 'Merged'
+            WHERE pull_request.number = $1 AND repository_id = $2;
+           "#,
+            self.number,
+            self.repository_id
+        )
+        .execute(db)
+        .await?;
+
+        Ok(())
+    }
 }
 
 impl Repository {
@@ -132,76 +198,5 @@ impl Repository {
         .await?;
 
         Ok(pull_request)
-    }
-}
-
-impl PullRequest {
-    pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-           INSERT INTO pull_request_comment (number, repository_id, created_by, content)
-           VALUES ($1, $2, $3, $4);
-           "#,
-            self.number,
-            self.repository_id,
-            user_id,
-            comment,
-        )
-        .execute(db)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn get_comments(&self, db: &PgPool) -> sqlx::Result<Vec<PullRequestComment>> {
-        let comments = sqlx::query_as!(
-            PullRequestComment,
-           // language=PostgreSQL
-           r#"
-           SELECT c.id, c.repository_id, u.username as created_by, c.content FROM pull_request_comment c
-                JOIN users u on u.id = c.created_by
-                WHERE c.repository_id = $1
-                AND c.number = $2;
-           "#,
-           self.repository_id,
-           self.number,
-       )
-            .fetch_all(db)
-            .await?;
-
-        Ok(comments)
-    }
-
-    pub async fn close(&self, db: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-           UPDATE pull_request SET state = 'Closed'
-            WHERE pull_request.number = $1 AND repository_id = $2;
-           "#,
-            self.number,
-            self.repository_id
-        )
-        .execute(db)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn merged(&self, db: &PgPool) -> sqlx::Result<()> {
-        sqlx::query!(
-            // language=PostgreSQL
-            r#"
-           UPDATE pull_request SET state = 'Merged'
-            WHERE pull_request.number = $1 AND repository_id = $2;
-           "#,
-            self.number,
-            self.repository_id
-        )
-        .execute(db)
-        .await?;
-
-        Ok(())
     }
 }

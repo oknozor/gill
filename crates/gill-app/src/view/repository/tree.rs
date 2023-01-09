@@ -1,16 +1,20 @@
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::view::repository::BranchDto;
-use crate::view::HtmlTemplate;
+use crate::view::{DynHtmlTemplate, HtmlTemplate};
 use anyhow::anyhow;
-use askama::Template;
+use askama::{DynTemplate, Template};
 use axum::extract::Path;
+
 use axum::Extension;
-use gill_db::user::User;
+
 use gill_git::traversal::{BlobInfo, TreeEntry, TreeInfo};
+use std::fmt::Write;
 
 use crate::domain::repository::RepositoryStats;
 use crate::get_connected_user_username;
+use gill_db::repository::Repository;
+
 use sqlx::PgPool;
 
 #[derive(Debug)]
@@ -73,6 +77,15 @@ impl From<TreeEntry> for TreeDto {
 }
 
 #[derive(Template, Debug)]
+#[template(path = "repository/federated/view.html")]
+pub struct FederatedRepositoryTemplate {
+    repository: String,
+    owner: String,
+    stats: RepositoryStats,
+    user: Option<String>,
+}
+
+#[derive(Template, Debug)]
 #[template(path = "repository/tree/tree.html")]
 pub struct GitTreeTemplate {
     repository: String,
@@ -81,7 +94,7 @@ pub struct GitTreeTemplate {
     tree: TreeDto,
     readme: Option<String>,
     branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
     user: Option<String>,
 }
 
@@ -128,17 +141,28 @@ pub async fn root(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+) -> Result<DynHtmlTemplate<Box<dyn DynTemplate>>, AppError> {
     let connected_username = get_connected_user_username(&db, user).await;
-    let user = User::by_user_name(&owner, &db).await?;
-    let repo = user.get_local_repository_by_name(&repository, &db).await?;
+    let repo = Repository::by_namespace(&owner, &repository, &db).await?;
+    let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 
-    let branch = repo
-        .get_default_branch(&db)
-        .await
-        .ok_or_else(|| anyhow!("No default branch"))?;
+    if repo.is_local {
+        let branch = repo
+            .get_default_branch(&db)
+            .await
+            .ok_or_else(|| anyhow!("No default branch"))?;
 
-    imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await
+        let template =
+            imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await?;
+        Ok(DynHtmlTemplate(Box::new(template.inner())))
+    } else {
+        Ok(DynHtmlTemplate(Box::new(FederatedRepositoryTemplate {
+            repository: repository.to_string(),
+            owner: owner.to_string(),
+            stats,
+            user: connected_username,
+        })))
+    }
 }
 
 mod imp {
@@ -166,7 +190,6 @@ mod imp {
         let readme = get_readme(&tree, &repo, owner, repository);
         let tree = TreeDto::from(tree);
         let branches = get_repository_branches(owner, repository, &current_branch, db).await?;
-
         let stats = RepositoryStats::get(owner, repository, db).await?;
 
         let template = GitTreeTemplate {
@@ -176,7 +199,7 @@ mod imp {
             tree,
             readme,
             branches,
-            current_branch,
+            current_branch: Some(current_branch),
             user: connected_username,
         };
 
@@ -205,7 +228,7 @@ mod imp {
             tree,
             readme,
             branches,
-            current_branch,
+            current_branch: Some(current_branch),
             user: connected_username,
         };
 

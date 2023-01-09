@@ -2,9 +2,9 @@ use crate::domain::repository::RepositoryStats;
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
-use crate::view::repository::{get_repository_branches, BranchDto};
+
 use crate::view::HtmlTemplate;
-use anyhow::anyhow;
+
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
@@ -21,8 +21,7 @@ pub struct PullRequestsTemplate {
     repository: String,
     pull_requests: Option<Vec<PullRequest>>,
     stats: RepositoryStats,
-    branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
 }
 
 pub async fn list_view(
@@ -41,13 +40,7 @@ pub async fn list_view(
     });
 
     let pull_requests = (!pull_requests.is_empty()).then_some(pull_requests);
-    let current_branch = repo
-        .get_default_branch(&db)
-        .await
-        .ok_or_else(|| anyhow!("No default branch"))?;
-
-    let current_branch = current_branch.name;
-    let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
+    let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 
     Ok(HtmlTemplate(PullRequestsTemplate {
         user: connected_username,
@@ -55,7 +48,6 @@ pub async fn list_view(
         repository,
         pull_requests,
         stats,
-        branches,
         current_branch,
     }))
 }

@@ -125,11 +125,17 @@ CREATE TABLE issue
 
 CREATE TABLE issue_comment
 (
-    id            SERIAL,
-    number        INT                            NOT NULL,
-    repository_id INT REFERENCES repository (id) NOT NULL,
-    created_by    INT REFERENCES users (id)      NOT NULL,
-    content       TEXT                           NOT NULL,
+    id              UUID PRIMARY KEY,
+    activity_pub_id VARCHAR(255)                                    NOT NULL UNIQUE,
+    number          INT                                             NOT NULL,
+    repository_id   INT REFERENCES repository (id)                  NOT NULL,
+    created_by      INT REFERENCES users (id)                       NOT NULL,
+    content         TEXT                                            NOT NULL,
+    media_type      VARCHAR(255)                                    NOT NULL,
+    attributed_to   VARCHAR(255) REFERENCES users (activity_pub_id) NOT NULL,
+    context         VARCHAR(255) REFERENCES issue (activity_pub_id) NOT NULL,
+    in_reply_to     VARCHAR(255)                                    NOT NULL,
+    published       TIMESTAMP                                       NOT NULL DEFAULT now(),
     CONSTRAINT issue_key FOREIGN KEY (number, repository_id) REFERENCES issue (number, repository_id)
 );
 

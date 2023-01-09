@@ -4,8 +4,8 @@ use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use activitypub_federation::core::object_id::ObjectId;
 
+use crate::apub::common::GillApubObject;
 use crate::apub::repository::RepositoryWrapper;
-use crate::apub::GillApubObject;
 use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;

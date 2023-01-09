@@ -1,25 +1,26 @@
+use crate::apub::common::{GillApubObject, Source};
 use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::{ApubUser, UserWrapper};
-use crate::apub::GillApubObject;
+use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
-use activitypub_federation::core::signatures::PublicKey;
+
 use activitypub_federation::traits::ApubObject;
 use activitystreams_kinds::kind;
 use async_session::async_trait;
-use gill_db::repository::issue::{Issue, IssueDigest, IssueState};
-use gill_db::repository::Repository;
-use gill_db::user::User;
+use gill_db::repository::issue::{Issue, IssueState};
+
+use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
-use serde_json::Value::Object;
-use sqlx::PgPool;
+
 use std::fmt::Debug;
 use std::str::FromStr;
-use url::{ParseError, Url};
+use url::Url;
 
-pub mod create;
+pub mod comment;
+pub mod offer;
+pub mod accept;
 
 kind!(TicketType, Ticket);
 
@@ -54,18 +55,11 @@ pub struct ApubTicket {
     pub resolved: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Source {
-    content: String,
-    media_type: String,
-}
-
 #[async_trait]
 impl ApubObject for IssueWrapper {
     type DataType = InstanceHandle;
     type ApubType = ApubTicket;
-    type DbType = IssueDigest;
+    type DbType = Issue;
     type Error = AppError;
 
     async fn read_from_apub_id(
@@ -76,7 +70,7 @@ impl ApubObject for IssueWrapper {
         Self: Sized,
     {
         let db = data.database();
-        let issue = Issue::by_activity_pub_id(&object_id.to_string(), db).await?;
+        let issue = Issue::by_activity_pub_id(object_id.as_ref(), db).await?;
         Ok(issue.map(IssueWrapper))
     }
 
@@ -141,7 +135,7 @@ impl ApubObject for IssueWrapper {
     {
         let user = ticket
             .attributed_to
-            .dereference(&context, &context.local_instance, request_counter)
+            .dereference(context, &context.local_instance, request_counter)
             .await?;
 
         let repository = ticket
@@ -182,6 +176,20 @@ impl ApubObject for IssueWrapper {
 }
 
 impl IssueWrapper {
+    pub async fn add_subscriber(
+        &self,
+        subscriber_id: i32,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
+        let db = instance.database();
+        let has_subscriber = self.0.has_subscriber(subscriber_id, db).await?;
+        if !has_subscriber {
+            self.0.add_subscriber(subscriber_id, db).await?;
+        }
+
+        Ok(())
+    }
+
     pub fn activity_pub_id_from_namespace(
         user: &str,
         repository: &str,
