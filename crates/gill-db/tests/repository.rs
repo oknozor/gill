@@ -1,9 +1,9 @@
 use crate::fixtures::{create_repository, GILL_REPO_ID, LINUX_REPO_ID};
 use gill_db::repository::branch::Branch;
 use gill_db::repository::Repository;
+use gill_db::Insert;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use gill_db::Insert;
 
 #[sqlx::test(fixtures("base"))]
 async fn should_create_repository(db: PgPool) {

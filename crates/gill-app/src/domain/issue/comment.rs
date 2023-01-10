@@ -7,14 +7,15 @@ use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
-use activitypub_federation::traits::ApubObject;
+use activitypub_federation::traits::{Actor, ApubObject};
 use chrono::Utc;
 use gill_db::repository::issue::comment::IssueComment;
 use gill_db::repository::Repository;
 use gill_db::user::User;
+use gill_db::Insert;
+use gill_settings::SETTINGS;
 use url::Url;
 use uuid::Uuid;
-use gill_db::Insert;
 
 pub struct CreateIssueCommentCommand<'a> {
     pub owner: &'a str,
@@ -32,7 +33,13 @@ impl CreateIssueCommentCommand<'_> {
         let issue = repository.get_issue(self.issue_number, db).await?;
         let author = User::by_id(self.author_id, db).await?;
         let id = Uuid::new_v4();
-        let activity_pub_id = format!("{}/comment/{}", issue.activity_pub_id, id);
+        let protocol = SETTINGS.protocol();
+        let domain = &SETTINGS.domain;
+        let owner = &self.owner;
+        let repository_name = &self.repository;
+        let number = &issue.number;
+
+        let activity_pub_id = format!("{protocol}://{domain}/apub/users/{owner}/repositories/{repository_name}/issues/{number}/comments/{id}");
 
         let comment = IssueComment {
             id,
@@ -49,23 +56,35 @@ impl CreateIssueCommentCommand<'_> {
         };
 
         let comment = comment.insert(db).await?;
-
         let user = UserWrapper::from(author);
         let comment = IssueCommentWrapper::from(comment);
         let repo = RepositoryWrapper::from(repository);
         let hostname = instance.local_instance().hostname();
         let id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
+        let subscribers = issue.get_subscribers(i64::MAX, 0, db).await?;
+        let subscribers: Vec<Url> = subscribers
+            .into_iter()
+            .map(UserWrapper::from)
+            .map(|user| user.shared_inbox_or_inbox())
+            .collect();
+
+        let to = repo.shared_inbox_or_inbox();
+        let mut cc = repo.followers(instance).await?;
+        cc.extend(subscribers.clone());
+
+        let mut recipient = vec![to.clone()];
+        recipient.extend(cc.clone());
+        recipient.extend(subscribers);
 
         let create_event = CreateTicketComment {
             actor: ObjectId::new(user.activity_pub_id_as_url()?),
-            to: repo.followers(instance).await?,
+            to: vec![to],
             object: comment.into_apub(instance).await?,
-            cc: vec![],
+            cc,
             kind: Default::default(),
             id: Url::parse(&id)?,
         };
 
-        let recipient = create_event.to.to_owned();
         tracing::debug!(
             "Sending create issue comment activity to user inbox {:?}",
             recipient

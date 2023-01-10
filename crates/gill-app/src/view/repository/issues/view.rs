@@ -4,16 +4,16 @@ use crate::oauth::Oauth2User;
 use crate::view::component::MarkdownPreviewForm;
 
 use crate::get_connected_user_username;
-use crate::view::repository::{get_repository_branches, BranchDto};
+
 use crate::view::HtmlTemplate;
-use anyhow::anyhow;
+
 use askama::Template;
 use axum::extract::Path;
 
 use axum::Extension;
 use gill_db::repository::Repository;
 
-use gill_db::repository::issue::comment::{IssueCommentDigest};
+use gill_db::repository::issue::comment::IssueCommentDigest;
 use gill_db::repository::issue::{IssueDigest, IssueState};
 use sqlx::PgPool;
 
@@ -25,8 +25,7 @@ pub struct IssueTemplate {
     repository: String,
     issue: IssueDigest,
     stats: RepositoryStats,
-    branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
     comments: Vec<IssueCommentDigest>,
     markdown_preview_form: MarkdownPreviewForm,
 }
@@ -41,13 +40,8 @@ pub async fn view(
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
     let issue = repo.get_issue_digest(issue_number, &db).await?;
     let comments = issue.get_comments(&db).await?;
-    let current_branch = repo
-        .get_default_branch(&db)
-        .await
-        .ok_or_else(|| anyhow!("No default branch"))?;
+    let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 
-    let current_branch = current_branch.name;
-    let branches = get_repository_branches(&owner, &repository, &current_branch, &db).await?;
     let action_href = format!("/{owner}/{repository}/issues/{issue_number}/comment");
     Ok(HtmlTemplate(IssueTemplate {
         user: connected_username,
@@ -55,7 +49,6 @@ pub async fn view(
         repository: repository.clone(),
         issue,
         stats,
-        branches,
         current_branch,
         comments,
         markdown_preview_form: MarkdownPreviewForm {

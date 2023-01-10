@@ -7,12 +7,13 @@ use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use crate::view::repository::issues::create::CreateIssueForm;
 use activitypub_federation::core::object_id::ObjectId;
-use activitypub_federation::traits::ApubObject;
+use activitypub_federation::traits::{Actor, ApubObject};
 use chrono::Utc;
 use gill_db::repository::issue::{Issue, IssueState};
 use gill_db::repository::Repository;
 use gill_db::user::User;
 use gill_db::Insert;
+use gill_settings::SETTINGS;
 use url::Url;
 use uuid::Uuid;
 
@@ -43,7 +44,11 @@ impl CreateIssueCommand {
         let db = instance.database();
         let repo = Repository::by_namespace(owner, repository, db).await?;
         let number = repo.item_count + 1;
-        let activity_pub_id = format!("{}/issues/{}", repo.activity_pub_id, number);
+        let protocol = SETTINGS.protocol();
+        let domain = &SETTINGS.domain;
+        let activity_pub_id = format!(
+            "{protocol}://{domain}/apub/users/{owner}/repositories/{repository}/issues/{number}"
+        );
         let context = repo.activity_pub_id.to_owned();
         let attributed_to = user.activity_pub_id.to_owned();
         let media_type = "text/markdown".to_owned();
@@ -53,12 +58,13 @@ impl CreateIssueCommand {
         let dependants = format!("{activity_pub_id}/dependants");
         let dependencies = format!("{activity_pub_id}/dependencies");
         let history = format!("{activity_pub_id}/history");
+        let content = self.content.escape_default().to_string();
 
         let new_issue = Issue {
             repository_id: repo.id,
             opened_by: user.id,
             title: self.title,
-            content: self.content,
+            content,
             state: IssueState::Open,
             activity_pub_id,
             context,
@@ -100,20 +106,22 @@ impl CreateIssueCommand {
 
         let create_event = CreateTicket {
             actor: ObjectId::new(user.activity_pub_id_as_url()?),
-            to: repo.followers(instance).await?,
+            to: vec![repo.shared_inbox_or_inbox()],
             object: issue.into_apub(instance).await?,
-            cc: vec![],
+            cc: repo.followers(instance).await?,
             kind: Default::default(),
             id: Url::parse(&id)?,
         };
 
-        let recipient = create_event.to.to_owned();
+        let mut recipient = create_event.to.to_owned();
+        recipient.extend(create_event.cc.to_owned());
+
         tracing::debug!(
             "Sending create issue activity to user inbox {:?}",
             recipient
         );
 
-        user.send(create_event, recipient.to_owned(), &instance.local_instance)
+        user.send(create_event, recipient, &instance.local_instance)
             .await?;
 
         Ok(())

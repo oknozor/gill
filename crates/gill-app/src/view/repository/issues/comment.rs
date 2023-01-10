@@ -5,10 +5,9 @@ use crate::oauth::Oauth2User;
 use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::response::Redirect;
-use axum::{Form};
+use axum::Form;
 
 use serde::Deserialize;
-
 
 #[derive(Deserialize, Debug)]
 pub struct IssueCommentForm {

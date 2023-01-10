@@ -1,6 +1,6 @@
+use gill_db::user::User;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use gill_db::user::User;
 
 #[sqlx::test(fixtures("base"))]
 async fn should_get_user_by_email(db: PgPool) -> anyhow::Result<()> {

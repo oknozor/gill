@@ -1,7 +1,7 @@
 use crate::apub::common::{GillApubObject, Source};
 
 use crate::apub::ticket::IssueWrapper;
-use crate::apub::user::{UserWrapper};
+use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -16,13 +16,12 @@ use gill_db::Insert;
 
 use serde::{Deserialize, Serialize};
 
-
 use std::fmt::Debug;
 use std::str::FromStr;
 
-use url::{Url};
-use uuid::Uuid;
 use gill_settings::SETTINGS;
+use url::Url;
+use uuid::Uuid;
 
 pub mod create;
 
@@ -142,9 +141,8 @@ impl IssueCommentWrapper {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!(
-            "{scheme}://{domain}/apub/users/{user}/repositories/{repository}/issues/{issue}/comment/{uuid}"
+            "{scheme}://{domain}/apub/users/{user}/repositories/{repository}/issues/{issue}/comments/{uuid}"
         ))?;
         Ok(ObjectId::new(url))
     }
-
 }

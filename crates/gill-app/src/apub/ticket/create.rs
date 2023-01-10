@@ -1,14 +1,12 @@
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
-
-
-use crate::apub::ticket::{ApubTicket};
+use crate::apub::ticket::ApubTicket;
 use crate::apub::user::UserWrapper;
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
-use activitystreams_kinds::activity::{CreateType};
+use activitystreams_kinds::activity::CreateType;
 use axum::async_trait;
 use serde::{Deserialize, Serialize};
 use url::Url;

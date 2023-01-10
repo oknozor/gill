@@ -126,7 +126,7 @@ CREATE TABLE issue
 CREATE TABLE issue_comment
 (
     id              UUID PRIMARY KEY,
-    activity_pub_id VARCHAR(255)                                    NOT NULL,
+    activity_pub_id VARCHAR(255)                                    NOT NULL UNIQUE,
     number          INT                                             NOT NULL,
     repository_id   INT REFERENCES repository (id)                  NOT NULL,
     created_by      INT REFERENCES users (id)                       NOT NULL,

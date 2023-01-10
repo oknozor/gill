@@ -15,6 +15,8 @@ use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 
+use crate::apub::ticket::comment::create::CreateTicketComment;
+use crate::apub::ticket::create::CreateTicket;
 use star::Star;
 use std::str::FromStr;
 use url::{ParseError, Url};
@@ -37,6 +39,8 @@ pub enum RepositoryAcceptedActivities {
     Watch(Watch),
     Star(Star),
     Fork(Fork),
+    CreateIssue(CreateTicket),
+    CreateIssueComment(CreateTicketComment),
 }
 
 impl From<Repository> for RepositoryWrapper {

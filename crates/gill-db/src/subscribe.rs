@@ -20,6 +20,25 @@ impl Issue {
         Ok(())
     }
 
+    pub async fn has_subscriber(&self, subscriber_id: i32, db: &PgPool) -> sqlx::Result<bool> {
+        let has_subscriber = sqlx::query!(
+            // language=PostgreSQL
+            r#"
+            SELECT
+                CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END as has_subscriber
+            FROM issue_subscriber
+            WHERE repository_id = $1 AND number = $2 AND subscriber = $3;
+            "#,
+            self.repository_id,
+            self.number,
+            subscriber_id
+        )
+        .fetch_one(db)
+        .await?;
+
+        Ok(has_subscriber.has_subscriber.unwrap_or_default())
+    }
+
     pub async fn get_subscribers(
         &self,
         limit: i64,

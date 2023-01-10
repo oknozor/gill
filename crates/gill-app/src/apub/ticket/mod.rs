@@ -1,6 +1,6 @@
 use crate::apub::common::{GillApubObject, Source};
 use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::{UserWrapper};
+use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -14,10 +14,9 @@ use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 
-
 use std::fmt::Debug;
 use std::str::FromStr;
-use url::{Url};
+use url::Url;
 
 pub mod comment;
 pub mod create;
@@ -176,6 +175,20 @@ impl ApubObject for IssueWrapper {
 }
 
 impl IssueWrapper {
+    pub async fn add_subscriber(
+        &self,
+        subscriber_id: i32,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
+        let db = instance.database();
+        let has_subscriber = self.0.has_subscriber(subscriber_id, db).await?;
+        if !has_subscriber {
+            self.0.add_subscriber(subscriber_id, db).await?;
+        }
+
+        Ok(())
+    }
+
     pub fn activity_pub_id_from_namespace(
         user: &str,
         repository: &str,

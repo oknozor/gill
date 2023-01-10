@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_repository.html" %}
 
 {% block head %}
 {% endblock %}
 
 {% block content %}
-{% include "../header.html" %}
+{% let current_branch = current_branch.as_ref().unwrap() %}
 {% include "../branch.html" %}
 <div class="flex flex-col space-around gap-5">
     <div class="flex flex-col rounded-md border border-slate-200 divide-y divide-slate-200">

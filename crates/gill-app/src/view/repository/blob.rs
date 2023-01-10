@@ -28,7 +28,7 @@ pub struct GitBLobTemplate {
     stats: RepositoryStats,
     blob: BlobDto,
     branches: Vec<BranchDto>,
-    current_branch: String,
+    current_branch: Option<String>,
     user: Option<String>,
 }
 
@@ -96,7 +96,7 @@ pub async fn blob(
         stats,
         blob,
         branches,
-        current_branch,
+        current_branch: Some(current_branch),
         user: connected_username,
     };
     Ok(HtmlTemplate(template))

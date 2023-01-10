@@ -6,7 +6,7 @@ use activitypub_federation::core::axum::{verify_request_payload, DigestVerified}
 
 use activitypub_federation::data::Data;
 use activitypub_federation::deser::context::WithContext;
-use activitypub_federation::traits::{ApubObject};
+use activitypub_federation::traits::ApubObject;
 
 use axum::extract::{OriginalUri, Path, State};
 use axum::response::IntoResponse;
@@ -16,20 +16,16 @@ use http::{HeaderMap, Method};
 
 use crate::apub::ticket::{ApubTicket, IssueWrapper};
 
-
-
-
 use repository::{ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper};
-
 
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
+
 use uuid::Uuid;
 
-
-use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 use crate::apub::ticket::comment::{ApubIssueComment, IssueCommentWrapper};
+use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
 
 pub mod commit;
 pub mod common;
@@ -46,7 +42,7 @@ pub fn router(instance: Arc<Instance>) -> Router {
             get(issue),
         )
         .route(
-            "/users/:user/repositories/:repository/issues/:number/comment/:uuid",
+            "/users/:user/repositories/:repository/issues/:number/comments/:uuid",
             get(comment),
         );
 
@@ -104,13 +100,17 @@ async fn comment(
     State(data): State<InstanceHandle>,
     Path((user, repository, issue_number, uuid)): Path<(String, String, i32, Uuid)>,
 ) -> Result<ApubJson<WithContext<ApubIssueComment>>, AppError> {
-    let object_id = IssueCommentWrapper::activity_pub_id_from_namespace(&user, &repository, issue_number, uuid)?;
+    let object_id = IssueCommentWrapper::activity_pub_id_from_namespace(
+        &user,
+        &repository,
+        issue_number,
+        uuid,
+    )?;
     let comment = object_id.dereference_local(&data).await?;
     let comment = comment.into_apub(&data).await;
     let comment = WithContext::new_default(comment?);
     Ok(ApubJson(comment))
 }
-
 
 async fn user_inbox(
     headers: HeaderMap,

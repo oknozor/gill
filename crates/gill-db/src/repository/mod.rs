@@ -1,5 +1,3 @@
-
-
 use branch::Branch;
 
 use serde::{Deserialize, Serialize};

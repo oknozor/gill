@@ -1,9 +1,9 @@
 mod follower;
 
+use gill_db::user::{CreateUser, User};
+use gill_db::Insert;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use gill_db::Insert;
-use gill_db::user::{CreateUser, User};
 
 const ALICE_ID: i32 = 0;
 
