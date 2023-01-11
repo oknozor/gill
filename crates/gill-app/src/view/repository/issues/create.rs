@@ -1,4 +1,4 @@
-use crate::domain::issue::CreateIssueCommand;
+use crate::domain::issue::create::CreateIssueCommand;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;

@@ -1,15 +1,15 @@
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 
 use crate::view::HtmlTemplate;
 
+use crate::domain::pull_request::{PullRequest, PullRequestState};
+use crate::domain::repository::Repository;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::repository::pull_request::{PullRequest, PullRequestState};
-use gill_db::repository::Repository;
 use sqlx::PgPool;
 use std::cmp::Ordering;
 

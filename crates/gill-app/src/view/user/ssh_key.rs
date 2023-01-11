@@ -1,4 +1,4 @@
-use crate::domain::ssh_key::RawSshkey;
+use crate::domain::user::ssh_key::RawSshkey;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;

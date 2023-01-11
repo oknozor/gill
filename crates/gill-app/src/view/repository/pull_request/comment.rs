@@ -1,10 +1,10 @@
+use crate::domain::repository::Repository;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::{Extension, Form};
-use gill_db::repository::Repository;
 use serde::Deserialize;
 use sqlx::PgPool;
 

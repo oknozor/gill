@@ -1,5 +1,5 @@
-use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::UserWrapper;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -25,8 +25,8 @@ pub struct ApubCommit {
     #[serde(rename = "type")]
     kind: CommitType,
     pub id: ObjectId<CommitWrapper>,
-    pub context: ObjectId<RepositoryWrapper>,
-    pub attributed_to: ObjectId<UserWrapper>,
+    pub context: ObjectId<Repository>,
+    pub attributed_to: ObjectId<User>,
     pub created: chrono::NaiveDateTime,
     pub committed: chrono::NaiveDateTime,
     pub hash: String,

@@ -1,8 +1,8 @@
+use crate::domain::repository::Repository;
 use crate::error::AppError;
 use crate::view::repository::tree_and_blob_from_query;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::repository::Repository;
 use gill_git::traversal::BlobMime;
 use gill_git::GitRepository;
 use sqlx::PgPool;

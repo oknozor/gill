@@ -1,5 +1,4 @@
 use crate::apub::common::GillApubObject;
-use crate::apub::user::UserWrapper;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -9,14 +8,14 @@ use activitypub_federation::traits::{ActivityHandler, Actor, ApubObject};
 use activitystreams_kinds::kind;
 use async_session::async_trait;
 use fork::Fork;
-use gill_db::repository::create::CreateRepository;
-use gill_db::repository::Repository;
-use gill_db::Insert;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 
 use crate::apub::ticket::comment::create::CreateTicketComment;
 use crate::apub::ticket::offer::OfferTicket;
+use crate::domain::repository::create::CreateRepository;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use star::Star;
 use std::str::FromStr;
 use url::{ParseError, Url};
@@ -27,9 +26,6 @@ pub mod star;
 pub mod watch;
 
 kind!(RepositoryType, Repository);
-
-#[derive(Debug, Clone)]
-pub struct RepositoryWrapper(Repository);
 
 /// List of all activities which this actor can receive.
 #[derive(Deserialize, Serialize, Debug)]
@@ -43,20 +39,14 @@ pub enum RepositoryAcceptedActivities {
     CreateIssueComment(CreateTicketComment),
 }
 
-impl From<Repository> for RepositoryWrapper {
-    fn from(repository: Repository) -> Self {
-        RepositoryWrapper(repository)
-    }
-}
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApubRepository {
     #[serde(rename = "type")]
     kind: RepositoryType,
-    pub id: ObjectId<RepositoryWrapper>,
+    pub id: ObjectId<Repository>,
     pub name: String,
-    pub clone_uri: String,
+    pub clone_uri: Url,
     pub attributed_to: Url,
     pub published: chrono::NaiveDateTime,
     pub summary: Option<String>,
@@ -70,83 +60,44 @@ pub struct ApubRepository {
 }
 
 #[async_trait]
-impl GillApubObject for RepositoryWrapper {
+impl GillApubObject for Repository {
     fn view_uri(&self) -> String {
-        let username = self.0.attributed_to.split('/').last().unwrap();
-        format!("/{}/{}", username, self.0.name)
-    }
-
-    fn followers_url(&self) -> Result<Url, AppError> {
-        Url::parse(&self.0.followers_url).map_err(Into::into)
+        let attributed_to = self.attributed_to.to_string();
+        let username = attributed_to.split('/').last().unwrap();
+        format!("/{}/{}", username, self.name)
     }
 
     async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
         let db = instance.database();
-        let followers = self.0.get_watchers(i64::MAX, 0, db).await?;
+        let followers = self.get_watchers(i64::MAX, 0, db).await?;
 
         let followers = followers
             .into_iter()
             .map(|follower| follower.inbox_url)
-            .filter_map(|url| Url::parse(&url).ok())
             .collect();
 
         Ok(followers)
     }
 
     fn local_id(&self) -> i32 {
-        self.0.id
-    }
-
-    fn activity_pub_id(&self) -> &str {
-        &self.0.activity_pub_id
+        self.id
     }
 
     fn public_key_with_owner(&self) -> Result<PublicKey, ParseError> {
         Ok(PublicKey::new_main_key(
-            self.activity_pub_id_as_url()?,
-            self.0.public_key.clone(),
+            self.activity_pub_id.clone().into(),
+            self.public_key.clone(),
         ))
     }
 
     fn private_key(&self) -> Option<String> {
-        self.0.private_key.clone()
+        self.private_key.clone()
     }
 }
 
-impl RepositoryWrapper {
-    pub fn owner_apub_id(&self) -> Result<ObjectId<UserWrapper>, AppError> {
-        Ok(ObjectId::new(Url::parse(&self.0.attributed_to)?))
-    }
-
-    pub async fn add_watcher(
-        &self,
-        watcher_id: i32,
-        instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
-        let db = instance.database();
-        self.0.add_watcher(watcher_id, db).await?;
-        Ok(())
-    }
-
-    pub async fn add_fork(
-        &self,
-        forked_by: i32,
-        fork: i32,
-        instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
-        let db = instance.database();
-        self.0.add_fork(fork, forked_by, db).await?;
-        Ok(())
-    }
-
-    pub async fn add_star(
-        &self,
-        starred_by: i32,
-        instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
-        let db = instance.database();
-        self.0.add_star(starred_by, db).await?;
-        Ok(())
+impl Repository {
+    pub fn owner_apub_id(&self) -> Result<ObjectId<User>, AppError> {
+        Ok(self.attributed_to.clone().into())
     }
 
     pub fn activity_pub_id_from_namespace(
@@ -162,15 +113,15 @@ impl RepositoryWrapper {
     }
 
     pub fn next_item_number(&self) -> i32 {
-        self.0.item_count + 1
+        self.item_count + 1
     }
 }
 
 #[async_trait]
-impl ApubObject for RepositoryWrapper {
+impl ApubObject for Repository {
     type DataType = InstanceHandle;
     type ApubType = ApubRepository;
-    type DbType = RepositoryWrapper;
+    type DbType = Repository;
     type Error = AppError;
 
     async fn read_from_apub_id(
@@ -178,30 +129,27 @@ impl ApubObject for RepositoryWrapper {
         data: &Self::DataType,
     ) -> Result<Option<Self>, Self::Error> {
         let db = data.database();
-        let repository = Repository::by_activity_pub_id(object_id.as_str(), db).await?;
-        Ok(repository.map(RepositoryWrapper))
+        Repository::by_activity_pub_id_optional(object_id.as_str(), db).await
     }
 
     async fn into_apub(self, _data: &Self::DataType) -> Result<Self::ApubType, Self::Error> {
-        let id = self.activity_pub_id_as_url()?;
-        let owner_url = Url::from_str(&self.0.attributed_to)?;
         let public_key = self.public_key_with_owner()?;
-        let forks = Url::parse(&format!("{id}/forks"))?;
+        let forks = Url::parse(&format!("{}/forks", self.activity_pub_id.to_string()))?;
 
         Ok(ApubRepository {
             kind: Default::default(),
-            id: ObjectId::new(id),
-            name: self.0.name,
-            clone_uri: self.0.clone_uri,
-            attributed_to: owner_url.clone(),
-            published: self.0.published,
-            summary: self.0.summary,
+            id: self.activity_pub_id.into(),
+            name: self.name,
+            clone_uri: self.clone_uri,
+            attributed_to: self.attributed_to.clone().into(),
+            published: self.published,
+            summary: self.summary,
             forks,
-            ticket_tracked_by: owner_url.clone(),
-            outbox: Url::parse(&self.0.outbox_url)?,
-            inbox: Url::parse(&self.0.inbox_url)?,
-            followers: Url::parse(&self.0.followers_url)?,
-            send_patches_to: owner_url,
+            ticket_tracked_by: self.attributed_to.clone().into(),
+            outbox: self.outbox_url,
+            inbox: self.inbox_url,
+            followers: self.followers_url,
+            send_patches_to: self.attributed_to.into(),
             public_key,
         })
     }
@@ -221,40 +169,41 @@ impl ApubObject for RepositoryWrapper {
         _request_counter: &mut i32,
     ) -> Result<Self, Self::Error> {
         let db = data.database();
-        let id = Url::from(apub.id);
-        let repository = Repository::by_activity_pub_id(id.as_str(), db).await?;
+        let repository =
+            Repository::by_activity_pub_id_optional(apub.id.inner().as_str(), db).await?;
         if let Some(repository) = repository {
-            Ok(RepositoryWrapper(repository))
+            Ok(repository)
         } else {
+            let domain = apub.id.inner().domain().expect("No domain").to_string();
             let repository = CreateRepository {
-                activity_pub_id: id.to_string(),
+                activity_pub_id: apub.id.into(),
                 name: apub.name,
                 summary: apub.summary,
                 public_key: apub.public_key.public_key_pem,
-                inbox_url: apub.inbox.to_string(),
-                outbox_url: apub.outbox.to_string(),
-                followers_url: apub.followers.to_string(),
-                attributed_to: apub.attributed_to.to_string(),
-                clone_uri: apub.clone_uri.to_string(),
-                send_patches_to: apub.send_patches_to.to_string(),
-                ticket_tracked_by: apub.ticket_tracked_by.to_string(),
+                inbox_url: apub.inbox,
+                outbox_url: apub.outbox,
+                followers_url: apub.followers,
+                attributed_to: apub.attributed_to.into(),
+                clone_uri: apub.clone_uri,
+                send_patches_to: apub.send_patches_to.into(),
+                ticket_tracked_by: apub.ticket_tracked_by.into(),
                 is_local: false,
                 private: false,
                 private_key: None,
-                domain: id.domain().expect("No domain").to_string(),
+                domain,
             };
 
-            let repository = repository.insert(db).await?;
-            Ok(RepositoryWrapper(repository))
+            let repository = repository.save(db).await?;
+            Ok(repository)
         }
     }
 }
 
-impl Actor for RepositoryWrapper {
+impl Actor for Repository {
     fn public_key(&self) -> &str {
-        &self.0.public_key
+        &self.public_key
     }
     fn inbox(&self) -> Url {
-        Url::from_str(&self.0.inbox_url).expect("Invalid inbox url")
+        self.inbox_url.to_owned()
     }
 }

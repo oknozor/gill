@@ -13,21 +13,13 @@ use url::{ParseError, Url};
 pub trait GillApubObject {
     fn view_uri(&self) -> String;
 
-    fn followers_url(&self) -> Result<Url, AppError>;
-
     async fn followers(&self, db: &InstanceHandle) -> Result<Vec<Url>, AppError>;
 
     fn local_id(&self) -> i32;
 
-    fn activity_pub_id(&self) -> &str;
-
     fn public_key_with_owner(&self) -> Result<PublicKey, ParseError>;
 
     fn private_key(&self) -> Option<String>;
-
-    fn activity_pub_id_as_url(&self) -> Result<Url, ParseError> {
-        Url::parse(self.activity_pub_id())
-    }
 
     async fn send<Activity>(
         &self,

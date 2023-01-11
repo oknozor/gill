@@ -4,10 +4,10 @@ use askama::Template;
 use axum::response::IntoResponse;
 use axum::Extension;
 
+use crate::domain::repository::digest::RepositoryDigest;
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::view::dto::{FederatedRepositoryDto, RepositoryDto};
-use gill_db::repository::digest::RepositoryDigest;
 use sqlx::PgPool;
 
 pub struct ActivityDto {}

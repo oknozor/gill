@@ -16,11 +16,7 @@ use oauth2::{
 };
 use serde::{Deserialize, Serialize};
 
-#[cfg(not(feature = "integration"))]
 pub mod service;
-
-#[cfg(feature = "integration")]
-pub mod service_mock;
 
 use gill_settings::SETTINGS;
 #[cfg(feature = "integration")]

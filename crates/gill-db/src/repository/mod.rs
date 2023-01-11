@@ -140,7 +140,7 @@ impl Repository {
     pub async fn by_activity_pub_id(
         activity_pub_id: &str,
         pool: &PgPool,
-    ) -> sqlx::Result<Option<Repository>> {
+    ) -> sqlx::Result<Repository> {
         let user = sqlx::query_as!(
             Repository,
             // language=PostgreSQL
@@ -150,7 +150,7 @@ impl Repository {
             "#,
             activity_pub_id,
         )
-        .fetch_optional(pool)
+        .fetch_one(pool)
         .await?;
 
         Ok(user)
@@ -167,8 +167,8 @@ impl Repository {
             "#,
             self.id,
         )
-            .fetch_one(db)
-            .await?;
+        .fetch_one(db)
+        .await?;
 
         Ok(user.username)
     }

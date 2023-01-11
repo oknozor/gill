@@ -69,7 +69,7 @@ async fn should_get_user_by_username(db: PgPool) {
 async fn should_get_user_by_activity_pub_id(db: PgPool) {
     let alice = User::by_activity_pub_id("https://myinstance.org/alice", &db).await;
 
-    assert_that!(alice).is_ok().is_equal_to(Some(User {
+    assert_that!(alice).is_ok().is_equal_to(User {
         id: ALICE_ID,
         username: "alice".to_string(),
         domain: "myinstance.org".to_string(),
@@ -81,5 +81,5 @@ async fn should_get_user_by_activity_pub_id(db: PgPool) {
         followers_url: "https://myinstance.org/alice/followsers/".to_string(),
         activity_pub_id: "https://myinstance.org/alice".to_string(),
         is_local: true,
-    }));
+    });
 }

@@ -1,4 +1,4 @@
-use crate::domain::issue::comment::CreateIssueCommentCommand;
+use crate::domain::issue::comment::create::CreateIssueCommentCommand;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;

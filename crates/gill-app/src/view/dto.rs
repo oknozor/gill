@@ -1,5 +1,5 @@
-use crate::domain::repository::RepositoryStats;
-use gill_db::repository::digest::RepositoryDigest;
+use crate::domain::repository::digest::RepositoryDigest;
+use crate::domain::repository::stats::RepositoryStats;
 
 pub struct RepositoryDto {
     pub owner: String,

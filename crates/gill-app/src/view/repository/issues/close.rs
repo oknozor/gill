@@ -1,10 +1,10 @@
+use crate::domain::repository::Repository;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::Extension;
-use gill_db::repository::Repository;
 use sqlx::PgPool;
 
 pub async fn close(
@@ -22,11 +22,7 @@ pub async fn close(
         return Err(AppError::Unauthorized);
     };
 
-    repository_entity
-        .get_issue_digest(issue_number, &db)
-        .await?
-        .close(&db)
-        .await?;
+    repository_entity.close_issue(issue_number, &db).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/issues/{issue_number}"

@@ -3,10 +3,10 @@ use crate::instance::InstanceHandle;
 
 use crate::apub::ticket::comment::ApubIssueComment;
 
-use crate::apub::user::UserWrapper;
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
 use crate::apub::common::GillApubObject;
+use crate::domain::user::User;
 use activitypub_federation::traits::ApubObject;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::CreateType;
@@ -17,7 +17,7 @@ use url::Url;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateTicketComment {
-    pub(crate) actor: ObjectId<UserWrapper>,
+    pub(crate) actor: ObjectId<User>,
     #[serde(deserialize_with = "deserialize_one_or_many")]
     pub(crate) to: Vec<Url>,
     pub(crate) object: ApubIssueComment,
@@ -54,7 +54,7 @@ impl ActivityHandler for CreateTicketComment {
         data: &Data<InstanceHandle>,
         request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let user = ObjectId::<UserWrapper>::new(self.actor)
+        let user = ObjectId::<User>::new(self.actor)
             .dereference_local(data)
             .await?;
 
@@ -69,7 +69,9 @@ impl ActivityHandler for CreateTicketComment {
         let issue = issue
             .dereference(data, &data.local_instance, request_counter)
             .await?;
-        issue.add_subscriber(user.local_id(), data).await?;
+        issue
+            .add_subscriber(user.local_id(), data.database())
+            .await?;
 
         Ok(())
     }
