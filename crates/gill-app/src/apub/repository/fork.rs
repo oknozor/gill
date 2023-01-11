@@ -1,6 +1,6 @@
 use crate::apub::common::GillApubObject;
-use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::UserWrapper;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -15,17 +15,17 @@ use url::Url;
 #[serde(rename_all = "camelCase")]
 pub struct Fork {
     id: Url,
-    pub repository: ObjectId<RepositoryWrapper>,
-    pub fork: ObjectId<RepositoryWrapper>,
-    pub forked_by: ObjectId<UserWrapper>,
+    pub repository: ObjectId<Repository>,
+    pub fork: ObjectId<Repository>,
+    pub forked_by: ObjectId<User>,
     r#type: CreateType,
 }
 
 impl Fork {
     pub fn new(
-        forked_by: ObjectId<UserWrapper>,
-        repository: ObjectId<RepositoryWrapper>,
-        fork: ObjectId<RepositoryWrapper>,
+        forked_by: ObjectId<User>,
+        repository: ObjectId<Repository>,
+        fork: ObjectId<Repository>,
         id: Url,
     ) -> Fork {
         Fork {
@@ -64,20 +64,20 @@ impl ActivityHandler for Fork {
         data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let user = ObjectId::<UserWrapper>::new(self.forked_by)
+        let user = ObjectId::<User>::new(self.forked_by)
             .dereference_local(data)
             .await?;
 
-        let repository = ObjectId::<RepositoryWrapper>::new(self.repository)
+        let repository = ObjectId::<Repository>::new(self.repository)
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
-        let fork = ObjectId::<RepositoryWrapper>::new(self.fork)
+        let fork = ObjectId::<Repository>::new(self.fork)
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
         repository
-            .add_fork(fork.local_id(), user.local_id(), data)
+            .add_fork(fork.local_id(), user.local_id(), data.database())
             .await?;
 
         Ok(())

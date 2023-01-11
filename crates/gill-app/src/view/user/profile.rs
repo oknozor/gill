@@ -7,8 +7,8 @@ use axum::Extension;
 
 use crate::view::dto::RepositoryDto;
 
+use crate::domain::user::User;
 use crate::get_connected_user_username;
-use gill_db::user::User;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -49,7 +49,7 @@ pub async fn user_view(
     Extension(db): Extension<PgPool>,
 ) -> Result<HtmlTemplate<UserPageTemplate>, crate::error::AppError> {
     let profile_username = user;
-    let user = User::by_user_name(&profile_username, &db).await?;
+    let user = User::by_name(&profile_username, &db).await?;
 
     let repositories = user
         .list_repositories(20, 0, &db)
@@ -59,7 +59,7 @@ pub async fn user_view(
         .collect();
 
     let stars = user
-        .list_starred_repositories(20, 0, &db)
+        .starred_repositories(20, 0, &db)
         .await?
         .into_iter()
         .map(RepositoryDto::from)

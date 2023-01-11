@@ -1,11 +1,10 @@
-use crate::apub::user::UserWrapper;
-
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use activitypub_federation::core::object_id::ObjectId;
 
 use crate::apub::common::GillApubObject;
-use crate::apub::repository::RepositoryWrapper;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use anyhow::anyhow;
 use axum::extract::State;
 use axum::response::Redirect;
@@ -40,7 +39,7 @@ pub async fn follow_form(
         // FIXME: this is not compatible with other forgefed instances and should not be done this way
         //  anyway, we should discuss this with forgefed people to find a common ground here
         if input.follow.contains('/') {
-            let repository = ObjectId::<RepositoryWrapper>::new(url);
+            let repository = ObjectId::<Repository>::new(url);
             let repository = repository
                 .dereference(&data.instance, data.instance.local_instance(), &mut 0)
                 .await?;
@@ -51,7 +50,7 @@ pub async fn follow_form(
 
             Ok(Redirect::to(&repository.view_uri()))
         } else {
-            let user = ObjectId::<UserWrapper>::new(url);
+            let user = ObjectId::<User>::new(url);
             let user = user
                 .dereference(&data.instance, data.instance.local_instance(), &mut 0)
                 .await?;
@@ -68,7 +67,7 @@ pub async fn follow_form(
 
         if let (Some(apub_link), Some(page_link)) = (apub_link, page_link) {
             let url = Url::parse(apub_link.href.as_ref().unwrap())?;
-            let repository = ObjectId::<RepositoryWrapper>::new(url);
+            let repository = ObjectId::<Repository>::new(url);
 
             let repository = repository
                 .dereference(&data.instance, data.instance.local_instance(), &mut 0)
@@ -94,7 +93,7 @@ pub async fn follow_form(
 
             if let (Some(apub_link), Some(page_link)) = (apub_link, page_link) {
                 let url = Url::parse(apub_link.href.as_ref().unwrap())?;
-                let user = ObjectId::<UserWrapper>::new(url);
+                let user = ObjectId::<User>::new(url);
                 user.dereference(&data.instance, data.instance.local_instance(), &mut 0)
                     .await?;
 

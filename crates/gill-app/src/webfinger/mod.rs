@@ -6,8 +6,8 @@ use axum::extract::Query;
 use axum::{Extension, Json};
 use gill_settings::SETTINGS;
 
-use gill_db::repository::Repository;
-use gill_db::user::User;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use serde::Deserialize;
 use sqlx::PgPool;
 use webfinger::{Link, Webfinger};
@@ -87,7 +87,7 @@ pub async fn webfinger(
                 ],
             }))
         } else {
-            User::by_user_name(&acct.user, &db).await?;
+            User::by_name(&acct.user, &db).await?;
             Ok(Json(Webfinger {
                 subject: query.resource,
                 aliases: vec![

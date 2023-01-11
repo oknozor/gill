@@ -68,10 +68,7 @@ impl Insert for IssueComment {
     }
 }
 impl IssueComment {
-    pub async fn by_activity_pub_id(
-        activity_pub_id: &str,
-        db: &PgPool,
-    ) -> sqlx::Result<Option<Self>> {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> sqlx::Result<Self> {
         let user = sqlx::query_as!(
             IssueComment,
             // language=PostgreSQL
@@ -81,7 +78,7 @@ impl IssueComment {
             "#,
             activity_pub_id,
         )
-        .fetch_optional(db)
+        .fetch_one(db)
         .await?;
 
         Ok(user)

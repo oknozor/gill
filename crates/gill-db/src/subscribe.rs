@@ -1,5 +1,5 @@
 use crate::repository::issue::Issue;
-use crate::user::User;
+
 use sqlx::PgPool;
 
 impl Issue {
@@ -39,18 +39,16 @@ impl Issue {
         Ok(has_subscriber.has_subscriber.unwrap_or_default())
     }
 
-    pub async fn get_subscribers(
+    pub async fn get_subscribers_inbox(
         &self,
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> sqlx::Result<Vec<User>> {
-        let followers = sqlx::query_as!(
-            User,
+    ) -> sqlx::Result<Vec<String>> {
+        let inboxes = sqlx::query!(
             // language=PostgreSQL
             r#"
-                SELECT u.id, username, domain, email, public_key, private_key, inbox_url, outbox_url,
-                followers_url, is_local, activity_pub_id
+                SELECT inbox_url
                 FROM issue_subscriber s
                 JOIN users u ON s.subscriber = u.id
                 LIMIT $1
@@ -59,9 +57,39 @@ impl Issue {
             limit,
             offset
         )
-            .fetch_all(db)
-            .await?;
+        .fetch_all(db)
+        .await?;
 
-        Ok(followers)
+        Ok(inboxes
+            .into_iter()
+            .map(|subscriber| subscriber.inbox_url)
+            .collect())
+    }
+
+    pub async fn get_subscribers_activity_pub_ids(
+        &self,
+        limit: i64,
+        offset: i64,
+        db: &PgPool,
+    ) -> sqlx::Result<Vec<String>> {
+        let subscriber = sqlx::query!(
+            // language=PostgreSQL
+            r#"
+                SELECT u.activity_pub_id
+                FROM issue_subscriber s
+                JOIN users u ON s.subscriber = u.id
+                LIMIT $1
+                OFFSET $2
+            "#,
+            limit,
+            offset
+        )
+        .fetch_all(db)
+        .await?;
+
+        Ok(subscriber
+            .into_iter()
+            .map(|subscriber| subscriber.activity_pub_id)
+            .collect())
     }
 }

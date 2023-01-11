@@ -7,7 +7,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
 use crate::get_connected_user_username;
 
 use gill_git::commits::OwnedCommit;

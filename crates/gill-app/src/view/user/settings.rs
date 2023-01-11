@@ -1,3 +1,4 @@
+use crate::domain::user::User;
 use crate::error::AppError;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
@@ -6,7 +7,6 @@ use askama::Template;
 use axum::extract::Query;
 use axum::response::IntoResponse;
 use axum::Extension;
-use gill_db::user::User;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -45,7 +45,7 @@ pub async fn settings(
         return Err(AppError::Unauthorized);
     };
 
-    let user = User::by_user_name(&user, &db).await?;
+    let user = User::by_name(&user, &db).await?;
 
     Ok(HtmlTemplate(UserSettingsTemplate {
         user: Some(user.username),

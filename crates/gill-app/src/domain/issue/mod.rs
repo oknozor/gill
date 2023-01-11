@@ -1,160 +1,235 @@
-use std::path::is_separator;
-use crate::apub::common::{GillApubObject, Source};
-use crate::apub::repository::RepositoryWrapper;
-use crate::apub::ticket::offer::{ApubTicketOffer, OfferTicket};
-use crate::apub::ticket::IssueWrapper;
-use crate::apub::user::UserWrapper;
+use crate::domain::id::ActivityPubId;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use crate::error::AppError;
-use crate::instance::InstanceHandle;
-use crate::view::repository::issues::create::CreateIssueForm;
-use activitypub_federation::core::object_id::ObjectId;
-use activitypub_federation::traits::{Actor, ApubObject};
-use chrono::Utc;
-use gill_db::repository::issue::{Issue, IssueState};
-use gill_db::repository::Repository;
-use gill_db::user::User;
+
+use axum::body::HttpBody;
+use chrono::NaiveDateTime;
+use gill_db::repository::issue::{Issue as IssueEntity, IssueState as IssueStateEntity};
 use gill_db::Insert;
-use gill_settings::SETTINGS;
+
+use sqlx::PgPool;
+
 use url::Url;
-use uuid::Uuid;
-use crate::apub::ticket::accept::AcceptTicket;
 
 pub mod comment;
+pub mod create;
+pub mod digest;
 
-pub struct CreateIssueCommand {
-    title: String,
-    content: String,
+#[derive(Debug, Clone)]
+pub struct Issue {
+    pub activity_pub_id: ActivityPubId<Issue>,
+    pub repository_id: i32,
+    pub opened_by: i32,
+    pub title: String,
+    pub content: String,
+    pub state: IssueState,
+    pub context: ActivityPubId<Repository>,
+    pub attributed_to: ActivityPubId<User>,
+    pub media_type: String,
+    pub published: NaiveDateTime,
+    pub followers_url: Url,
+    pub team: Url,
+    pub replies: Url,
+    pub history: Url,
+    pub dependants: Url,
+    pub dependencies: Url,
+    pub resolved_by: Option<ActivityPubId<User>>,
+    pub resolved: Option<NaiveDateTime>,
+    pub number: i32,
+    pub is_local: bool,
 }
 
-impl From<CreateIssueForm> for CreateIssueCommand {
-    fn from(form: CreateIssueForm) -> Self {
-        Self {
-            title: form.title,
-            content: form.content,
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum IssueState {
+    Open,
+    Closed,
+}
+
+impl From<IssueStateEntity> for IssueState {
+    fn from(state: IssueStateEntity) -> Self {
+        match state {
+            IssueStateEntity::Open => IssueState::Open,
+            IssueStateEntity::Closed => IssueState::Closed,
         }
     }
 }
 
-impl CreateIssueCommand {
-    pub async fn execute(
-        self,
-        repository: &str,
-        owner: &str,
-        user: User,
-        instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
-        let db = instance.database();
-        let repo = Repository::by_namespace(owner, repository, db).await?;
-        let user = UserWrapper::from(user);
+impl From<IssueState> for IssueStateEntity {
+    fn from(state: IssueState) -> Self {
+        match state {
+            IssueState::Open => IssueStateEntity::Open,
+            IssueState::Closed => IssueStateEntity::Closed,
+        }
+    }
+}
 
-        if repo.is_local {
-            let number = repo.item_count + 1;
-            let protocol = SETTINGS.protocol();
-            let domain = &SETTINGS.domain;
-            let activity_pub_id = format!(
-                "{protocol}://{domain}/apub/users/{owner}/repositories/{repository}/issues/{number}"
-            );
-            let context = repo.activity_pub_id.to_owned();
-            let attributed_to = user.activity_pub_id().to_owned();
-            let media_type = "text/markdown".to_owned();
-            let followers_url = format!("{activity_pub_id}/followers");
-            let team = format!("{activity_pub_id}/team");
-            let replies = format!("{activity_pub_id}/replies");
-            let dependants = format!("{activity_pub_id}/dependants");
-            let dependencies = format!("{activity_pub_id}/dependencies");
-            let history = format!("{activity_pub_id}/history");
-            let content = self.content.escape_default().to_string();
+impl TryFrom<IssueEntity> for Issue {
+    type Error = url::ParseError;
 
-            let new_issue = Issue {
-                repository_id: repo.id,
-                opened_by: user.local_id(),
-                title: self.title,
-                content,
-                state: IssueState::Open,
-                activity_pub_id,
-                context,
-                attributed_to,
-                media_type,
-                published: Utc::now().naive_local(),
-                followers_url,
-                team,
-                replies,
-                history,
-                dependants,
-                dependencies,
-                resolved_by: None,
-                resolved: None,
-                number,
-                is_local: true,
-            };
-
-            let issue = new_issue.insert(db).await?;
-
-            // Add the author to the list of subscriber
-            issue.add_subscriber(user.local_id(), db).await?;
-
-            // If author is not the repository owner, add the owner to
-            // the list of subscriber
-            if repo.attributed_to != user.activity_pub_id() {
-                let owner = User::by_activity_pub_id(&repo.attributed_to, db)
-                    .await?
-                    .expect("local user must a have an apub identifier");
-
-                issue.add_subscriber(owner.id, db).await?;
+    fn try_from(issue: IssueEntity) -> Result<Self, Self::Error> {
+        let resolved_by = match issue.resolved_by {
+            None => None,
+            Some(resolved_by) => {
+                let resolved_by = ActivityPubId::try_from(resolved_by)?;
+                Some(resolved_by)
             }
+        };
 
-            let issue = IssueWrapper::from(issue);
-            let repo = RepositoryWrapper::from(repo);
-            let hostname = instance.local_instance().hostname();
-            let id = format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4());
-            let ticket = issue.into_apub(instance).await?;
-            let to = repo.followers(instance).await?;
-            let recipient = to.clone();
-            let create_event = AcceptTicket {
-                id: Url::parse(&id)?,
-                actor: ObjectId::new(user.activity_pub_id_as_url()?),
-                to,
-                object: Url::parse(&format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4()))?,
-                kind: Default::default(),
-                result: ticket.id,
-            };
+        Ok(Self {
+            activity_pub_id: ActivityPubId::try_from(issue.activity_pub_id)?,
+            repository_id: issue.repository_id,
+            opened_by: issue.opened_by,
+            title: issue.title,
+            content: issue.content,
+            state: IssueState::Open,
+            context: ActivityPubId::try_from(issue.context)?,
+            attributed_to: ActivityPubId::try_from(issue.attributed_to)?,
+            media_type: issue.media_type,
+            published: Default::default(),
+            followers_url: Url::parse(&issue.followers_url)?,
+            team: Url::parse(&issue.team)?,
+            replies: Url::parse(&issue.replies)?,
+            history: Url::parse(&issue.history)?,
+            dependants: Url::parse(&issue.dependants)?,
+            dependencies: Url::parse(&issue.dependencies)?,
+            resolved_by,
+            resolved: issue.resolved,
+            number: issue.number,
+            is_local: issue.is_local,
+        })
+    }
+}
 
-            tracing::debug!(
-            "Sending accept issue activity to repository followers inboxes {:?}",
-            recipient
-        );
-
-            user.send(create_event, recipient, &instance.local_instance)
-                .await?;
-
-            Ok(())            
-        } else {
-            let repository = RepositoryWrapper::from(repo);
-            let hostname = &SETTINGS.domain;
-            let repository_activity_pub_id = repository.activity_pub_id_as_url()?;
-            let to = repository.followers(instance).await?;
-            let recipient = to.clone();
-            let offer = OfferTicket {
-                id: Url::parse(&format!("https://{hostname}/activity/{uuid}", uuid = Uuid::new_v4()))?,
-                kind: Default::default(),
-                actor: ObjectId::new(user.activity_pub_id_as_url()?),
-                to: vec![],
-                object: ApubTicketOffer {
-                    kind: Default::default(),
-                    attributed_to: ObjectId::new(user.activity_pub_id_as_url()?),
-                    summary: self.title,
-                    media_type: "text/markdown".to_string(),
-                    source: Source {
-                        content: self.content,
-                        media_type: "text/markdown".to_string(),
-                    },
-                },
-                target: ObjectId::new(repository_activity_pub_id),
-            };
-
-            user.send(offer, recipient, &instance.local_instance)
-                .await
+impl From<Issue> for IssueEntity {
+    fn from(issue: Issue) -> Self {
+        IssueEntity {
+            repository_id: issue.repository_id,
+            opened_by: issue.opened_by,
+            title: issue.title.to_string(),
+            content: issue.content.to_string(),
+            state: issue.state.into(),
+            activity_pub_id: issue.activity_pub_id.to_string(),
+            context: issue.context.to_string(),
+            attributed_to: issue.attributed_to.to_string(),
+            media_type: issue.media_type.clone(),
+            published: issue.published,
+            followers_url: issue.followers_url.to_string(),
+            team: issue.team.to_string(),
+            replies: issue.replies.to_string(),
+            history: issue.history.to_string(),
+            dependants: issue.dependants.to_string(),
+            dependencies: issue.dependencies.to_string(),
+            resolved_by: issue.resolved_by.map(|resolved_by| resolved_by.to_string()),
+            resolved: issue.resolved,
+            number: issue.number,
+            is_local: issue.is_local,
         }
     }
 }
 
+impl From<&Issue> for IssueEntity {
+    fn from(val: &Issue) -> Self {
+        IssueEntity {
+            repository_id: val.repository_id,
+            opened_by: val.opened_by,
+            title: val.title.to_string(),
+            content: val.content.to_string(),
+            state: val.state.into(),
+            activity_pub_id: val.activity_pub_id.to_string(),
+            context: val.context.to_string(),
+            attributed_to: val.attributed_to.to_string(),
+            media_type: val.media_type.clone(),
+            published: val.published,
+            followers_url: val.followers_url.to_string(),
+            team: val.team.to_string(),
+            replies: val.replies.to_string(),
+            history: val.history.to_string(),
+            dependants: val.dependants.to_string(),
+            dependencies: val.dependencies.to_string(),
+            resolved_by: val
+                .resolved_by
+                .as_ref()
+                .map(|resolved_by| resolved_by.to_string()),
+            resolved: val.resolved,
+            number: val.number,
+            is_local: val.is_local,
+        }
+    }
+}
+
+impl Issue {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> Result<Self, AppError> {
+        let entity = IssueEntity::by_activity_pub_id(activity_pub_id, db).await?;
+        Issue::try_from(entity).map_err(Into::into)
+    }
+
+    pub async fn by_activity_pub_id_optional(
+        activity_pub_id: &str,
+        db: &PgPool,
+    ) -> Result<Option<Self>, AppError> {
+        let entity = IssueEntity::by_activity_pub_id(activity_pub_id, db).await;
+        match entity {
+            Ok(entity) => {
+                let issue = Issue::try_from(entity)?;
+                Ok(Some(issue))
+            }
+            Err(sqlx::Error::RowNotFound) => Ok(None),
+            Err(err) => Err(AppError::from(err)),
+        }
+    }
+
+    pub async fn save(self, db: &PgPool) -> Result<Self, AppError> {
+        let entity: IssueEntity = self.into();
+        let entity = entity.insert(db).await?;
+        Issue::try_from(entity).map_err(Into::into)
+    }
+
+    pub async fn has_subscriber(&self, subscriber_id: i32, db: &PgPool) -> Result<bool, AppError> {
+        let entity = IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
+
+        entity
+            .has_subscriber(subscriber_id, db)
+            .await
+            .map_err(Into::into)
+    }
+
+    pub async fn add_subscriber(&self, subscriber_id: i32, db: &PgPool) -> Result<(), AppError> {
+        let has_subscriber = self.has_subscriber(subscriber_id, db).await?;
+        if !has_subscriber {
+            let entity =
+                IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
+
+            entity.add_subscriber(subscriber_id, db).await?;
+        }
+
+        Ok(())
+    }
+
+    async fn followers(&self, db: &PgPool) -> Result<Vec<Url>, AppError> {
+        let entity = IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
+
+        let followers = entity
+            .get_subscribers_activity_pub_ids(i64::MAX, 0, db)
+            .await?;
+        let followers = followers
+            .into_iter()
+            .filter_map(|url| Url::parse(&url).ok())
+            .collect();
+
+        Ok(followers)
+    }
+
+    pub async fn get_subscribers_inbox(
+        &self,
+        limit: i64,
+        offset: i64,
+        db: &PgPool,
+    ) -> Result<Vec<String>, AppError> {
+        let entity: IssueEntity = self.into();
+        entity
+            .get_subscribers_inbox(limit, offset, db)
+            .await
+            .map_err(Into::into)
+    }
+}

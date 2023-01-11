@@ -1,8 +1,9 @@
+use crate::domain::user::User;
+use crate::error::AppError;
 use crate::state::AppState;
 use anyhow::Result;
 use axum::routing::{get, post};
 use axum::Router;
-use gill_db::user::User;
 use sqlx::PgPool;
 use std::fmt;
 use std::fmt::Formatter;
@@ -48,8 +49,8 @@ async fn get_repository_branches(
     repository: &str,
     current_branch: &str,
     db: &PgPool,
-) -> Result<Vec<BranchDto>> {
-    let user = User::by_user_name(owner, db).await.unwrap();
+) -> Result<Vec<BranchDto>, AppError> {
+    let user = User::by_name(owner, db).await.unwrap();
     let repository = user.get_local_repository_by_name(repository, db).await?;
     let branches = repository.list_branches(20, 0, db).await?;
     let branches = branches

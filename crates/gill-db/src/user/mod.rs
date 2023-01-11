@@ -118,10 +118,7 @@ impl User {
         Ok(user)
     }
 
-    pub async fn by_activity_pub_id(
-        activity_pub_id: &str,
-        pool: &PgPool,
-    ) -> sqlx::Result<Option<User>> {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, pool: &PgPool) -> sqlx::Result<User> {
         let user = sqlx::query_as!(
             User,
             // language=PostgreSQL
@@ -131,7 +128,7 @@ impl User {
             "#,
             activity_pub_id,
         )
-        .fetch_optional(pool)
+        .fetch_one(pool)
         .await?;
 
         Ok(user)

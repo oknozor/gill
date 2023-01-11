@@ -7,9 +7,9 @@ use anyhow::anyhow;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
-use gill_db::repository::Repository;
 
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
+use crate::domain::repository::Repository;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]

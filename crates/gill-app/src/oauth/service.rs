@@ -1,3 +1,4 @@
+use crate::domain::user::User;
 use crate::oauth::Oauth2User;
 use axum::{
     http,
@@ -5,7 +6,6 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use gill_db::user::User;
 use gill_settings::SETTINGS;
 use once_cell::sync::Lazy;
 use serde_json::Value;
@@ -38,7 +38,7 @@ pub async fn auth<B>(mut req: Request<B>, next: Next<B>) -> Result<Response, Sta
             match User::by_email(&current_user.email, pool).await {
                 Err(err) => {
                     tracing::error!(
-                        "Error fetching current user '{}': {err}",
+                        "Error fetching current user '{}': {err:?}",
                         current_user.email
                     );
                     Err(StatusCode::INTERNAL_SERVER_ERROR)

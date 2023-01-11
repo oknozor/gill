@@ -14,7 +14,7 @@ use gill_git::GitRepository;
 use sqlx::PgPool;
 use std::fmt::Formatter;
 
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
 use std::fmt;
 
 // Needed in template

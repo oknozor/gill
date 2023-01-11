@@ -7,7 +7,7 @@ use sqlx::PgPool;
 
 pub mod comment;
 
-#[derive(Debug, sqlx::Type, Eq, PartialEq)]
+#[derive(Debug, sqlx::Type, Eq, PartialEq, Copy, Clone)]
 #[sqlx(type_name = "pull_request_state")]
 pub enum IssueState {
     Open,
@@ -138,7 +138,7 @@ impl Issue {
     pub async fn by_activity_pub_id(
         activity_pub_id: &str,
         db: &PgPool,
-    ) -> Result<Option<Issue>, sqlx::Error> {
+    ) -> Result<Issue, sqlx::Error> {
         let issue = sqlx::query_as!(
             Issue,
             // language=PostgreSQL
@@ -169,7 +169,7 @@ impl Issue {
             "#,
             activity_pub_id,
         )
-        .fetch_optional(db)
+        .fetch_one(db)
         .await?;
 
         Ok(issue)

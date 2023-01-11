@@ -1,3 +1,19 @@
+use gill_db::user::CreateSSHKey as CreateSSHKeyEntity;
+
+pub struct CreateSSHKey {
+    pub name: String,
+    pub key: String,
+}
+
+impl From<CreateSSHKey> for CreateSSHKeyEntity {
+    fn from(val: CreateSSHKey) -> Self {
+        CreateSSHKeyEntity {
+            name: val.name,
+            key: val.key,
+        }
+    }
+}
+
 pub struct RawSshkey {
     inner: String,
 }

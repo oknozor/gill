@@ -1,5 +1,4 @@
-use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::UserWrapper;
+use crate::domain::repository::Repository;
 use crate::error::AppError;
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
@@ -7,7 +6,6 @@ use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::response::{IntoResponse, Response};
 use axum::Extension;
-use gill_db::repository::Repository;
 use http::StatusCode;
 use sqlx::PgPool;
 
@@ -28,9 +26,7 @@ pub async fn star(
 
     // If the repo is hosted on another instance send a 'Star' activity
     if !repository.is_local {
-        let user = UserWrapper::from(user);
-        user.star_repository(&RepositoryWrapper::from(repository), &state.instance)
-            .await?;
+        user.star_repository(&repository, &state.instance).await?;
     }
 
     Ok(StatusCode::NO_CONTENT.into_response())
@@ -52,9 +48,7 @@ pub async fn watch(
 
     // If the repo is hosted on another instance send a 'Watch' activity
     if !repository.is_local {
-        let user = UserWrapper::from(user);
-        user.watch_repository(&RepositoryWrapper::from(repository), &state.instance)
-            .await?;
+        user.watch_repository(&repository, &state.instance).await?;
     }
 
     Ok(StatusCode::NO_CONTENT.into_response())

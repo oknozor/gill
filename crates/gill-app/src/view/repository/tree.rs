@@ -11,10 +11,10 @@ use axum::Extension;
 use gill_git::traversal::{BlobInfo, TreeEntry, TreeInfo};
 use std::fmt::Write;
 
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
 use crate::get_connected_user_username;
-use gill_db::repository::Repository;
 
+use crate::domain::repository::Repository;
 use sqlx::PgPool;
 
 #[derive(Debug)]
@@ -171,7 +171,7 @@ mod imp {
     use crate::view::repository::tree::TreeDto;
     use crate::view::HtmlTemplate;
 
-    use crate::domain::repository::RepositoryStats;
+    use crate::domain::repository::stats::RepositoryStats;
     use crate::view::repository::get_repository_branches;
 
     use gill_git::traversal::TreeEntry;

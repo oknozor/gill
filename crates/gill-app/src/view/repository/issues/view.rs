@@ -1,4 +1,4 @@
-use crate::domain::repository::RepositoryStats;
+use crate::domain::repository::stats::RepositoryStats;
 use crate::error::AppError;
 use crate::oauth::Oauth2User;
 use crate::view::component::MarkdownPreviewForm;
@@ -11,10 +11,11 @@ use askama::Template;
 use axum::extract::Path;
 
 use axum::Extension;
-use gill_db::repository::Repository;
 
-use gill_db::repository::issue::comment::IssueCommentDigest;
-use gill_db::repository::issue::{IssueDigest, IssueState};
+use crate::domain::issue::comment::digest::IssueCommentDigest;
+use crate::domain::issue::digest::IssueDigest;
+use crate::domain::issue::IssueState;
+use crate::domain::repository::Repository;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]

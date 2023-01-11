@@ -1,16 +1,16 @@
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
-use crate::apub::ticket::{ApubTicket, IssueWrapper};
-use crate::apub::user::UserWrapper;
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
+use crate::domain::issue::Issue;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
-use activitystreams_kinds::activity::{AcceptType, CreateType, OfferType};
+use activitystreams_kinds::activity::AcceptType;
 use axum::async_trait;
 use serde::{Deserialize, Serialize};
 use url::Url;
-use crate::apub::repository::RepositoryWrapper;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ pub struct AcceptTicket {
     #[serde(rename = "type")]
     pub(crate) kind: AcceptType,
     /// The repository managing this ticket
-    pub(crate) actor: ObjectId<RepositoryWrapper>,
+    pub(crate) actor: ObjectId<Repository>,
     /// Collection of this repository follower's inboxes and the
     /// offer author inbox
     #[serde(deserialize_with = "deserialize_one_or_many")]
@@ -29,7 +29,7 @@ pub struct AcceptTicket {
     /// the offer activity or its id
     pub(crate) object: Url,
     /// The accepted ticket
-    pub(crate) result: ObjectId<IssueWrapper>,
+    pub(crate) result: ObjectId<Issue>,
 }
 
 #[async_trait]
@@ -58,7 +58,7 @@ impl ActivityHandler for AcceptTicket {
         data: &Data<InstanceHandle>,
         request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        ObjectId::<UserWrapper>::new(self.actor)
+        ObjectId::<User>::new(self.actor)
             .dereference_local(data)
             .await?;
 

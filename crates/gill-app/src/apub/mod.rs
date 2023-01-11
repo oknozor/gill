@@ -14,9 +14,9 @@ use axum::routing::{get, post};
 use axum::{body, middleware, Extension, Json, Router};
 use http::{HeaderMap, Method};
 
-use crate::apub::ticket::{ApubTicket, IssueWrapper};
+use crate::apub::ticket::ApubTicket;
 
-use repository::{ApubRepository, RepositoryAcceptedActivities, RepositoryWrapper};
+use repository::{ApubRepository, RepositoryAcceptedActivities};
 
 use std::sync::Arc;
 use tower::ServiceBuilder;
@@ -24,8 +24,12 @@ use tower_http::ServiceBuilderExt;
 
 use uuid::Uuid;
 
-use crate::apub::ticket::comment::{ApubIssueComment, IssueCommentWrapper};
-use user::{ApubUser, PersonAcceptedActivities, UserWrapper};
+use crate::apub::ticket::comment::ApubIssueComment;
+use crate::domain::issue::comment::IssueComment;
+use crate::domain::issue::Issue;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
+use user::{ApubUser, PersonAcceptedActivities};
 
 pub mod commit;
 pub mod common;
@@ -65,7 +69,7 @@ async fn user(
     Path(user): Path<String>,
     State(data): State<InstanceHandle>,
 ) -> Result<ApubJson<WithContext<ApubUser>>, AppError> {
-    let object_id = UserWrapper::activity_pub_id_from_namespace(&user)?;
+    let object_id = User::activity_pub_id_from_namespace(&user)?;
     let user = object_id
         .dereference_local(&data)
         .await?
@@ -78,7 +82,7 @@ async fn repository(
     State(data): State<InstanceHandle>,
     Path((user, repository)): Path<(String, String)>,
 ) -> Result<ApubJson<WithContext<ApubRepository>>, AppError> {
-    let object_id = RepositoryWrapper::activity_pub_id_from_namespace(&user, &repository)?;
+    let object_id = Repository::activity_pub_id_from_namespace(&user, &repository)?;
     let repository = object_id.dereference_local(&data).await?;
     let repository = repository.into_apub(&data).await;
     let repository = WithContext::new_default(repository?);
@@ -89,7 +93,7 @@ async fn issue(
     State(data): State<InstanceHandle>,
     Path((user, repository, issue_number)): Path<(String, String, i32)>,
 ) -> Result<ApubJson<WithContext<ApubTicket>>, AppError> {
-    let object_id = IssueWrapper::activity_pub_id_from_namespace(&user, &repository, issue_number)?;
+    let object_id = Issue::activity_pub_id_from_namespace(&user, &repository, issue_number)?;
     let ticket = object_id.dereference_local(&data).await?;
     let ticket = ticket.into_apub(&data).await;
     let ticket = WithContext::new_default(ticket?);
@@ -100,12 +104,8 @@ async fn comment(
     State(data): State<InstanceHandle>,
     Path((user, repository, issue_number, uuid)): Path<(String, String, i32, Uuid)>,
 ) -> Result<ApubJson<WithContext<ApubIssueComment>>, AppError> {
-    let object_id = IssueCommentWrapper::activity_pub_id_from_namespace(
-        &user,
-        &repository,
-        issue_number,
-        uuid,
-    )?;
+    let object_id =
+        IssueComment::activity_pub_id_from_namespace(&user, &repository, issue_number, uuid)?;
     let comment = object_id.dereference_local(&data).await?;
     let comment = comment.into_apub(&data).await;
     let comment = WithContext::new_default(comment?);
@@ -120,7 +120,7 @@ async fn user_inbox(
     Extension(digest_verified): Extension<DigestVerified>,
     Json(activity): Json<WithContext<PersonAcceptedActivities>>,
 ) -> impl IntoResponse {
-    receive_activity::<WithContext<PersonAcceptedActivities>, UserWrapper, InstanceHandle>(
+    receive_activity::<WithContext<PersonAcceptedActivities>, User, InstanceHandle>(
         digest_verified,
         activity,
         &data.clone().local_instance,
@@ -140,7 +140,7 @@ async fn repository_inbox(
     Extension(digest_verified): Extension<DigestVerified>,
     Json(activity): Json<WithContext<RepositoryAcceptedActivities>>,
 ) -> impl IntoResponse {
-    receive_activity::<WithContext<RepositoryAcceptedActivities>, UserWrapper, InstanceHandle>(
+    receive_activity::<WithContext<RepositoryAcceptedActivities>, User, InstanceHandle>(
         digest_verified,
         activity,
         &data.clone().local_instance,

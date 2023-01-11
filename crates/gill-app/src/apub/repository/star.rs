@@ -1,6 +1,6 @@
 use crate::apub::common::GillApubObject;
-use crate::apub::repository::RepositoryWrapper;
-use crate::apub::user::UserWrapper;
+use crate::domain::repository::Repository;
+use crate::domain::user::User;
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -15,17 +15,13 @@ use url::Url;
 #[serde(rename_all = "camelCase")]
 pub struct Star {
     id: Url,
-    pub user: ObjectId<UserWrapper>,
-    pub repository: ObjectId<RepositoryWrapper>,
+    pub user: ObjectId<User>,
+    pub repository: ObjectId<Repository>,
     r#type: LikeType,
 }
 
 impl Star {
-    pub fn new(
-        user: ObjectId<UserWrapper>,
-        repository: ObjectId<RepositoryWrapper>,
-        id: Url,
-    ) -> Star {
+    pub fn new(user: ObjectId<User>, repository: ObjectId<Repository>, id: Url) -> Star {
         Star {
             id,
             user,
@@ -61,15 +57,17 @@ impl ActivityHandler for Star {
         data: &Data<Self::DataType>,
         _request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let user = ObjectId::<UserWrapper>::new(self.user)
+        let user = ObjectId::<User>::new(self.user)
             .dereference_local(data)
             .await?;
 
-        let repository = ObjectId::<RepositoryWrapper>::new(self.repository)
+        let repository = ObjectId::<Repository>::new(self.repository)
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
-        repository.add_star(user.local_id(), data).await?;
+        repository
+            .add_star(user.local_id(), data.database())
+            .await?;
         Ok(())
     }
 }
