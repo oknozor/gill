@@ -1,7 +1,7 @@
 use crate::domain::id::ActivityPubId;
 use crate::domain::issue::Issue;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use activitypub_federation::core::object_id::ObjectId;
 use gill_db::repository::issue::comment::IssueComment as IssueCommentEntity;
 use gill_db::Insert;
@@ -68,10 +68,7 @@ impl From<&IssueComment> for IssueCommentEntity {
 }
 
 impl IssueComment {
-    pub async fn by_activity_pub_id(
-        activity_pub_id: &str,
-        db: &PgPool,
-    ) -> Result<IssueComment, AppError> {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> AppResult<IssueComment> {
         let entity = IssueCommentEntity::by_activity_pub_id(activity_pub_id, db).await?;
         IssueComment::try_from(entity).map_err(Into::into)
     }
@@ -79,7 +76,7 @@ impl IssueComment {
     pub async fn by_activity_pub_id_optional(
         activity_pub_id: &str,
         db: &PgPool,
-    ) -> Result<Option<IssueComment>, AppError> {
+    ) -> AppResult<Option<IssueComment>> {
         let entity = IssueCommentEntity::by_activity_pub_id(activity_pub_id, db).await;
         match entity {
             Ok(entity) => {
@@ -96,7 +93,7 @@ impl IssueComment {
         repository: &str,
         issue: i32,
         uuid: Uuid,
-    ) -> anyhow::Result<ObjectId<Self>> {
+    ) -> AppResult<ObjectId<Self>> {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!(
@@ -105,7 +102,7 @@ impl IssueComment {
         Ok(ObjectId::new(url))
     }
 
-    pub async fn save(&self, db: &PgPool) -> Result<IssueComment, AppError> {
+    pub async fn save(&self, db: &PgPool) -> AppResult<IssueComment> {
         let entity: IssueCommentEntity = self.into();
         let entity = entity.insert(db).await?;
         IssueComment::try_from(entity).map_err(Into::into)

@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 
 use gill_db::repository::digest::RepositoryDigest as RepositoryDigestEntity;
 use sqlx::PgPool;
@@ -31,7 +31,7 @@ impl From<RepositoryDigestEntity> for RepositoryDigest {
 }
 
 impl RepositoryDigest {
-    pub async fn all_local(limit: i64, offset: i64, db: &PgPool) -> Result<Vec<Self>, AppError> {
+    pub async fn all_local(limit: i64, offset: i64, db: &PgPool) -> AppResult<Vec<Self>> {
         let repositories = RepositoryDigestEntity::all_local(limit, offset, db).await?;
         Ok(repositories
             .into_iter()
@@ -39,11 +39,7 @@ impl RepositoryDigest {
             .collect())
     }
 
-    pub async fn all_federated(
-        limit: i64,
-        offset: i64,
-        db: &PgPool,
-    ) -> Result<Vec<Self>, AppError> {
+    pub async fn all_federated(limit: i64, offset: i64, db: &PgPool) -> AppResult<Vec<Self>> {
         let repositories = RepositoryDigestEntity::all_federated(limit, offset, db).await?;
         Ok(repositories
             .into_iter()

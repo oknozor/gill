@@ -3,7 +3,7 @@ use crate::domain::user::create::CreateUser;
 use crate::domain::user::ssh_key::CreateSSHKey;
 use crate::domain::user::ssh_key::RawSshkey;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppResult};
 use activitypub_federation::core::signatures::generate_actor_keypair;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -23,7 +23,7 @@ pub struct CreateUserCommand {
 pub async fn create(
     Extension(db): Extension<PgPool>,
     Json(user): Json<CreateUserCommand>,
-) -> Result<Response, AppError> {
+) -> AppResult<Response> {
     let keys = generate_actor_keypair()?;
     let protocol = SETTINGS.protocol();
     let domain = &SETTINGS.domain;
@@ -66,7 +66,7 @@ pub async fn register_ssh_key(
     Extension(user): Extension<User>,
     Extension(pool): Extension<PgPool>,
     Json(ssh_key): Json<CreateSSHKeyDto>,
-) -> Result<Response, AppError> {
+) -> AppResult<Response> {
     let key_name = ssh_key.name;
     let raw_key = RawSshkey::from(ssh_key.key);
     let (key_type, key) = raw_key.key_parts();

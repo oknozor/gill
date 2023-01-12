@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::oauth::oauth_client;
 use crate::{api, apub, view};
 
@@ -50,7 +50,7 @@ impl UrlVerifier for MyUrlVerifier {
 }
 
 impl Instance {
-    pub fn new(hostname: String, db: PgPool) -> Result<InstanceHandle, AppError> {
+    pub fn new(hostname: String, db: PgPool) -> AppResult<InstanceHandle> {
         let settings = InstanceSettings::builder()
             .debug(true)
             .url_verifier(Box::new(MyUrlVerifier()))

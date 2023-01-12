@@ -1,6 +1,8 @@
 use axum::response::{IntoResponse, Response};
 use http::StatusCode;
 
+pub type AppResult<T> = Result<T, AppError>;
+
 #[derive(Debug)]
 pub enum AppError {
     Internal(anyhow::Error),

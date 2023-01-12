@@ -1,5 +1,5 @@
 use crate::domain::pull_request::comment::PullRequestComment;
-use crate::error::AppError;
+use crate::error::AppResult;
 use std::cmp::Ordering;
 
 use gill_db::repository::pull_request::{
@@ -95,7 +95,7 @@ impl Ord for PullRequest {
 }
 
 impl PullRequest {
-    pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> AppResult<()> {
         let entity: PullRequestEntity = self.clone().into();
         let comment = comment.escape_default().to_string();
         entity
@@ -104,18 +104,18 @@ impl PullRequest {
             .map_err(Into::into)
     }
 
-    pub async fn get_comments(&self, db: &PgPool) -> Result<Vec<PullRequestComment>, AppError> {
+    pub async fn get_comments(&self, db: &PgPool) -> AppResult<Vec<PullRequestComment>> {
         let entity: PullRequestEntity = self.clone().into();
         let comments = entity.get_comments(db).await?;
         Ok(comments.into_iter().map(PullRequestComment::from).collect())
     }
 
-    pub async fn close(&self, db: &PgPool) -> Result<(), AppError> {
+    pub async fn close(&self, db: &PgPool) -> AppResult<()> {
         let entity: PullRequestEntity = self.clone().into();
         entity.close(db).await.map_err(Into::into)
     }
 
-    pub async fn set_merged(&self, db: &PgPool) -> Result<(), AppError> {
+    pub async fn set_merged(&self, db: &PgPool) -> AppResult<()> {
         let entity: PullRequestEntity = self.clone().into();
         entity.set_merged(db).await.map_err(Into::into)
     }

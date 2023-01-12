@@ -1,5 +1,5 @@
 use crate::domain::repository::stats::RepositoryStats;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::oauth::Oauth2User;
 use crate::view::component::MarkdownPreviewForm;
 use crate::view::HtmlTemplate;
@@ -68,7 +68,7 @@ pub async fn rebase(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .rebase(&user, &owner, pull_request_number, &db)

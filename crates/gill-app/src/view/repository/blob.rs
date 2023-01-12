@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::oauth::Oauth2User;
 use crate::view::repository::{get_repository_branches, tree_and_blob_from_query, BranchDto};
 use crate::view::HtmlTemplate;
@@ -51,7 +51,7 @@ pub async fn blob(
     Path((owner, repository, current_branch)): Path<(String, String, String)>,
     Path(path): Path<Vec<String>>,
     Extension(db): Extension<PgPool>,
-) -> Result<HtmlTemplate<GitBLobTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<GitBLobTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let path = path.last().unwrap();
     let (tree, blob_name) = tree_and_blob_from_query(path);

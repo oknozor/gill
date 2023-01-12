@@ -14,7 +14,7 @@ use sqlx::PgPool;
 use url::Url;
 use webfinger::Webfinger;
 
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::state::AppState;
 
 #[derive(Deserialize, Debug)]
@@ -29,7 +29,7 @@ pub async fn follow_form(
     connected_user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<FollowForm>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     let Some(_user) = get_connected_user(&db, connected_user).await else {
         return Err(AppError::from(anyhow!("Unauthorized")));
     };

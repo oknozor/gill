@@ -1,6 +1,6 @@
 use crate::domain::issue::comment::digest::IssueCommentDigest;
 use crate::domain::issue::IssueState;
-use crate::error::AppError;
+use crate::error::AppResult;
 use gill_db::repository::issue::IssueDigest as IssueDigestEntity;
 use sqlx::PgPool;
 use std::cmp::Ordering;
@@ -57,7 +57,7 @@ impl Ord for IssueDigest {
 }
 
 impl IssueDigest {
-    pub async fn get_comments(&self, db: &PgPool) -> Result<Vec<IssueCommentDigest>, AppError> {
+    pub async fn get_comments(&self, db: &PgPool) -> AppResult<Vec<IssueCommentDigest>> {
         let issue: IssueDigestEntity = self.clone().into();
         let comments = issue.get_comments(db).await?;
         Ok(comments.into_iter().map(IssueCommentDigest::from).collect())

@@ -5,7 +5,7 @@ use crate::apub::user::follow::Follow;
 use crate::domain::id::ActivityPubId;
 use crate::domain::repository::digest::RepositoryDigest;
 use crate::domain::repository::Repository;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
 use activitypub_federation::traits::Actor;
@@ -74,12 +74,12 @@ impl From<&User> for UserEntity {
 }
 
 impl User {
-    pub async fn by_id(id: i32, db: &PgPool) -> Result<User, AppError> {
+    pub async fn by_id(id: i32, db: &PgPool) -> AppResult<User> {
         let entity = UserEntity::by_id(id, db).await?;
         User::try_from(entity).map_err(Into::into)
     }
 
-    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> Result<User, AppError> {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> AppResult<User> {
         let entity = UserEntity::by_activity_pub_id(activity_pub_id, db).await?;
         User::try_from(entity).map_err(Into::into)
     }
@@ -87,7 +87,7 @@ impl User {
     pub async fn by_activity_pub_id_optional(
         activity_pub_id: &str,
         db: &PgPool,
-    ) -> Result<Option<User>, AppError> {
+    ) -> AppResult<Option<User>> {
         let entity = UserEntity::by_activity_pub_id(activity_pub_id, db).await;
         match entity {
             Ok(entity) => {
@@ -99,30 +99,30 @@ impl User {
         }
     }
 
-    pub async fn by_email(email: &str, db: &PgPool) -> Result<User, AppError> {
+    pub async fn by_email(email: &str, db: &PgPool) -> AppResult<User> {
         let entity = UserEntity::by_email(email, db).await?;
         User::try_from(entity).map_err(Into::into)
     }
 
-    pub async fn by_name(name: &str, db: &PgPool) -> Result<User, AppError> {
+    pub async fn by_name(name: &str, db: &PgPool) -> AppResult<User> {
         let entity = UserEntity::by_user_name(name, db).await?;
         User::try_from(entity).map_err(Into::into)
     }
 
-    pub async fn add_follower(&self, follower_id: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn add_follower(&self, follower_id: i32, db: &PgPool) -> AppResult<()> {
         let entity: UserEntity = self.into();
         entity.add_follower(follower_id, db).await?;
         Ok(())
     }
 
-    pub fn activity_pub_id_from_namespace(user: &str) -> Result<ObjectId<Self>, AppError> {
+    pub fn activity_pub_id_from_namespace(user: &str) -> AppResult<ObjectId<Self>> {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!("{scheme}://{domain}/apub/users/{user}"))?;
         Ok(ObjectId::new(url))
     }
 
-    pub async fn follow(&self, other: &User, instance: &InstanceHandle) -> Result<(), AppError> {
+    pub async fn follow(&self, other: &User, instance: &InstanceHandle) -> AppResult<()> {
         let follower = self.activity_pub_id.clone().into();
         let following = other.activity_pub_id.clone().into();
         let hostname = instance.local_instance().hostname();
@@ -148,7 +148,7 @@ impl User {
         &self,
         other: &Repository,
         instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         let watcher = self.activity_pub_id.clone().into();
         let watching = other.activity_pub_id.clone().into();
         let hostname = instance.local_instance().hostname();
@@ -174,7 +174,7 @@ impl User {
         &self,
         other: &Repository,
         instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         let starred_by = self.activity_pub_id.clone().into();
         let starred = other.activity_pub_id.clone().into();
         let hostname = instance.local_instance().hostname();
@@ -201,7 +201,7 @@ impl User {
         ssh_key: &str,
         key_type: &str,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         let entity: UserEntity = self.into();
         entity
             .add_ssh_key(key_name, ssh_key, key_type, db)
@@ -214,7 +214,7 @@ impl User {
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> Result<Vec<User>, AppError> {
+    ) -> AppResult<Vec<User>> {
         let entity: UserEntity = self.into();
         let follower_entities = entity.get_followers(limit, offset, db).await?;
         let followers = follower_entities
@@ -231,7 +231,7 @@ impl User {
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> Result<Vec<RepositoryDigest>, AppError> {
+    ) -> AppResult<Vec<RepositoryDigest>> {
         let user: UserEntity = self.into();
         let repositories = user.list_repositories(limit, offset, db).await?;
         Ok(repositories
@@ -245,7 +245,7 @@ impl User {
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> Result<Vec<RepositoryDigest>, AppError> {
+    ) -> AppResult<Vec<RepositoryDigest>> {
         let user: UserEntity = self.into();
         let repositories = user.list_starred_repositories(limit, offset, db).await?;
         Ok(repositories
@@ -258,7 +258,7 @@ impl User {
         &self,
         repo_name: &str,
         db: &PgPool,
-    ) -> Result<Repository, AppError> {
+    ) -> AppResult<Repository> {
         let user: UserEntity = self.into();
         let repository = user.get_local_repository_by_name(repo_name, db).await?;
         Repository::try_from(repository).map_err(Into::into)

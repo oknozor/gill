@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 use crate::view::HtmlTemplate;
@@ -30,7 +30,7 @@ pub async fn view(
     Path((owner, repository)): Path<(String, String)>,
     Query(diff): Query<DiffQuery>,
     Extension(db): Extension<PgPool>,
-) -> Result<HtmlTemplate<GitDiffTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<GitDiffTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let repo = GitRepository::open(&owner, &repository)?;
     let diff = repo.diff(&diff.from, &diff.to)?;
@@ -47,7 +47,7 @@ pub async fn view(
 pub async fn get_diff(
     Path((owner, repository)): Path<(String, String)>,
     Query(diff): Query<DiffQuery>,
-) -> Result<String, AppError> {
+) -> AppResult<String> {
     let repo = GitRepository::open(&owner, &repository)?;
     let diff = repo.diff(&diff.from, &diff.to)?;
     let diff = diff2html(&diff)?;

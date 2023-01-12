@@ -6,7 +6,7 @@ use crate::apub::ticket::comment::create::CreateTicketComment;
 use crate::domain::id::ActivityPubId;
 use crate::domain::user::create::CreateUser;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
 use activitypub_federation::core::signatures::PublicKey;
@@ -53,7 +53,7 @@ impl GillApubObject for User {
         format!("/{}", self.username)
     }
 
-    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
+    async fn followers(&self, instance: &InstanceHandle) -> AppResult<Vec<Url>> {
         let db = instance.database();
         let followers = self.get_followers(i64::MAX, 0, db).await?;
 

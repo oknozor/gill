@@ -5,7 +5,7 @@ use crate::domain::issue::comment::IssueComment;
 use crate::domain::id::ActivityPubId;
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::instance::InstanceHandle;
 use activitypub_federation::traits::{Actor, ApubObject};
 use chrono::Utc;
@@ -22,7 +22,7 @@ pub struct CreateIssueCommentCommand<'a> {
 }
 
 impl CreateIssueCommentCommand<'_> {
-    pub async fn execute(&self, instance: &InstanceHandle) -> Result<(), AppError> {
+    pub async fn execute(&self, instance: &InstanceHandle) -> AppResult<()> {
         let db = instance.database();
         let content = self.content.escape_default().to_string();
         let repository = Repository::by_namespace(self.owner, self.repository, db).await?;

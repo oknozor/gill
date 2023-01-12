@@ -1,5 +1,5 @@
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 use crate::view::HtmlTemplate;
@@ -40,7 +40,7 @@ pub async fn settings(
     connected_user: Option<Oauth2User>,
     Query(page): Query<UserSettingsQuery>,
     Extension(db): Extension<PgPool>,
-) -> Result<impl IntoResponse, AppError> {
+) -> AppResult<impl IntoResponse> {
     let Some(user) = get_connected_user_username(&db, connected_user).await else {
         return Err(AppError::Unauthorized);
     };

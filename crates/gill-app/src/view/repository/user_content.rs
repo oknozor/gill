@@ -1,5 +1,5 @@
 use crate::domain::repository::Repository;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::view::repository::tree_and_blob_from_query;
 use axum::extract::Path;
 use axum::Extension;
@@ -11,7 +11,7 @@ pub async fn image(
     Path((owner, repository)): Path<(String, String)>,
     Path(path): Path<Vec<String>>,
     Extension(db): Extension<PgPool>,
-) -> Result<Vec<u8>, AppError> {
+) -> AppResult<Vec<u8>> {
     let path = path.last().unwrap();
     let (tree, blob_name) = tree_and_blob_from_query(path);
     let repo = GitRepository::open(&owner, &repository)?;

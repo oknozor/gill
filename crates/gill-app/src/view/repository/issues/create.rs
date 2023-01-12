@@ -1,5 +1,5 @@
 use crate::domain::issue::create::CreateIssueCommand;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use crate::state::AppState;
@@ -24,7 +24,7 @@ pub async fn create(
     State(state): State<AppState>,
     Extension(db): Extension<PgPool>,
     Form(form): Form<CreateIssueForm>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     CreateIssueCommand::from(form)
         .execute(&repository, &owner, user, &state.instance)
         .await?;

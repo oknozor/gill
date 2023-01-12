@@ -1,5 +1,5 @@
 use crate::domain::repository::Repository;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use axum::extract::Path;
@@ -23,7 +23,7 @@ pub async fn create(
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
     Form(input): Form<CreatePullRequestForm>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
     repo.create_pull_request(
         user.id,

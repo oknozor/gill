@@ -5,7 +5,7 @@ use crate::domain::id::ActivityPubId;
 use crate::domain::issue::{Issue, IssueState};
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::instance::InstanceHandle;
 use crate::view::repository::issues::create::CreateIssueForm;
 
@@ -36,7 +36,7 @@ impl CreateIssueCommand {
         owner: &str,
         user: User,
         instance: &InstanceHandle,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         let db = instance.database();
         let repo = Repository::by_namespace(owner, repository, db).await?;
 

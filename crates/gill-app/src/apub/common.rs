@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::activity_queue::send_activity;
 use activitypub_federation::core::signatures::PublicKey;
@@ -13,7 +13,7 @@ use url::{ParseError, Url};
 pub trait GillApubObject {
     fn view_uri(&self) -> String;
 
-    async fn followers(&self, db: &InstanceHandle) -> Result<Vec<Url>, AppError>;
+    async fn followers(&self, db: &InstanceHandle) -> AppResult<Vec<Url>>;
 
     fn local_id(&self) -> i32;
 
