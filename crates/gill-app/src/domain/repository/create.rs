@@ -1,7 +1,7 @@
 use crate::domain::id::ActivityPubId;
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::AppResult;
 use gill_db::repository::create::CreateRepository as CreateRepositoryEntity;
 use gill_db::Insert;
 use sqlx::PgPool;
@@ -48,7 +48,7 @@ impl From<CreateRepository> for CreateRepositoryEntity {
 }
 
 impl CreateRepository {
-    pub async fn save(self, db: &PgPool) -> Result<Repository, AppError> {
+    pub async fn save(self, db: &PgPool) -> AppResult<Repository> {
         let entity: CreateRepositoryEntity = self.into();
         let repository = entity.insert(db).await?;
         Repository::try_from(repository).map_err(Into::into)

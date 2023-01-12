@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 
 use activitypub_federation::core::signatures::generate_actor_keypair;
 
@@ -22,7 +22,7 @@ pub struct CreateRepositoryCommand {
 }
 
 impl CreateRepositoryCommand {
-    fn map_to_domain(self, user: &User) -> Result<CreateRepository, AppError> {
+    fn map_to_domain(self, user: &User) -> AppResult<CreateRepository> {
         let protocol = &SETTINGS.protocol();
         let user_name = user.username.clone();
         let domain = &SETTINGS.domain;
@@ -60,11 +60,9 @@ pub async fn init(
     Extension(db): Extension<PgPool>,
     Extension(user): Extension<User>,
     Json(repository): Json<CreateRepositoryCommand>,
-) -> Result<Response, AppError> {
-    // TODO: handle database error
+) -> AppResult<Response> {
     let create_repository_command = repository.map_to_domain(&user)?;
     let repository = create_repository_command.save(&db).await?;
-    // #[cfg(not(feature = "integration"))]
     gill_git::init::init_bare(&user.username, &repository.name)?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

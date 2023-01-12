@@ -1,5 +1,5 @@
 use crate::domain::issue::comment::create::CreateIssueCommentCommand;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use crate::state::AppState;
@@ -23,7 +23,7 @@ pub async fn comment(
     State(state): State<AppState>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<IssueCommentForm>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     let create_comment = CreateIssueCommentCommand {
         owner: &owner,
         repository: &repository,

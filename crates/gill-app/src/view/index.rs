@@ -5,7 +5,7 @@ use axum::response::IntoResponse;
 use axum::Extension;
 
 use crate::domain::repository::digest::RepositoryDigest;
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::get_connected_user_username;
 use crate::view::dto::{FederatedRepositoryDto, RepositoryDto};
 use sqlx::PgPool;
@@ -23,7 +23,7 @@ struct LandingPageTemplate {
 pub async fn index(
     Extension(db): Extension<PgPool>,
     user: Option<Oauth2User>,
-) -> Result<impl IntoResponse, AppError> {
+) -> AppResult<impl IntoResponse> {
     let username = get_connected_user_username(&db, user).await;
     let local_repositories = RepositoryDigest::all_local(10, 0, &db).await?;
     let local_repositories = local_repositories

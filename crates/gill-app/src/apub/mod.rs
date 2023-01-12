@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::instance::{Instance, InstanceHandle};
 use activitypub_federation::core::axum::inbox::receive_activity;
 use activitypub_federation::core::axum::json::ApubJson;
@@ -68,7 +68,7 @@ pub fn router(instance: Arc<Instance>) -> Router {
 async fn user(
     Path(user): Path<String>,
     State(data): State<InstanceHandle>,
-) -> Result<ApubJson<WithContext<ApubUser>>, AppError> {
+) -> AppResult<ApubJson<WithContext<ApubUser>>> {
     let object_id = User::activity_pub_id_from_namespace(&user)?;
     let user = object_id
         .dereference_local(&data)
@@ -81,7 +81,7 @@ async fn user(
 async fn repository(
     State(data): State<InstanceHandle>,
     Path((user, repository)): Path<(String, String)>,
-) -> Result<ApubJson<WithContext<ApubRepository>>, AppError> {
+) -> AppResult<ApubJson<WithContext<ApubRepository>>> {
     let object_id = Repository::activity_pub_id_from_namespace(&user, &repository)?;
     let repository = object_id.dereference_local(&data).await?;
     let repository = repository.into_apub(&data).await;
@@ -92,7 +92,7 @@ async fn repository(
 async fn issue(
     State(data): State<InstanceHandle>,
     Path((user, repository, issue_number)): Path<(String, String, i32)>,
-) -> Result<ApubJson<WithContext<ApubTicket>>, AppError> {
+) -> AppResult<ApubJson<WithContext<ApubTicket>>> {
     let object_id = Issue::activity_pub_id_from_namespace(&user, &repository, issue_number)?;
     let ticket = object_id.dereference_local(&data).await?;
     let ticket = ticket.into_apub(&data).await;
@@ -103,7 +103,7 @@ async fn issue(
 async fn comment(
     State(data): State<InstanceHandle>,
     Path((user, repository, issue_number, uuid)): Path<(String, String, i32, Uuid)>,
-) -> Result<ApubJson<WithContext<ApubIssueComment>>, AppError> {
+) -> AppResult<ApubJson<WithContext<ApubIssueComment>>> {
     let object_id =
         IssueComment::activity_pub_id_from_namespace(&user, &repository, issue_number, uuid)?;
     let comment = object_id.dereference_local(&data).await?;

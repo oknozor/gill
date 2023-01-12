@@ -1,5 +1,5 @@
 use crate::domain::repository::stats::RepositoryStats;
-use crate::error::AppError;
+use crate::error::{AppResult};
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 
@@ -27,7 +27,7 @@ pub async fn list_view(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<HtmlTemplate<PullRequestsTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<PullRequestsTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;

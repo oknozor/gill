@@ -1,7 +1,7 @@
 use crate::domain::id::ActivityPubId;
 use crate::domain::issue::Issue;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 
 use gill_db::repository::branch::Branch;
 use gill_db::repository::Repository as RepositoryEntity;
@@ -198,7 +198,7 @@ impl Repository {
         issue_number: i32,
         user_activity_pub_id: ActivityPubId<User>,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         if self.attributed_to != user_activity_pub_id {
             return Err(AppError::Unauthorized);
         };
@@ -208,17 +208,13 @@ impl Repository {
         issue.close(db).await.map_err(Into::into)
     }
 
-    pub async fn get_pull_request(
-        &self,
-        number: i32,
-        db: &PgPool,
-    ) -> Result<PullRequest, AppError> {
+    pub async fn get_pull_request(&self, number: i32, db: &PgPool) -> AppResult<PullRequest> {
         let entity: RepositoryEntity = self.into();
         let entity = entity.get_pull_request(number, db).await?;
         Ok(PullRequest::from(entity))
     }
 
-    pub async fn list_pull_requests(&self, db: &PgPool) -> Result<Vec<PullRequest>, AppError> {
+    pub async fn list_pull_requests(&self, db: &PgPool) -> AppResult<Vec<PullRequest>> {
         let entity: RepositoryEntity = self.into();
         let entities = entity.list_pull_requests(db).await?;
         let mut pull_request: Vec<_> = entities
@@ -245,7 +241,7 @@ impl Repository {
         base: &str,
         compare: &str,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         let entity: RepositoryEntity = self.into();
         entity
             .create_pull_request(user_id, title, description, base, compare, db)
@@ -253,7 +249,7 @@ impl Repository {
             .map_err(Into::into)
     }
 
-    pub async fn list_issues(&self, db: &PgPool) -> Result<Vec<IssueDigest>, AppError> {
+    pub async fn list_issues(&self, db: &PgPool) -> AppResult<Vec<IssueDigest>> {
         let entity: RepositoryEntity = self.into();
         let entities = entity.list_issues(db).await?;
         let mut issues: Vec<IssueDigest> = entities.into_iter().map(IssueDigest::from).collect();
@@ -266,7 +262,7 @@ impl Repository {
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> Result<Vec<Branch>, AppError> {
+    ) -> AppResult<Vec<Branch>> {
         let repository: RepositoryEntity = self.into();
         let branches = repository.list_branches(limit, offset, db).await?;
         Ok(branches.into_iter().map(Branch::from).collect())
@@ -278,7 +274,7 @@ impl Repository {
         owner: &str,
         pull_request_number: i32,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         if self.attributed_to != user.activity_pub_id {
             return Err(AppError::Unauthorized);
         };
@@ -303,7 +299,7 @@ impl Repository {
         owner: &str,
         pull_request_number: i32,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         if self.attributed_to != user.activity_pub_id {
             return Err(AppError::Unauthorized);
         };
@@ -327,7 +323,7 @@ impl Repository {
         user: &User,
         pull_request_number: i32,
         db: &PgPool,
-    ) -> Result<(), AppError> {
+    ) -> AppResult<()> {
         if self.attributed_to != user.activity_pub_id {
             return Err(AppError::Unauthorized);
         };

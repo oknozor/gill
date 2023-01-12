@@ -1,5 +1,5 @@
 use crate::domain::user::ssh_key::RawSshkey;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 
@@ -21,7 +21,7 @@ pub async fn add(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<AddSshKeyForm>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     let raw_key = RawSshkey::from(input.key);
     let (key_type, key) = raw_key.key_parts();
     user.add_ssh_key(&input.title, key, key_type, &db).await?;

@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::oauth::Oauth2User;
 use crate::view::repository::BranchDto;
 use crate::view::{DynHtmlTemplate, HtmlTemplate};
@@ -104,7 +104,7 @@ pub async fn tree(
     Path((owner, repository, branch)): Path<(String, String, String)>,
     Path(path): Path<Vec<String>>,
     Extension(db): Extension<PgPool>,
-) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<GitTreeTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let tree = path[3..].join("/");
     let tree_path = if tree.is_empty() {
@@ -130,7 +130,7 @@ pub async fn tree_root(
     user: Option<Oauth2User>,
     Path((owner, repository, branch)): Path<(String, String, String)>,
     Extension(db): Extension<PgPool>,
-) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<GitTreeTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     imp::get_tree_root(&owner, &repository, branch, connected_username, &db).await
 }
@@ -141,7 +141,7 @@ pub async fn root(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<DynHtmlTemplate<Box<dyn DynTemplate>>, AppError> {
+) -> AppResult<DynHtmlTemplate<Box<dyn DynTemplate>>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
@@ -167,7 +167,7 @@ pub async fn root(
 
 mod imp {
     use super::GitTreeTemplate;
-    use crate::error::AppError;
+    use crate::error::AppResult;
     use crate::view::repository::tree::TreeDto;
     use crate::view::HtmlTemplate;
 
@@ -184,7 +184,7 @@ mod imp {
         current_branch: String,
         connected_username: Option<String>,
         db: &PgPool,
-    ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+    ) -> AppResult<HtmlTemplate<GitTreeTemplate>> {
         let repo = GitRepository::open(owner, repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), None)?;
         let readme = get_readme(&tree, &repo, owner, repository);
@@ -213,7 +213,7 @@ mod imp {
         current_branch: String,
         connected_username: Option<String>,
         db: &PgPool,
-    ) -> Result<HtmlTemplate<GitTreeTemplate>, AppError> {
+    ) -> AppResult<HtmlTemplate<GitTreeTemplate>> {
         let repo = GitRepository::open(&owner, &repository)?;
         let tree = repo.get_tree_for_path(Some(&current_branch), tree_path)?;
         let readme = get_readme(&tree, &repo, &owner, &repository);

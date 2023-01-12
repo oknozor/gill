@@ -1,6 +1,6 @@
 use crate::domain::id::ActivityPubId;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::AppResult;
 use gill_db::user::CreateUser as CreateUserEntity;
 use gill_db::Insert;
 use sqlx::PgPool;
@@ -38,7 +38,7 @@ impl From<CreateUser> for CreateUserEntity {
 }
 
 impl CreateUser {
-    pub async fn save(self, db: &PgPool) -> Result<User, AppError> {
+    pub async fn save(self, db: &PgPool) -> AppResult<User> {
         let entity: CreateUserEntity = self.into();
         let user = entity.insert(db).await?;
         User::try_from(user).map_err(Into::into)

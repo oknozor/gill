@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 use crate::view::repository::{get_repository_branches, BranchDto};
@@ -27,7 +27,7 @@ pub async fn compare(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<HtmlTemplate<CompareTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<CompareTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;

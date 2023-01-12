@@ -1,7 +1,7 @@
 use crate::domain::id::ActivityPubId;
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 
 use axum::body::HttpBody;
 use chrono::NaiveDateTime;
@@ -159,7 +159,7 @@ impl From<&Issue> for IssueEntity {
 }
 
 impl Issue {
-    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> Result<Self, AppError> {
+    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> AppResult<Self> {
         let entity = IssueEntity::by_activity_pub_id(activity_pub_id, db).await?;
         Issue::try_from(entity).map_err(Into::into)
     }
@@ -167,7 +167,7 @@ impl Issue {
     pub async fn by_activity_pub_id_optional(
         activity_pub_id: &str,
         db: &PgPool,
-    ) -> Result<Option<Self>, AppError> {
+    ) -> AppResult<Option<Self>> {
         let entity = IssueEntity::by_activity_pub_id(activity_pub_id, db).await;
         match entity {
             Ok(entity) => {
@@ -179,13 +179,13 @@ impl Issue {
         }
     }
 
-    pub async fn save(self, db: &PgPool) -> Result<Self, AppError> {
+    pub async fn save(self, db: &PgPool) -> AppResult<Self> {
         let entity: IssueEntity = self.into();
         let entity = entity.insert(db).await?;
         Issue::try_from(entity).map_err(Into::into)
     }
 
-    pub async fn has_subscriber(&self, subscriber_id: i32, db: &PgPool) -> Result<bool, AppError> {
+    pub async fn has_subscriber(&self, subscriber_id: i32, db: &PgPool) -> AppResult<bool> {
         let entity = IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
 
         entity
@@ -194,7 +194,7 @@ impl Issue {
             .map_err(Into::into)
     }
 
-    pub async fn add_subscriber(&self, subscriber_id: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn add_subscriber(&self, subscriber_id: i32, db: &PgPool) -> AppResult<()> {
         let has_subscriber = self.has_subscriber(subscriber_id, db).await?;
         if !has_subscriber {
             let entity =
@@ -206,7 +206,7 @@ impl Issue {
         Ok(())
     }
 
-    async fn followers(&self, db: &PgPool) -> Result<Vec<Url>, AppError> {
+    async fn followers(&self, db: &PgPool) -> AppResult<Vec<Url>> {
         let entity = IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
 
         let followers = entity
@@ -225,7 +225,7 @@ impl Issue {
         limit: i64,
         offset: i64,
         db: &PgPool,
-    ) -> Result<Vec<String>, AppError> {
+    ) -> AppResult<Vec<String>> {
         let entity: IssueEntity = self.into();
         entity
             .get_subscribers_inbox(limit, offset, db)

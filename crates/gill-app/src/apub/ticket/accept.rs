@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::{AppError};
 use crate::instance::InstanceHandle;
 
 use activitypub_federation::deser::helpers::deserialize_one_or_many;

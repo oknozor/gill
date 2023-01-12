@@ -1,5 +1,5 @@
 use crate::apub::common::GillApubObject;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
 use activitypub_federation::core::signatures::PublicKey;
@@ -67,7 +67,7 @@ impl GillApubObject for Repository {
         format!("/{}/{}", username, self.name)
     }
 
-    async fn followers(&self, instance: &InstanceHandle) -> Result<Vec<Url>, AppError> {
+    async fn followers(&self, instance: &InstanceHandle) -> AppResult<Vec<Url>> {
         let db = instance.database();
         let followers = self.get_watchers(i64::MAX, 0, db).await?;
 
@@ -96,7 +96,7 @@ impl GillApubObject for Repository {
 }
 
 impl Repository {
-    pub fn owner_apub_id(&self) -> Result<ObjectId<User>, AppError> {
+    pub fn owner_apub_id(&self) -> AppResult<ObjectId<User>> {
         Ok(self.attributed_to.clone().into())
     }
 

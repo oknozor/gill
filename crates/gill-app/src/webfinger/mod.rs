@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 
 use anyhow::anyhow;
 use axum::extract::Query;
@@ -51,7 +51,7 @@ impl WebFingerQuery {
 pub async fn webfinger(
     Query(query): Query<WebFingerQuery>,
     Extension(db): Extension<PgPool>,
-) -> Result<Json<Webfinger>, AppError> {
+) -> AppResult<Json<Webfinger>> {
     let acct = query.parse().unwrap();
     if acct.domain == SETTINGS.domain {
         if let Some(repository) = acct.repository {

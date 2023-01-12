@@ -1,5 +1,5 @@
 use crate::domain::repository::Repository;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use axum::extract::Path;
@@ -13,7 +13,7 @@ pub async fn close(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, issue_number)): Path<(String, String, i32)>,
-) -> Result<Redirect, AppError> {
+) -> AppResult<Redirect> {
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .close_issue(issue_number, user.activity_pub_id, &db)

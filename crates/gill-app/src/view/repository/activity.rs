@@ -1,5 +1,5 @@
 use crate::domain::repository::Repository;
-use crate::error::AppError;
+use crate::error::{AppError, AppResult};
 use crate::get_connected_user;
 use crate::oauth::Oauth2User;
 use crate::state::AppState;
@@ -16,7 +16,7 @@ pub async fn star(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<Response, AppError> {
+) -> AppResult<Response> {
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .add_star(&user, &state.instance)
@@ -31,7 +31,7 @@ pub async fn watch(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
-) -> Result<Response, AppError> {
+) -> AppResult<Response> {
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .add_watcher(&user, &state.instance)

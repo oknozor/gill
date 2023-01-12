@@ -1,8 +1,8 @@
-use crate::error::AppError;
+use crate::error::AppResult;
 use crate::oauth::Oauth2User;
 use crate::view::repository::{get_repository_branches, BranchDto};
 use crate::view::HtmlTemplate;
-use anyhow::Result;
+
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
@@ -30,7 +30,7 @@ pub async fn history(
     user: Option<Oauth2User>,
     Path((owner, repository, current_branch)): Path<(String, String, String)>,
     Extension(db): Extension<PgPool>,
-) -> Result<HtmlTemplate<CommitHistoryTemplate>, AppError> {
+) -> AppResult<HtmlTemplate<CommitHistoryTemplate>> {
     let connected_username = get_connected_user_username(&db, user).await;
     let repo = GitRepository::open(&owner, &repository)?;
     let commits = repo.history()?;
