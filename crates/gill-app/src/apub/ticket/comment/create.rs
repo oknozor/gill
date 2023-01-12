@@ -1,4 +1,4 @@
-use crate::error::{AppError};
+use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
 use crate::apub::ticket::comment::ApubIssueComment;

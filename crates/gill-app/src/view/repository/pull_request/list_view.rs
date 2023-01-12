@@ -1,5 +1,5 @@
 use crate::domain::repository::stats::RepositoryStats;
-use crate::error::{AppResult};
+use crate::error::AppResult;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
 

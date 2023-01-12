@@ -68,11 +68,6 @@ impl From<&IssueComment> for IssueCommentEntity {
 }
 
 impl IssueComment {
-    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> AppResult<IssueComment> {
-        let entity = IssueCommentEntity::by_activity_pub_id(activity_pub_id, db).await?;
-        IssueComment::try_from(entity).map_err(Into::into)
-    }
-
     pub async fn by_activity_pub_id_optional(
         activity_pub_id: &str,
         db: &PgPool,

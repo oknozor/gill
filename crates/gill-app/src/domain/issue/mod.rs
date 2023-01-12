@@ -3,7 +3,6 @@ use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::{AppError, AppResult};
 
-use axum::body::HttpBody;
 use chrono::NaiveDateTime;
 use gill_db::repository::issue::{Issue as IssueEntity, IssueState as IssueStateEntity};
 use gill_db::Insert;
@@ -159,11 +158,6 @@ impl From<&Issue> for IssueEntity {
 }
 
 impl Issue {
-    pub async fn by_activity_pub_id(activity_pub_id: &str, db: &PgPool) -> AppResult<Self> {
-        let entity = IssueEntity::by_activity_pub_id(activity_pub_id, db).await?;
-        Issue::try_from(entity).map_err(Into::into)
-    }
-
     pub async fn by_activity_pub_id_optional(
         activity_pub_id: &str,
         db: &PgPool,
@@ -204,20 +198,6 @@ impl Issue {
         }
 
         Ok(())
-    }
-
-    async fn followers(&self, db: &PgPool) -> AppResult<Vec<Url>> {
-        let entity = IssueEntity::by_activity_pub_id(&self.activity_pub_id.to_string(), db).await?;
-
-        let followers = entity
-            .get_subscribers_activity_pub_ids(i64::MAX, 0, db)
-            .await?;
-        let followers = followers
-            .into_iter()
-            .filter_map(|url| Url::parse(&url).ok())
-            .collect();
-
-        Ok(followers)
     }
 
     pub async fn get_subscribers_inbox(
