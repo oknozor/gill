@@ -1,10 +1,8 @@
 use crate::repository::Repository;
 use crate::Insert;
 use async_trait::async_trait;
-use serde::Deserialize;
 use sqlx::PgPool;
 
-#[derive(Deserialize)]
 pub struct CreateRepository {
     pub activity_pub_id: String,
     pub name: String,

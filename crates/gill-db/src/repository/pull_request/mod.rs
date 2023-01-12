@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 pub mod comment;
 
-#[derive(Debug, sqlx::Type)]
+#[derive(sqlx::Type, Debug)]
 #[sqlx(type_name = "pull_request_state")]
 pub enum PullRequestState {
     Open,
@@ -13,7 +13,7 @@ pub enum PullRequestState {
     Merged,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct PullRequest {
     pub repository_id: i32,
     pub number: i32,

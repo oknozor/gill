@@ -1,4 +1,4 @@
-#[derive(Debug, sqlx::FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct PullRequestComment {
     pub id: i32,
     pub repository_id: i32,

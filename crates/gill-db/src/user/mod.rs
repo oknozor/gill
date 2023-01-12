@@ -2,19 +2,17 @@ use crate::repository::digest::RepositoryDigest;
 use crate::repository::Repository;
 use crate::Insert;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
 pub mod follow;
 pub mod ssh_keys;
 
-#[derive(Deserialize, Serialize)]
 pub struct CreateSSHKey {
     pub name: String,
     pub key: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct CreateUser {
     pub username: String,
     pub email: Option<String>,
@@ -29,7 +27,7 @@ pub struct CreateUser {
 }
 
 /// A user living in gill database
-#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, FromRow)]
+#[derive(Clone, PartialEq, Eq, Debug, FromRow)]
 pub struct User {
     pub id: i32,
     pub username: String,
