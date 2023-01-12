@@ -13,7 +13,7 @@ use crate::domain::issue::digest::IssueDigest;
 use crate::domain::issue::IssueState;
 use crate::domain::repository::Repository;
 use sqlx::PgPool;
-use std::cmp::Ordering;
+
 
 #[derive(Template, Debug)]
 #[template(path = "repository/issues/list.html")]
@@ -34,12 +34,7 @@ pub async fn list_view(
     let connected_username = get_connected_user_username(&db, user).await;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
-    let mut issues = repo.list_issues(&db).await?;
-    issues.sort_by(|issues, other| match (&issues.state, &other.state) {
-        (IssueState::Open, IssueState::Closed) => Ordering::Less,
-        (_, _) => issues.number.cmp(&other.number),
-    });
-
+    let issues = repo.list_issues(&db).await?;
     let pull_requests = (!issues.is_empty()).then_some(issues);
     let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 

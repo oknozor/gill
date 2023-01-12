@@ -79,7 +79,7 @@ impl PullRequest {
         Ok(())
     }
 
-    pub async fn merged(&self, db: &PgPool) -> sqlx::Result<()> {
+    pub async fn set_merged(&self, db: &PgPool) -> sqlx::Result<()> {
         sqlx::query!(
             // language=PostgreSQL
             r#"

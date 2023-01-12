@@ -12,7 +12,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::Extension;
-use gill_git::GitRepository;
+
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -71,26 +71,10 @@ pub async fn rebase(
         return Err(AppError::Unauthorized);
     };
 
-    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
-
-    if repository_entity.attributed_to != user.activity_pub_id {
-        return Err(AppError::Unauthorized);
-    };
-
-    let pull_request = repository_entity
-        .get_pull_request(pull_request_number, &db)
+    Repository::by_namespace(&owner, &repository, &db)
+        .await?
+        .rebase(&user, &owner, pull_request_number, &db)
         .await?;
-
-    let git_repository = GitRepository::open(&owner, &repository)?;
-
-    git_repository.rebase(
-        &pull_request.base,
-        &pull_request.compare,
-        &user.username,
-        user.email.as_ref().expect("local user has email"),
-    )?;
-
-    pull_request.merged(&db).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/pulls/{pull_request_number}"
@@ -106,26 +90,10 @@ pub async fn merge(
         return Err(AppError::Unauthorized);
     };
 
-    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
-
-    if repository_entity.attributed_to != user.activity_pub_id {
-        return Err(AppError::Unauthorized);
-    };
-
-    let pull_request = repository_entity
-        .get_pull_request(pull_request_number, &db)
+    Repository::by_namespace(&owner, &repository, &db)
+        .await?
+        .merge(&user, &owner, pull_request_number, &db)
         .await?;
-
-    let git_repository = GitRepository::open(&owner, &repository)?;
-
-    git_repository.merge(
-        &pull_request.base,
-        &pull_request.compare,
-        &user.username,
-        user.email.as_ref().expect("local user has email"),
-    )?;
-
-    pull_request.merged(&db).await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/pulls/{pull_request_number}"
@@ -141,16 +109,9 @@ pub async fn close(
         return Err(AppError::Unauthorized);
     };
 
-    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
-
-    if repository_entity.attributed_to != user.activity_pub_id {
-        return Err(AppError::Unauthorized);
-    };
-
-    repository_entity
-        .get_pull_request(pull_request_number, &db)
+    Repository::by_namespace(&owner, &repository, &db)
         .await?
-        .close(&db)
+        .close_pull_request(&user, pull_request_number, &db)
         .await?;
 
     Ok(Redirect::to(&format!(

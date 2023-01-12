@@ -16,13 +16,10 @@ pub async fn close(
         return Err(AppError::Unauthorized);
     };
 
-    let repository_entity = Repository::by_namespace(&owner, &repository, &db).await?;
-
-    if repository_entity.attributed_to != user.activity_pub_id {
-        return Err(AppError::Unauthorized);
-    };
-
-    repository_entity.close_issue(issue_number, &db).await?;
+    Repository::by_namespace(&owner, &repository, &db)
+        .await?
+        .close_issue(issue_number, user.activity_pub_id, &db)
+        .await?;
 
     Ok(Redirect::to(&format!(
         "/{owner}/{repository}/issues/{issue_number}"

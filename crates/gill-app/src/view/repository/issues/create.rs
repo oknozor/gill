@@ -26,9 +26,9 @@ pub async fn create(
         return Err(AppError::Unauthorized);
     };
 
-    let command = CreateIssueCommand::from(form);
-    command
+    CreateIssueCommand::from(form)
         .execute(&repository, &owner, user, &state.instance)
         .await?;
+
     Ok(Redirect::to(&format!("/{owner}/{repository}/issues")))
 }
