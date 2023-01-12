@@ -3,7 +3,7 @@ use crate::domain::user::create::CreateUser;
 use crate::domain::user::ssh_key::CreateSSHKey;
 use crate::domain::user::ssh_key::RawSshkey;
 use crate::domain::user::User;
-use crate::error::{AppResult};
+use crate::error::AppResult;
 use activitypub_federation::core::signatures::generate_actor_keypair;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};

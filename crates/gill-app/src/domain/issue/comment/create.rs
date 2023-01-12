@@ -18,7 +18,7 @@ pub struct CreateIssueCommentCommand<'a> {
     pub repository: &'a str,
     pub author_id: i32,
     pub issue_number: i32,
-    pub content: String,
+    pub content: &'a str,
 }
 
 impl CreateIssueCommentCommand<'_> {

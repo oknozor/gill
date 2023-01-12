@@ -1,5 +1,5 @@
 use crate::apub::common::{GillApubObject, Source};
-use crate::error::{AppError};
+use crate::error::AppError;
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
 

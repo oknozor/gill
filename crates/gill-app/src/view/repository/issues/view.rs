@@ -1,5 +1,5 @@
 use crate::domain::repository::stats::RepositoryStats;
-use crate::error::{AppResult};
+use crate::error::AppResult;
 use crate::oauth::Oauth2User;
 use crate::view::component::MarkdownPreviewForm;
 

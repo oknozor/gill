@@ -9,7 +9,6 @@ use axum::extract::Path;
 use axum::Extension;
 
 use gill_git::traversal::{BlobInfo, TreeEntry, TreeInfo};
-use std::fmt::Write;
 
 use crate::domain::repository::stats::RepositoryStats;
 use crate::get_connected_user_username;

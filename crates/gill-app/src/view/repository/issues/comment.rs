@@ -29,7 +29,7 @@ pub async fn comment(
         repository: &repository,
         author_id: user.id,
         issue_number,
-        content: input.comment,
+        content: &input.comment,
     };
 
     create_comment.execute(&state.instance).await?;
