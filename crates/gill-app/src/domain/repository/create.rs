@@ -26,23 +26,23 @@ pub struct CreateRepository {
 }
 
 impl From<CreateRepository> for CreateRepositoryEntity {
-    fn from(val: CreateRepository) -> Self {
+    fn from(repository: CreateRepository) -> Self {
         CreateRepositoryEntity {
-            activity_pub_id: val.activity_pub_id.to_string(),
-            name: val.name,
-            summary: val.summary,
-            private: val.private,
-            inbox_url: val.inbox_url.to_string(),
-            outbox_url: val.outbox_url.to_string(),
-            followers_url: val.followers_url.to_string(),
-            attributed_to: val.attributed_to.to_string(),
-            clone_uri: val.clone_uri.to_string(),
-            public_key: val.public_key,
-            private_key: val.private_key,
-            ticket_tracked_by: val.ticket_tracked_by.to_string(),
-            send_patches_to: val.send_patches_to.to_string(),
-            domain: val.domain,
-            is_local: val.is_local,
+            activity_pub_id: repository.activity_pub_id.to_string(),
+            name: repository.name,
+            summary: repository.summary,
+            private: repository.private,
+            inbox_url: repository.inbox_url.to_string(),
+            outbox_url: repository.outbox_url.to_string(),
+            followers_url: repository.followers_url.to_string(),
+            attributed_to: repository.attributed_to.to_string(),
+            clone_uri: repository.clone_uri.to_string(),
+            public_key: repository.public_key,
+            private_key: repository.private_key,
+            ticket_tracked_by: repository.ticket_tracked_by.to_string(),
+            send_patches_to: repository.send_patches_to.to_string(),
+            domain: repository.domain,
+            is_local: repository.is_local,
         }
     }
 }
