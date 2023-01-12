@@ -14,7 +14,6 @@ use crate::domain::issue::IssueState;
 use crate::domain::repository::Repository;
 use sqlx::PgPool;
 
-
 #[derive(Template, Debug)]
 #[template(path = "repository/issues/list.html")]
 pub struct IssuesTemplate {

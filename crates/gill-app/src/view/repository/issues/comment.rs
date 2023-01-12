@@ -5,26 +5,25 @@ use crate::oauth::Oauth2User;
 use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::response::Redirect;
-use axum::Form;
+use axum::{Extension, Form};
 
+use gill_authorize_derive::authorized;
 use serde::Deserialize;
+use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct IssueCommentForm {
     pub comment: String,
 }
 
+#[authorized]
 pub async fn comment(
     user: Option<Oauth2User>,
     Path((owner, repository, issue_number)): Path<(String, String, i32)>,
     State(state): State<AppState>,
+    Extension(db): Extension<PgPool>,
     Form(input): Form<IssueCommentForm>,
 ) -> Result<Redirect, AppError> {
-    let db = state.instance.database();
-    let Some(user) = get_connected_user(db, user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     let create_comment = CreateIssueCommentCommand {
         owner: &owner,
         repository: &repository,

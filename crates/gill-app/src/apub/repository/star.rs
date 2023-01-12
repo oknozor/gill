@@ -1,4 +1,3 @@
-
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::AppError;

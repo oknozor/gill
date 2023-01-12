@@ -13,6 +13,7 @@ use axum::extract::Path;
 use axum::response::Redirect;
 use axum::Extension;
 
+use gill_authorize_derive::authorized;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -62,15 +63,12 @@ pub async fn view(
     }))
 }
 
+#[authorized]
 pub async fn rebase(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .rebase(&user, &owner, pull_request_number, &db)
@@ -81,15 +79,12 @@ pub async fn rebase(
     )))
 }
 
+#[authorized]
 pub async fn merge(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .merge(&user, &owner, pull_request_number, &db)
@@ -100,15 +95,12 @@ pub async fn merge(
     )))
 }
 
+#[authorized]
 pub async fn close(
     user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository, pull_request_number)): Path<(String, String, i32)>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .close_pull_request(&user, pull_request_number, &db)
