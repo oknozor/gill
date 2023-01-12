@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct Branch {
     pub name: String,
     pub repository_id: i32,

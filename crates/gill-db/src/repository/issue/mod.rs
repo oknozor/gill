@@ -7,14 +7,14 @@ use sqlx::PgPool;
 
 pub mod comment;
 
-#[derive(Debug, sqlx::Type, Eq, PartialEq, Copy, Clone)]
+#[derive(sqlx::Type, Debug)]
 #[sqlx(type_name = "pull_request_state")]
 pub enum IssueState {
     Open,
     Closed,
 }
 
-#[derive(Debug)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct IssueDigest {
     pub repository_id: i32,
     pub number: i32,
@@ -24,7 +24,7 @@ pub struct IssueDigest {
     pub state: IssueState,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct Issue {
     pub repository_id: i32,
     pub opened_by: i32,

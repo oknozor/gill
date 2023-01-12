@@ -1,7 +1,6 @@
 use branch::Branch;
 
-use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, PgPool};
+use sqlx::PgPool;
 
 pub mod branch;
 pub mod create;
@@ -12,7 +11,7 @@ pub mod pull_request;
 pub mod star;
 pub mod watch;
 
-#[derive(Deserialize, Serialize, Clone, PartialEq, Eq, Debug, FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct Repository {
     pub id: i32,
     pub activity_pub_id: String,

@@ -1,7 +1,6 @@
-use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct RepositoryDigest {
     pub id: i32,
     pub name: String,
@@ -83,9 +82,8 @@ impl RepositoryDigest {
     }
 }
 
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(FromRow)]
 pub struct RepositoryLight {
-    id: i32,
     pub summary: Option<String>,
     pub star_count: Option<i64>,
     pub fork_count: Option<i64>,
@@ -102,8 +100,7 @@ impl RepositoryLight {
             RepositoryLight,
             // language=PostgreSQL
             r#"
-            SELECT r.id,
-                   r.summary,
+            SELECT r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count,
                    COUNT(rw.repository_id) as watch_count
