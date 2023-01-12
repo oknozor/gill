@@ -11,7 +11,7 @@ use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
 use sqlx::PgPool;
-use std::cmp::Ordering;
+
 
 #[derive(Template, Debug)]
 #[template(path = "repository/pulls/list.html")]
@@ -32,13 +32,7 @@ pub async fn list_view(
     let connected_username = get_connected_user_username(&db, user).await;
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
-    let mut pull_requests = repo.list_pull_requests(&db).await?;
-    pull_requests.sort_by(|pr, other| match (&pr.state, &other.state) {
-        (PullRequestState::Open, PullRequestState::Closed)
-        | (PullRequestState::Open, PullRequestState::Merged) => Ordering::Less,
-        (_, _) => pr.number.cmp(&other.number),
-    });
-
+    let pull_requests = repo.list_pull_requests(&db).await?;
     let pull_requests = (!pull_requests.is_empty()).then_some(pull_requests);
     let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 

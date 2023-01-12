@@ -3,7 +3,6 @@ use crate::domain::issue::Issue;
 use crate::domain::user::User;
 use crate::error::AppError;
 
-
 use gill_db::repository::branch::Branch;
 use gill_db::repository::Repository as RepositoryEntity;
 
@@ -11,6 +10,8 @@ use sqlx::PgPool;
 
 use crate::domain::issue::digest::IssueDigest;
 use crate::domain::pull_request::PullRequest;
+use crate::instance::InstanceHandle;
+use gill_git::GitRepository;
 use url::{ParseError, Url};
 
 pub mod branch;
@@ -122,9 +123,19 @@ impl Repository {
         }
     }
 
-    pub async fn add_watcher(&self, watcher_id: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn add_watcher(
+        &self,
+        watcher: &User,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
         let entity: RepositoryEntity = self.into();
-        entity.add_watcher(watcher_id, db).await.map_err(Into::into)
+        entity.add_watcher(watcher.id, instance.database()).await?;
+
+        if !self.is_local {
+            watcher.watch_repository(self, instance).await?;
+        }
+
+        Ok(())
     }
 
     pub async fn add_fork(&self, forked_by: i32, fork: i32, db: &PgPool) -> Result<(), AppError> {
@@ -135,9 +146,19 @@ impl Repository {
             .map_err(Into::into)
     }
 
-    pub async fn add_star(&self, starred_by: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn add_star(
+        &self,
+        starred_by: &User,
+        instance: &InstanceHandle,
+    ) -> Result<(), AppError> {
         let entity: RepositoryEntity = self.into();
-        entity.add_star(starred_by, db).await.map_err(Into::into)
+        entity.add_star(starred_by.id, instance.database()).await?;
+
+        if !self.is_local {
+            starred_by.star_repository(self, instance).await?;
+        }
+
+        Ok(())
     }
 
     pub async fn issue_by_number(&self, number: i32, db: &PgPool) -> Result<Issue, AppError> {
@@ -172,7 +193,16 @@ impl Repository {
         Ok(IssueDigest::from(issue))
     }
 
-    pub async fn close_issue(&self, issue_number: i32, db: &PgPool) -> Result<(), AppError> {
+    pub async fn close_issue(
+        &self,
+        issue_number: i32,
+        user_activity_pub_id: ActivityPubId<User>,
+        db: &PgPool,
+    ) -> Result<(), AppError> {
+        if self.attributed_to != user_activity_pub_id {
+            return Err(AppError::Unauthorized);
+        };
+
         let entity: RepositoryEntity = self.into();
         let issue = entity.get_issue_digest(issue_number, db).await?;
         issue.close(db).await.map_err(Into::into)
@@ -191,11 +221,15 @@ impl Repository {
     pub async fn list_pull_requests(&self, db: &PgPool) -> Result<Vec<PullRequest>, AppError> {
         let entity: RepositoryEntity = self.into();
         let entities = entity.list_pull_requests(db).await?;
-        Ok(entities
+        let mut pull_request: Vec<_> = entities
             .into_iter()
             .map(PullRequest::try_from)
             .filter_map(Result::ok)
-            .collect())
+            .collect();
+
+        pull_request.sort();
+
+        Ok(pull_request)
     }
 
     pub async fn get_default_branch(&self, db: &PgPool) -> Option<Branch> {
@@ -222,7 +256,9 @@ impl Repository {
     pub async fn list_issues(&self, db: &PgPool) -> Result<Vec<IssueDigest>, AppError> {
         let entity: RepositoryEntity = self.into();
         let entities = entity.list_issues(db).await?;
-        Ok(entities.into_iter().map(IssueDigest::from).collect())
+        let mut issues: Vec<IssueDigest> = entities.into_iter().map(IssueDigest::from).collect();
+        issues.sort();
+        Ok(issues)
     }
 
     pub async fn list_branches(
@@ -234,5 +270,72 @@ impl Repository {
         let repository: RepositoryEntity = self.into();
         let branches = repository.list_branches(limit, offset, db).await?;
         Ok(branches.into_iter().map(Branch::from).collect())
+    }
+
+    pub async fn rebase(
+        &self,
+        user: &User,
+        owner: &str,
+        pull_request_number: i32,
+        db: &PgPool,
+    ) -> Result<(), AppError> {
+        if self.attributed_to != user.activity_pub_id {
+            return Err(AppError::Unauthorized);
+        };
+
+        let pull_request = self.get_pull_request(pull_request_number, db).await?;
+
+        let git_repository = GitRepository::open(owner, &self.name)?;
+
+        git_repository.rebase(
+            &pull_request.base,
+            &pull_request.compare,
+            &user.username,
+            user.email.as_ref().expect("local user has email"),
+        )?;
+
+        pull_request.set_merged(db).await
+    }
+
+    pub async fn merge(
+        &self,
+        user: &User,
+        owner: &str,
+        pull_request_number: i32,
+        db: &PgPool,
+    ) -> Result<(), AppError> {
+        if self.attributed_to != user.activity_pub_id {
+            return Err(AppError::Unauthorized);
+        };
+
+        let pull_request = self.get_pull_request(pull_request_number, db).await?;
+
+        let git_repository = GitRepository::open(owner, &self.name)?;
+
+        git_repository.merge(
+            &pull_request.base,
+            &pull_request.compare,
+            &user.username,
+            user.email.as_ref().expect("local user has email"),
+        )?;
+
+        pull_request.set_merged(db).await
+    }
+
+    pub async fn close_pull_request(
+        &self,
+        user: &User,
+        pull_request_number: i32,
+        db: &PgPool,
+    ) -> Result<(), AppError> {
+        if self.attributed_to != user.activity_pub_id {
+            return Err(AppError::Unauthorized);
+        };
+
+        self.get_pull_request(pull_request_number, db)
+            .await?
+            .close(db)
+            .await
+            .map_err(Into::into)
     }
 }

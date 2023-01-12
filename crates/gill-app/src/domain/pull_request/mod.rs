@@ -1,5 +1,6 @@
 use crate::domain::pull_request::comment::PullRequestComment;
 use crate::error::AppError;
+use std::cmp::Ordering;
 
 use gill_db::repository::pull_request::{
     PullRequest as PullRequestEntity, PullRequestState as PullRequestStateEntity,
@@ -8,7 +9,7 @@ use sqlx::PgPool;
 
 pub mod comment;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PullRequest {
     pub repository_id: i32,
     pub number: i32,
@@ -20,7 +21,7 @@ pub struct PullRequest {
     pub state: PullRequestState,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum PullRequestState {
     Open,
     Closed,
@@ -77,11 +78,28 @@ impl From<PullRequestEntity> for PullRequest {
     }
 }
 
+impl PartialOrd<PullRequest> for PullRequest {
+    fn partial_cmp(&self, other: &PullRequest) -> Option<Ordering> {
+        match (&self.state, &other.state) {
+            (PullRequestState::Open, PullRequestState::Closed)
+            | (PullRequestState::Open, PullRequestState::Merged) => Some(Ordering::Less),
+            (_, _) => Some(self.number.cmp(&other.number)),
+        }
+    }
+}
+
+impl Ord for PullRequest {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 impl PullRequest {
     pub async fn comment(&self, comment: &str, user_id: i32, db: &PgPool) -> Result<(), AppError> {
         let entity: PullRequestEntity = self.clone().into();
+        let comment = comment.escape_default().to_string();
         entity
-            .comment(comment, user_id, db)
+            .comment(&comment, user_id, db)
             .await
             .map_err(Into::into)
     }
@@ -97,8 +115,8 @@ impl PullRequest {
         entity.close(db).await.map_err(Into::into)
     }
 
-    pub async fn merged(&self, db: &PgPool) -> Result<(), AppError> {
+    pub async fn set_merged(&self, db: &PgPool) -> Result<(), AppError> {
         let entity: PullRequestEntity = self.clone().into();
-        entity.merged(db).await.map_err(Into::into)
+        entity.set_merged(db).await.map_err(Into::into)
     }
 }

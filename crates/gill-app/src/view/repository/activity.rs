@@ -19,15 +19,10 @@ pub async fn star(
         return Err(AppError::Unauthorized);
     };
 
-    let repository = Repository::by_namespace(&owner, &repository, &db).await?;
-
-    // Add a 'repository_star' entry to our local db
-    repository.add_star(user.id, &db).await?;
-
-    // If the repo is hosted on another instance send a 'Star' activity
-    if !repository.is_local {
-        user.star_repository(&repository, &state.instance).await?;
-    }
+    Repository::by_namespace(&owner, &repository, &db)
+        .await?
+        .add_star(&user, &state.instance)
+        .await?;
 
     Ok(StatusCode::NO_CONTENT.into_response())
 }
@@ -42,14 +37,10 @@ pub async fn watch(
         return Err(AppError::Unauthorized);
     };
 
-    let repository = Repository::by_namespace(&owner, &repository, &db).await?;
-    // Add a 'repository_watch' entry to our local db
-    repository.add_watcher(user.id, &db).await?;
-
-    // If the repo is hosted on another instance send a 'Watch' activity
-    if !repository.is_local {
-        user.watch_repository(&repository, &state.instance).await?;
-    }
+    Repository::by_namespace(&owner, &repository, &db)
+        .await?
+        .add_watcher(&user, &state.instance)
+        .await?;
 
     Ok(StatusCode::NO_CONTENT.into_response())
 }

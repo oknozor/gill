@@ -23,12 +23,11 @@ pub async fn comment(
         return Err(AppError::Unauthorized);
     };
 
-    let comment = input.comment.escape_default().to_string();
     Repository::by_namespace(&owner, &repository, &db)
         .await?
         .get_pull_request(pull_request_number, &db)
         .await?
-        .comment(&comment, user.id, &db)
+        .comment(&input.comment, user.id, &db)
         .await?;
 
     Ok(Redirect::to(&format!(

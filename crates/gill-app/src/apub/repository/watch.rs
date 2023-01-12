@@ -1,4 +1,4 @@
-use crate::apub::common::GillApubObject;
+
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::AppError;
@@ -65,9 +65,7 @@ impl ActivityHandler for Watch {
             .dereference(data, data.local_instance(), &mut 0)
             .await?;
 
-        repository
-            .add_watcher(user.local_id(), data.database())
-            .await?;
+        repository.add_watcher(&user, data).await?;
         Ok(())
     }
 }
