@@ -12,7 +12,6 @@ use axum::extract::Path;
 use axum::Extension;
 use sqlx::PgPool;
 
-
 #[derive(Template, Debug)]
 #[template(path = "repository/pulls/list.html")]
 pub struct PullRequestsTemplate {

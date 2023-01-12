@@ -5,9 +5,11 @@ use crate::oauth::Oauth2User;
 use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::response::Redirect;
-use axum::Form;
+use axum::{Extension, Form};
 
+use gill_authorize_derive::authorized;
 use serde::Deserialize;
+use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct CreateIssueForm {
@@ -15,17 +17,14 @@ pub struct CreateIssueForm {
     pub content: String,
 }
 
+#[authorized]
 pub async fn create(
-    connected_user: Option<Oauth2User>,
+    user: Option<Oauth2User>,
     Path((owner, repository)): Path<(String, String)>,
     State(state): State<AppState>,
+    Extension(db): Extension<PgPool>,
     Form(form): Form<CreateIssueForm>,
 ) -> Result<Redirect, AppError> {
-    let db = state.instance.database();
-    let Some(user) = get_connected_user(db, connected_user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     CreateIssueCommand::from(form)
         .execute(&repository, &owner, user, &state.instance)
         .await?;

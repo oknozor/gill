@@ -29,6 +29,7 @@ gill-git = { path = "../gill-git" }
 gill-settings = { path = "../gill-settings" }
 gill-syntax = { path = "../gill-syntax" }
 gill-markdown = { path = "../gill-markdown" }
+gill-authorize-derive = { path = "../gill-authorize-derive" }
 
 uuid = "1.2.2"
 enum_delegate = "0.2.0"

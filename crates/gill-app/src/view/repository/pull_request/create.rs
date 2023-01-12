@@ -5,6 +5,7 @@ use crate::oauth::Oauth2User;
 use axum::extract::Path;
 use axum::response::Redirect;
 use axum::{Extension, Form};
+use gill_authorize_derive::authorized;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -16,16 +17,13 @@ pub struct CreatePullRequestForm {
     pub compare: String,
 }
 
+#[authorized]
 pub async fn create(
-    connected_user: Option<Oauth2User>,
+    user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Path((owner, repository)): Path<(String, String)>,
     Form(input): Form<CreatePullRequestForm>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, connected_user).await else {
-        return Err(AppError::Unauthorized);
-    };
-
     let repo = Repository::by_namespace(&owner, &repository, &db).await?;
     repo.create_pull_request(
         user.id,

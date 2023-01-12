@@ -6,6 +6,7 @@ use crate::oauth::Oauth2User;
 use axum::response::Redirect;
 use axum::{Extension, Form};
 
+use gill_authorize_derive::authorized;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -15,14 +16,12 @@ pub struct AddSshKeyForm {
     pub key: String,
 }
 
+#[authorized]
 pub async fn add(
-    connected_user: Option<Oauth2User>,
+    user: Option<Oauth2User>,
     Extension(db): Extension<PgPool>,
     Form(input): Form<AddSshKeyForm>,
 ) -> Result<Redirect, AppError> {
-    let Some(user) = get_connected_user(&db, connected_user).await else {
-        return Err(AppError::Unauthorized);
-    };
     let raw_key = RawSshkey::from(input.key);
     let (key_type, key) = raw_key.key_parts();
     user.add_ssh_key(&input.title, key, key_type, &db).await?;
