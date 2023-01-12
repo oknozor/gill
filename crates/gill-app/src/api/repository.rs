@@ -30,7 +30,7 @@ impl CreateRepositoryCommand {
             "{protocol}://{domain}/apub/users/{user_name}/repositories/{}",
             self.name
         );
-        let clone_uri = format!("git@{domain}:{user_name}/{}.git", self.name);
+        let clone_uri = format!("ssh://git@{domain}/~/{user_name}/{}.git", self.name);
         let key_pair = generate_actor_keypair()?;
         let activity_pub_id = ActivityPubId::try_from(apub_id.clone())?;
 
