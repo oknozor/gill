@@ -1,5 +1,6 @@
 use crate::instance::InstanceHandle;
 
+pub mod commit;
 pub mod id;
 pub mod issue;
 pub mod pull_request;

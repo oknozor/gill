@@ -6,8 +6,8 @@ impl GitRepository {
         self.find_commit(sha)
     }
 
-    pub fn history(&self) -> anyhow::Result<Vec<OwnedCommit>> {
-        self.list_commits()
+    pub fn history(&self, branch: &str) -> anyhow::Result<Vec<OwnedCommit>> {
+        self.list_commits(branch)
     }
 }
 
@@ -50,9 +50,10 @@ impl TryFrom<&Commit<'_>> for OwnedCommit {
 
 mod imp {
     use crate::commits::OwnedCommit;
-    use crate::GitRepository;
+    use crate::{GitRepository};
     use anyhow::Result;
     use git_repository::ObjectId;
+    
 
     impl GitRepository {
         pub fn find_commit(&self, sha: &str) -> Result<OwnedCommit> {
@@ -61,10 +62,13 @@ mod imp {
             OwnedCommit::try_from(&commit)
         }
 
-        pub fn list_commits(&self) -> Result<Vec<OwnedCommit>> {
-            let head = self.inner.head_commit()?;
+        pub fn list_commits(&self, refs: &str) -> Result<Vec<OwnedCommit>> {
+            let refs = format!("refs/heads/{refs}");
+            let tree = self.inner.find_reference(&refs)?;
+            let target_ref = tree.target();
+            let commit = self.inner.find_object(target_ref.id())?.try_into_commit()?;
             let mut commits = vec![];
-            for commit in head.ancestors().all()? {
+            for commit in commit.ancestors().all()? {
                 let commit = commit?.object()?.try_into_commit()?;
                 let commit = OwnedCommit::try_from(&commit)?;
                 commits.push(commit);
@@ -108,7 +112,7 @@ mod test {
         };
 
         // Act
-        let commits = repo.list_commits()?;
+        let commits = repo.list_commits("master")?;
 
         // Assert
         assert_that!(commits).has_length(3);

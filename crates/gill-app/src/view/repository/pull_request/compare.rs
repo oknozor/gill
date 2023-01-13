@@ -1,7 +1,7 @@
 use crate::error::AppResult;
 use crate::get_connected_user_username;
 use crate::oauth::Oauth2User;
-use crate::view::repository::{get_repository_branches, BranchDto};
+use crate::view::repository::{get_repository_branches, BranchDto, Tab};
 use crate::view::HtmlTemplate;
 use anyhow::anyhow;
 use askama::Template;
@@ -21,6 +21,7 @@ pub struct CompareTemplate {
     stats: RepositoryStats,
     branches: Vec<BranchDto>,
     current_branch: Option<String>,
+    tab: Tab,
 }
 
 pub async fn compare(
@@ -46,5 +47,6 @@ pub async fn compare(
         stats,
         branches,
         current_branch: Some(current_branch),
+        tab: Tab::PullRequests,
     }))
 }

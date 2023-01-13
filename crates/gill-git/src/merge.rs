@@ -136,8 +136,9 @@ mod test {
         let _merge = repo.merge("master", "other", "gill", "gill@test.org");
 
         assert_that!(repo.inner.is_bare()).is_true();
-        println!("{:?}", repo.list_commits());
-        assert_that!(repo.list_commits()).is_ok().has_length(3);
+        assert_that!(repo.list_commits("master"))
+            .is_ok()
+            .has_length(3);
 
         Ok(())
     }
@@ -171,7 +172,9 @@ mod test {
         let _merge = repo.rebase("master", "other", "gill", "gill@test.org");
 
         assert_that!(repo.inner.is_bare()).is_true();
-        assert_that!(repo.list_commits()).is_ok().has_length(2);
+        assert_that!(repo.list_commits("master"))
+            .is_ok()
+            .has_length(2);
 
         Ok(())
     }

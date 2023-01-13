@@ -1,6 +1,6 @@
 use crate::error::AppResult;
 use crate::oauth::Oauth2User;
-use crate::view::repository::{get_repository_branches, tree_and_blob_from_query, BranchDto};
+use crate::view::repository::{get_repository_branches, tree_and_blob_from_query, BranchDto, Tab};
 use crate::view::HtmlTemplate;
 use askama::Template;
 use axum::extract::Path;
@@ -32,6 +32,7 @@ pub struct GitBLobTemplate {
     branches: Vec<BranchDto>,
     current_branch: Option<String>,
     user: Option<String>,
+    tab: Tab,
 }
 
 #[derive(Debug)]
@@ -101,6 +102,7 @@ pub async fn blob(
         branches,
         current_branch: Some(current_branch),
         user: connected_username,
+        tab: Tab::Code,
     };
     Ok(HtmlTemplate(template))
 }

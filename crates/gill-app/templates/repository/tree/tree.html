@@ -12,7 +12,8 @@
         <div class="flex flex-row gap-2 py-3 px-4 items-center">
             <i class="text-xl ti ti-folder"></i>
             <a class="w-40 truncate ..." id="{{dir.filename}}">{{dir.filename}}</a>
-            <a class="text-gray-400 text-xs hover:underline">{{dir.commit_summary}}</a>
+            <a href="/{{owner}}/{{repository}}/commit/{{dir.commit_sha}}"
+               class="text-gray-400 text-xs hover:underline">{{dir.commit_summary}}</a>
             <script>generateTreeLink("{{dir.filename}}", "tree", "{{current_branch}}");</script>
         </div>
         {% endfor %}
@@ -20,7 +21,8 @@
         <div class="flex flex-row gap-2 py-3 px-4 items-center">
             <i class="text-xl ti ti-file-code"></i>
             <a class="w-40 truncate ..." id="{{blob.filename}}">{{blob.filename}}</a>
-            <a class="text-gray-400 text-xs hover:underline">{{blob.commit_summary}}</a>
+            <a href="/{{owner}}/{{repository}}/commit/{{blob.commit_sha}}"
+               class="text-gray-400 text-xs hover:underline">{{blob.commit_summary}}</a>
             <script>generateTreeLink("{{blob.filename}}", "blob", "{{current_branch}}"); </script>
         </div>
         {% endfor %}
