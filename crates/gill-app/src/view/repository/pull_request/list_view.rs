@@ -7,6 +7,7 @@ use crate::view::HtmlTemplate;
 
 use crate::domain::pull_request::{PullRequest, PullRequestState};
 use crate::domain::repository::Repository;
+use crate::view::repository::Tab;
 use askama::Template;
 use axum::extract::Path;
 use axum::Extension;
@@ -21,6 +22,7 @@ pub struct PullRequestsTemplate {
     pull_requests: Option<Vec<PullRequest>>,
     stats: RepositoryStats,
     current_branch: Option<String>,
+    tab: Tab,
 }
 
 pub async fn list_view(
@@ -42,5 +44,6 @@ pub async fn list_view(
         pull_requests,
         stats,
         current_branch,
+        tab: Tab::PullRequests,
     }))
 }

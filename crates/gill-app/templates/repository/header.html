@@ -34,23 +34,28 @@
         window.location.href = "/{{owner}}/{{repository}}/pulls"
     }
 
+    const goToHistory = () => {
+        let branch = encodeURIComponent("{{current_branch}}");
+        window.location.href = `/{{owner}}/{{repository}}/commits/${branch}`
+    }
+
     const gotToCode = () => {
         let branch = encodeURIComponent("{{current_branch}}");
         window.location.href = `/{{owner}}/{{repository}}/tree/${branch}`
     }
     const highlightButton = () => {
-        let path = window.location.pathname;
-        let parts = path.split("/");
-        let current = parts[parts.length - 1];
-
-        let button;
-        if (current === "issues") {
-            button = document.getElementById("issues")
-        } else if (current === "pulls") {
-            button = document.getElementById("pulls")
-        } else {
-            button = document.getElementById("code")
-        }
+        // @formatter:off
+        {% match tab %}
+        {% when Tab::Code  %}
+            let button = document.getElementById("code")
+        {% when Tab::Issues  %}
+            let button = document.getElementById("issues")
+        {% when Tab::PullRequests  %}
+            let button = document.getElementById("pulls")
+        {% when Tab::History  %}
+            let button = document.getElementById("history")
+        {% endmatch %}
+        // @formatter:on
 
         button.classList.add("border-red-300");
         button.classList.add("border-b-4");
@@ -112,7 +117,14 @@
                 class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
                 onclick="goToPullRequest()">
             <i class="px-2 ti ti-git-pull-request"></i>
-            <span class="pt-1">Pull requests<span>
+            <span class="pt-1">Pull requests</span>
+        </button>
+        <button
+                id="history"
+                class="tab-button px-6 py-2 flex items-center justify-center hover:bg-slate-200 hover:rounded-md"
+                onclick="goToHistory()">
+            <i class="px-2 ti ti-git-commit"></i>
+            <span class="pt-1">History</span>
         </button>
     </div>
 </div>

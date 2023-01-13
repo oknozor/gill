@@ -12,6 +12,7 @@ use axum::Extension;
 use crate::domain::issue::digest::IssueDigest;
 use crate::domain::issue::IssueState;
 use crate::domain::repository::Repository;
+use crate::view::repository::Tab;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -23,6 +24,7 @@ pub struct IssuesTemplate {
     issues: Option<Vec<IssueDigest>>,
     stats: RepositoryStats,
     current_branch: Option<String>,
+    tab: Tab,
 }
 
 pub async fn list_view(
@@ -44,5 +46,6 @@ pub async fn list_view(
         issues: pull_requests,
         stats,
         current_branch,
+        tab: Tab::Issues,
     }))
 }

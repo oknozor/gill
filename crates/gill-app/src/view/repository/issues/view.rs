@@ -16,6 +16,7 @@ use crate::domain::issue::comment::digest::IssueCommentDigest;
 use crate::domain::issue::digest::IssueDigest;
 use crate::domain::issue::IssueState;
 use crate::domain::repository::Repository;
+use crate::view::repository::Tab;
 use sqlx::PgPool;
 
 #[derive(Template, Debug)]
@@ -29,6 +30,7 @@ pub struct IssueTemplate {
     current_branch: Option<String>,
     comments: Vec<IssueCommentDigest>,
     markdown_preview_form: MarkdownPreviewForm,
+    tab: Tab,
 }
 
 pub async fn view(
@@ -58,5 +60,6 @@ pub async fn view(
             owner,
             repository,
         },
+        tab: Tab::Issues,
     }))
 }

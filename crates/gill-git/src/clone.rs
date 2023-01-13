@@ -97,7 +97,7 @@ mod test {
         let non_bare = GitRepository {
             inner: git_repository::open("non-bare-copy-repository")?,
         };
-        let commits = non_bare.list_commits()?;
+        let commits = non_bare.list_commits("master")?;
         assert_that!(non_bare.path()).is_equal_to(&PathBuf::from("non-bare-copy-repository"));
         assert_that!(repository.non_bare_path()).exists();
         assert_that!(commits).has_length(1);

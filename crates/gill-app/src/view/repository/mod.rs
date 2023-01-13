@@ -17,6 +17,14 @@ pub mod pull_request;
 pub mod tree;
 pub mod user_content;
 
+#[derive(Debug)]
+pub enum Tab {
+    Code,
+    Issues,
+    PullRequests,
+    History,
+}
+
 pub fn routes() -> Router<AppState> {
     let router = Router::new()
         .route("/:owner/:repository", get(tree::root))
@@ -25,9 +33,10 @@ pub fn routes() -> Router<AppState> {
         .route("/:owner/:repository/blob/:branch/*blob", get(blob::blob))
         .route(
             "/:owner/:repository/commits/:branch/",
-            get(commits::history),
+            get(commits::git_log),
         )
-        .route("/:owner/:repository/commits/:branch", get(commits::history))
+        .route("/:owner/:repository/commits/:branch", get(commits::git_log))
+        .route("/:owner/:repository/commit/:sha", get(commits::commit_diff))
         .route("/:owner/:repository/diff", get(diff::view))
         .route("/:owner/:repository/get_diff", get(diff::get_diff))
         .route("/:owner/:repository/star", post(activity::star))

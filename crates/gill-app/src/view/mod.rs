@@ -11,6 +11,7 @@ use axum::Router;
 
 pub mod component;
 pub mod dto;
+mod filters;
 pub mod follow;
 pub mod index;
 pub mod repository;

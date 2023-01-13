@@ -1,6 +1,6 @@
 use crate::error::AppResult;
 use crate::oauth::Oauth2User;
-use crate::view::repository::BranchDto;
+use crate::view::repository::{BranchDto, Tab};
 use crate::view::{DynHtmlTemplate, HtmlTemplate};
 use anyhow::anyhow;
 use askama::{DynTemplate, Template};
@@ -95,6 +95,7 @@ pub struct GitTreeTemplate {
     branches: Vec<BranchDto>,
     current_branch: Option<String>,
     user: Option<String>,
+    tab: Tab,
 }
 
 /// Returns a tree with for a given owner, repository and a branch
@@ -171,7 +172,7 @@ mod imp {
     use crate::view::HtmlTemplate;
 
     use crate::domain::repository::stats::RepositoryStats;
-    use crate::view::repository::get_repository_branches;
+    use crate::view::repository::{get_repository_branches, Tab};
 
     use gill_git::traversal::TreeEntry;
     use gill_git::GitRepository;
@@ -200,6 +201,7 @@ mod imp {
             branches,
             current_branch: Some(current_branch),
             user: connected_username,
+            tab: Tab::Code,
         };
 
         Ok(HtmlTemplate(template))
@@ -229,6 +231,7 @@ mod imp {
             branches,
             current_branch: Some(current_branch),
             user: connected_username,
+            tab: Tab::Code,
         };
 
         Ok(HtmlTemplate(template))

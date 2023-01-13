@@ -13,6 +13,7 @@ use axum::extract::Path;
 use axum::response::Redirect;
 use axum::Extension;
 
+use crate::view::repository::Tab;
 use gill_authorize_derive::authorized;
 use sqlx::PgPool;
 
@@ -27,6 +28,7 @@ pub struct PullRequestTemplate {
     current_branch: Option<String>,
     comments: Vec<PullRequestComment>,
     markdown_preview_form: MarkdownPreviewForm,
+    tab: Tab,
 }
 
 pub async fn view(
@@ -60,6 +62,7 @@ pub async fn view(
             owner,
             repository,
         },
+        tab: Tab::PullRequests,
     }))
 }
 
