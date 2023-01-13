@@ -19,8 +19,6 @@ use serde::{Deserialize, Serialize};
 pub mod service;
 
 use gill_settings::SETTINGS;
-#[cfg(feature = "integration")]
-pub use service_mock as service;
 
 static COOKIE_NAME: &str = "GILL_SESSION";
 
