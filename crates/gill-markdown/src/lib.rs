@@ -116,7 +116,7 @@ mod test {
         let markdown = r#"<img src="/docs/assets/img.png" alt="image" />"#;
         let html = render(markdown, "oknozor", "gill");
         assert_that!(html).is_equal_to(
-            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"></img>"#.to_owned(),
+            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"/>"#.to_owned(),
         );
     }
 
@@ -125,7 +125,7 @@ mod test {
         let markdown = r#"<img src="./docs/assets/img.png" alt="image" />"#;
         let html = render(markdown, "oknozor", "gill");
         assert_that!(html).is_equal_to(
-            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"></img>"#.to_owned(),
+            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"/>"#.to_owned(),
         );
     }
 
@@ -134,7 +134,7 @@ mod test {
         let markdown = r#"<img src="docs/assets/img.png" alt="image" />"#;
         let html = render(markdown, "oknozor", "gill");
         assert_that!(html).is_equal_to(
-            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"></img>"#.to_owned(),
+            &r#"<img alt="image" src="/oknozor/gill/docs/assets/img.png"/>"#.to_owned(),
         );
     }
 }

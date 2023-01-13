@@ -1,5 +1,5 @@
 use crate::SYNTAX_SET;
-use gill_git::diff::Diff;
+use gill_git::diffs::Diff;
 use syntect::easy::HighlightLines;
 use syntect::html::{append_highlighted_html_for_styled_line, IncludeBackground};
 
@@ -287,7 +287,7 @@ fn extract_line_start_and_nth(line_info: &str) -> (u32, u32) {
 
 #[cfg(test)]
 mod test {
-    use gill_git::diff::Diff;
+    use gill_git::diffs::Diff;
 
     #[test]
     fn diff2html() {

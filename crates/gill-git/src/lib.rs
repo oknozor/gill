@@ -5,7 +5,7 @@ use std::{fs, io};
 
 pub mod clone;
 pub mod commits;
-pub mod diff;
+pub mod diffs;
 pub mod init;
 pub mod merge;
 pub mod traversal;
@@ -54,7 +54,9 @@ impl GitRepository {
             .expect("filename")
             .to_string_lossy()
             .to_string();
+
         path.pop();
+
         let path = path.join(format!("non-bare-copy-{filename}"));
         path
     }

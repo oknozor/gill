@@ -1,15 +1,17 @@
-use crate::{ref_to_tree, GitRepository};
+use crate::GitRepository;
 use git_repository::bstr::ByteSlice;
 use git_repository::object::tree::diff::change::Event;
 use git_repository::object::tree::diff::{Action, Change};
 use git_repository::objs::tree::EntryMode;
-use git_repository::{object, Id};
-
+use git_repository::{object, Id, Tree};
 use imara_diff::intern::InternedInput;
 use imara_diff::{Algorithm, UnifiedDiffBuilder};
 
+pub mod commit;
+pub mod tree;
+
 #[derive(Debug, Default)]
-pub struct DiffBuilder {
+struct DiffBuilder {
     out: Vec<Diff>,
 }
 
@@ -87,11 +89,9 @@ impl DiffBuilder {
 }
 
 impl GitRepository {
-    pub fn diff(&self, branch: &str, other: &str) -> anyhow::Result<Vec<Diff>> {
+    fn diff_tree_to_tree(&self, tree: Tree, other: Tree) -> anyhow::Result<Vec<Diff>> {
         let repository = &self.inner;
         let mut diff_builder = DiffBuilder::default();
-        let tree = ref_to_tree(Some(&format!("heads/{branch}")), repository)?;
-        let other = ref_to_tree(Some(&format!("heads/{other}")), repository)?;
         tree.changes()
             .track_path()
             .for_each_to_obtain_tree(&other, |changes: Change| {
@@ -185,44 +185,5 @@ impl GitRepository {
             })?;
 
         Ok(diff_builder.out)
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::GitRepository;
-    use anyhow::Result;
-    use cmd_lib::run_cmd;
-    use sealed_test::prelude::*;
-    use speculoos::prelude::*;
-    use std::fs;
-
-    #[sealed_test]
-    fn should_get_diff() -> Result<()> {
-        // Arrange
-        run_cmd!(git init;)?;
-        fs::write("file", "changes")?;
-        run_cmd!(
-            git add .;
-            git commit -m "first commit";
-            git checkout -b other;
-        )?;
-        fs::write("file2", "changes")?;
-        run_cmd!(
-            git add .;
-            git commit -m "second commit";
-        )?;
-
-        let repo = GitRepository {
-            inner: git_repository::open(".")?,
-        };
-
-        // Act
-        let diffs = repo.diff("master", "other");
-
-        // Assert
-        assert_that!(diffs).is_ok().has_length(1);
-
-        Ok(())
     }
 }
