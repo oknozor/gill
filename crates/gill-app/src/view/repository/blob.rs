@@ -15,6 +15,8 @@ use sqlx::PgPool;
 use std::fmt::Formatter;
 
 use crate::domain::repository::stats::RepositoryStats;
+use base64::engine::general_purpose;
+use base64::Engine;
 use std::fmt;
 
 // Needed in template
@@ -63,6 +65,7 @@ pub async fn blob(
         .iter()
         .find(|blob| blob.filename() == blob_name)
         .unwrap();
+
     let blob = match repo.blob_mime(blob) {
         BlobMime::Text => {
             let blob = repo.blob_str(blob)?;
@@ -80,9 +83,9 @@ pub async fn blob(
                 })
                 .unwrap_or(PlainText(blob))
         }
-        BlobMime::Image => Image(base64::encode(repo.blob_bytes(blob)?)),
+        BlobMime::Image => Image(general_purpose::STANDARD.encode(repo.blob_bytes(blob)?)),
         BlobMime::Application => Binary {
-            content: base64::encode(repo.blob_bytes(blob)?),
+            content: general_purpose::STANDARD.encode(repo.blob_bytes(blob)?),
             filename: blob.filename.clone(),
         },
     };

@@ -2,7 +2,7 @@ use crate::GitRepository;
 use git_repository::Commit;
 
 impl GitRepository {
-    pub fn by_sha(&self, sha: &str) -> anyhow::Result<OwnedCommit> {
+    pub fn commit_by_sha(&self, sha: &str) -> anyhow::Result<OwnedCommit> {
         self.find_commit(sha)
     }
 
