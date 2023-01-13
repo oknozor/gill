@@ -122,7 +122,7 @@ impl ApubObject for Issue {
             state: if ticket.is_resolved {
                 IssueState::Closed
             } else {
-                IssueState::Closed
+                IssueState::Open
             },
             activity_pub_id: ActivityPubId::from(ticket.id),
             context: ActivityPubId::from(ticket.context),
