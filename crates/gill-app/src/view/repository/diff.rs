@@ -19,7 +19,6 @@ pub struct DiffQuery {
 #[derive(Template)]
 #[template(path = "repository/diff.html")]
 pub struct GitDiffTemplate {
-    owner: String,
     diff: String,
     user: Option<String>,
 }
@@ -36,7 +35,6 @@ pub async fn view(
     let diff = diff2html(&diff)?;
 
     Ok(HtmlTemplate(GitDiffTemplate {
-        owner,
         diff,
         user: connected_username,
     }))

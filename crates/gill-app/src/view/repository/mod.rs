@@ -78,9 +78,9 @@ async fn get_repository_branches(
     Ok(branches)
 }
 
-pub fn tree_and_blob_from_query(path: &String) -> (Option<&str>, &str) {
+pub fn tree_and_blob_from_query(path: &str) -> (Option<&str>, &str) {
     match path.rsplit_once('/') {
-        None => (None, path.as_str()),
+        None => (None, path),
         Some((tree, blob_name)) => {
             if !tree.is_empty() {
                 (Some(tree), blob_name)

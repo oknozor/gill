@@ -50,10 +50,9 @@ impl TryFrom<&Commit<'_>> for OwnedCommit {
 
 mod imp {
     use crate::commits::OwnedCommit;
-    use crate::{GitRepository};
+    use crate::GitRepository;
     use anyhow::Result;
     use git_repository::ObjectId;
-    
 
     impl GitRepository {
         pub fn find_commit(&self, sha: &str) -> Result<OwnedCommit> {
