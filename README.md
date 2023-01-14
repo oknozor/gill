@@ -64,6 +64,7 @@ These are screenshots of the current Gill user interface which is likely to chan
 |-------------------------------------|-------------------------------------|
 | ![screenshot](docs/assets/sc_3.png) | ![screenshot](docs/assets/sc_4.png) |
 
+## License
 
-
+All the code in this repository is released under the MIT License, for more information take a look at the [LICENSE](LICENSE) file.
 
