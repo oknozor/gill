@@ -51,4 +51,4 @@ reload:
     docker-compose exec gill ./entrypoint.sh
 
 css_live:
-    cd crates/gill-app && tailwindcss -i assets/css/style.css -o assets/css/tailwind.css --watch
+    cd crates/gill-app && tailwindcss -m -i assets/css/style.css -o assets/css/tailwind.min.css --watch
