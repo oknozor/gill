@@ -1,44 +1,40 @@
 version: '3.9'
+
 services:
   gill:
-    image: gill-app:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./
+    image: "gill/gill:0.0.1"
     depends_on:
       - postgres
-    restart: always
-    container_name: gill-app
+    restart: unless-stopped
+    container_name: gill
     environment:
-      DB_NAME: gill
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
+      GILL_DB_NAME: gill
+      GILL_DB_HOST: postgres
+      GILL_DB_PORT: 5432
+      GILL_DB_USER: postgres
+      GILL_DB_PASSWORD: postgres
+      GILL_GILL_ASSETS: /opt/gill/assets
+      GILL_OAUTH_CLIENT_ID: gill
+      GILL_OAUTH_CLIENT_SECRET: 8Nup063EeIOYzSsEyVZkbo67sUpIX0Bc
+      GILL_OAUTH_PROVIDER: https://keycloak.cloud.hoohoot.org
+      GILL_OAUTH_USER_INFO_URL: /auth/realms/hoohoot/protocol/openid-connect/userinfo
+      GILL_OAUTH_TOKEN_URL: /auth/realms/hoohoot/protocol/openid-connect/token
+      GILL_OAUTH_AUTH_URL: /auth/realms/hoohoot/protocol/openid-connect/auth
+      GILL_DOMAIN: bore.pub:45136
+      GILL_PORT: 3000
+      GILL_DEBUG: false
+    env_file:
+      - docker/sshd.env
     ports:
       - "3000:3000"
       - "2222:22"
     volumes:
-      - ./docker/home:/home/git
-      - ./crates/gill-app/assets:/home/git/assets
-    entrypoint: /home/git/entrypoint-debug.sh
-
-  gill-2:
-    image: gill-app:latest
-    depends_on:
-      - postgres
-    restart: always
-    container_name: gill-app-2
-    environment:
-      DB_NAME: gill_2
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-    ports:
-      - "3001:3000"
-      - "12222:22"
-    volumes:
-      - ./docker/home2:/home/git
-      - ./crates/gill-app/assets:/home/git/assets
-    entrypoint: /home/git/entrypoint-debug.sh
+      - gill_data:/home/git
+    networks:
+      - gill
 
   postgres:
     image: docker.io/postgres:13.2
@@ -51,3 +47,10 @@ services:
       - "5432:5432"
     volumes:
       - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - gill
+
+volumes:
+  gill_data:
+networks:
+  gill:

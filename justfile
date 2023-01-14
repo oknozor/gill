@@ -2,6 +2,7 @@
 
 export DATABASE_URL := "postgres://postgres:postgres@localhost/gill"
 
+## Dev commands
 clean:
     docker-compose down
     cargo clean
@@ -34,9 +35,6 @@ build: reset-db
     docker build -t gill-app:latest -f Dockerfile .
     docker-compose up -d
 
-run: build
-    docker-compose exec -d gill ./entrypoint.sh
-
 reload:
     docker-compose exec gill "pkill" "gill-app" || true
     docker-compose exec gill-2 "pkill" "gill-app" || true
@@ -50,5 +48,29 @@ reload:
     cp target/x86_64-unknown-linux-musl/release/gill-app docker/home2/bin/gill-app
     docker-compose exec gill ./entrypoint.sh
 
-css_live:
+css-live-reload:
     cd crates/gill-app && tailwindcss -m -i assets/css/style.css -o assets/css/tailwind.min.css --watch
+
+
+## Docker build
+migrate-db:
+    docker-compose up postgres -d
+    sqlx migrate run --source crates/gill-db/migrations
+    cargo sqlx prepare --merged
+
+build-release-binaries: migrate-db
+    CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
+
+build-docker-image: build-release-binaries
+    docker compose build --no-cache
+
+# Helpers
+generate-ssh-env:
+    mkdir -p /tmp/etc/ssh
+    ssh-keygen -A -f /tmp
+    echo "GILL_SSH_ECDSA_PUB: '`cat /tmp/etc/ssh/ssh_host_ecdsa_key.pub`'" >> docker/sshd.env
+    echo "GILL_SSH_ECDSA: '`cat /tmp/etc/ssh/ssh_host_ecdsa_key`'" >> docker/sshd.env
+    echo "GILL_SSH_ED25519_PUB: '`cat /tmp/etc/ssh/ssh_host_ed25519_key.pub`'" >> docker/sshd.env
+    echo "GILL_SSH_ED25519: '`cat /tmp/etc/ssh/ssh_host_ed25519_key`'" >> docker/sshd.env
+    echo "GILL_SSH_RSA_PUB: '`cat /tmp/etc/ssh/ssh_host_rsa_key.pub`'" >> docker/sshd.env
+    echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> docker/sshd.env

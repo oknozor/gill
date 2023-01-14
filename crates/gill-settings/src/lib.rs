@@ -6,6 +6,21 @@ use std::path::PathBuf;
 
 pub static SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
 
+const OAUTH_CLIENT_ID: &str = "GILL_OAUTH_CLIENT_ID";
+const OAUTH_CLIENT_SECRET: &str = "GILL_OAUTH_CLIENT_SECRET";
+const OAUTH_PROVIDER: &str = "GILL_OAUTH_PROVIDER";
+const OAUTH_USER_INFO_URL: &str = "GILL_OAUTH_USER_INFO_URL";
+const OAUTH_TOKEN_URL: &str = "GILL_OAUTH_TOKEN_URL";
+const OAUTH_AUTH_URL: &str = "GILL_OAUTH_AUTH_URL";
+const DOMAIN: &str = "GILL_DOMAIN";
+const DB_NAME: &str = "GILL_DB_NAME";
+const DB_HOST: &str = "GILL_DB_HOST";
+const DB_USER: &str = "GILL_DB_USER";
+const DB_PORT: &str = "GILL_DB_PORT";
+const DB_PASSWORD: &str = "GILL_DB_PASSWORD";
+const PORT: &str = "GILL_PORT";
+const DEBUG: &str = "GILL_DEBUG";
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub domain: String,
@@ -77,74 +92,110 @@ impl Settings {
             "https"
         }
     }
+
     pub(crate) fn get() -> Result<Self, config::ConfigError> {
-        // TODO
         let config_path = PathBuf::from("/home/git/config.toml");
-        if !config_path.exists() {
+
+        if config_path.exists() {
+            let config: Settings = Config::builder()
+                .add_source(File::from(config_path))
+                .build()?
+                .try_deserialize()?;
+
+            Ok(config.override_with_env())
+        } else {
             tracing::warn!("{config_path:?}, not found");
+            Ok(Settings::from_env())
+        }
+    }
+
+    fn override_with_env(mut self) -> Self {
+        if let Ok(client_id) = env::var(OAUTH_CLIENT_ID) {
+            self.oauth_provider.client_id = client_id;
         }
 
-        let mut config: Settings = Config::builder()
-            .add_source(File::from(config_path))
-            .build()?
-            .try_deserialize()?;
-
-        if let Ok(client_id) = env::var("OAUTH_CLIENT_ID") {
-            config.oauth_provider.client_id = client_id;
+        if let Ok(client_secret) = env::var(OAUTH_CLIENT_SECRET) {
+            self.oauth_provider.client_secret = client_secret;
         }
 
-        if let Ok(client_secret) = env::var("OAUTH_CLIENT_SECRET") {
-            config.oauth_provider.client_secret = client_secret;
+        if let Ok(provider) = env::var(OAUTH_PROVIDER) {
+            self.oauth_provider.provider = provider;
         }
 
-        if let Ok(provider) = env::var("OAUTH_PROVIDER") {
-            config.oauth_provider.provider = provider;
+        if let Ok(user_info_url) = env::var(OAUTH_USER_INFO_URL) {
+            self.oauth_provider.user_info_url = user_info_url;
         }
 
-        if let Ok(user_info_url) = env::var("OAUTH_USER_INFO_URL") {
-            config.oauth_provider.user_info_url = user_info_url;
+        if let Ok(token_url) = env::var(OAUTH_TOKEN_URL) {
+            self.oauth_provider.token_url = token_url;
         }
 
-        if let Ok(token_url) = env::var("OAUTH_TOKEN_URL") {
-            config.oauth_provider.token_url = token_url;
+        if let Ok(auth_url) = env::var(OAUTH_AUTH_URL) {
+            self.oauth_provider.auth_url = auth_url;
         }
 
-        if let Ok(auth_url) = env::var("OAUTH_AUTH_URL") {
-            config.oauth_provider.auth_url = auth_url;
+        if let Ok(domain) = env::var(DOMAIN) {
+            self.domain = domain;
         }
 
-        if let Ok(domain) = env::var("DOMAIN") {
-            config.domain = domain;
+        if let Ok(name) = env::var(DB_NAME) {
+            self.database.database = name;
         }
 
-        if let Ok(name) = env::var("DB_NAME") {
-            config.database.database = name;
+        if let Ok(db_host) = env::var(DB_HOST) {
+            self.database.host = db_host;
         }
 
-        if let Ok(db_host) = env::var("DB_HOST") {
-            config.database.host = db_host;
+        if let Ok(user) = env::var(DB_USER) {
+            self.database.user = user;
         }
 
-        if let Ok(user) = env::var("DB_USER") {
-            config.database.user = user;
+        if let Ok(port) = env::var(DB_PORT) {
+            self.database.port = port.parse().expect("Invalid port number");
         }
 
-        if let Ok(port) = env::var("DB_PORT") {
-            config.database.port = port.parse().expect("Invalid port number");
+        if let Ok(password) = env::var(DB_PASSWORD) {
+            self.database.password = password;
         }
 
-        if let Ok(password) = env::var("DB_PASSWORD") {
-            config.database.password = password;
+        if let Ok(port) = env::var(PORT) {
+            self.port = port.parse().expect("Invalid port number");
         }
 
-        if let Ok(port) = env::var("PORT") {
-            config.port = port.parse().expect("Invalid port number");
+        if let Ok(debug) = env::var(DEBUG) {
+            self.debug = debug.parse().expect("Expected a bool");
         }
 
-        if let Ok(debug) = env::var("DEBUG") {
-            config.debug = debug.parse().expect("Expected a bool");
-        }
+        self
+    }
 
-        Ok(config)
+    fn from_env() -> Self {
+        Settings {
+            domain: env::var(DOMAIN).expect("Missing env var 'DOMAIN'"),
+            debug: env::var(DEBUG).expect(DEBUG)
+                .parse()
+                .expect("GILL_DEBUG must be a bool"),
+            port: env::var(PORT)
+                .expect(PORT)
+                .parse()
+                .expect("GILL_PORT must be an integer"),
+            oauth_provider: AuthSettings {
+                client_id: env::var(OAUTH_CLIENT_ID).expect(OAUTH_CLIENT_ID),
+                client_secret: env::var(OAUTH_CLIENT_SECRET).expect(OAUTH_CLIENT_SECRET),
+                provider: env::var(OAUTH_PROVIDER).expect(OAUTH_PROVIDER),
+                user_info_url: env::var(OAUTH_USER_INFO_URL).expect(OAUTH_USER_INFO_URL),
+                auth_url: env::var(OAUTH_AUTH_URL).expect(OAUTH_AUTH_URL),
+                token_url: env::var(OAUTH_TOKEN_URL).expect(OAUTH_TOKEN_URL),
+            },
+            database: DbSettings {
+                database: env::var(DB_NAME).expect(DB_NAME),
+                host: env::var(DB_HOST).expect(DB_HOST),
+                port: env::var(DB_PORT).expect(DB_PORT)
+                    .parse()
+                    .expect("GILL_DB_PORT must be an integer"),
+                user: env::var(DB_USER).expect(DB_USER),
+                password: env::var(DB_PASSWORD).expect(DB_PASSWORD),
+            },
+        }
     }
 }

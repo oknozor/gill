@@ -85,7 +85,7 @@ impl Instance {
         let app = Router::new()
             .nest_service(
                 "/assets",
-                axum::routing::get_service(ServeDir::new("assets")).handle_error(handle_error),
+                axum::routing::get_service(ServeDir::new("/opt/gill/assets")).handle_error(handle_error),
             )
             .route(
                 "/.well-known/webfinger",

@@ -1,0 +1,53 @@
+version: '3.9'
+services:
+  gill:
+    image: gill-app:latest
+    depends_on:
+      - postgres
+    restart: always
+    container_name: gill-app
+    environment:
+      DB_NAME: gill
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    volumes:
+      - ./docker/dev/home:/home/git
+      - ./crates/gill-app/assets:/opt/gill/assets
+    entrypoint: /home/git/entrypoint-debug.sh
+
+  gill-2:
+    image: gill-app:latest
+    depends_on:
+      - postgres
+    restart: always
+    container_name: gill-app-2
+    environment:
+      DB_NAME: gill_2
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "3001:3000"
+      - "12222:22"
+    volumes:
+      - ./docker/dev/home2:/home/git
+      - ./crates/gill-app/assets:/opt/gill/assets
+    entrypoint: /home/git/entrypoint-debug.sh
+
+  postgres:
+    image: docker.io/postgres:13.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "gill"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
