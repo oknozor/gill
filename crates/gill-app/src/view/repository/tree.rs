@@ -18,7 +18,8 @@ use sqlx::PgPool;
 
 #[derive(Debug)]
 struct TreeDto {
-    pub filename: String,
+    // TODO
+    pub _filename: String,
     pub blobs: Vec<BlobDto>,
     pub trees: Vec<TreeEntryDto>,
 }
@@ -68,7 +69,7 @@ impl From<TreeEntry> for TreeDto {
         blobs.sort_by(|a, b| a.filename.cmp(&b.filename));
 
         Self {
-            filename: tree.filename,
+            _filename: tree.filename,
             blobs,
             trees,
         }

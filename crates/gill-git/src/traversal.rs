@@ -16,14 +16,14 @@ impl GitRepository {
         let reference = branch.map(|name| format!("heads/{name}"));
         let reference = reference.as_deref();
         let tree = ref_to_tree(reference, &self.inner)?;
-        let path = path.map(Path::new).unwrap_or(Path::new(""));
+        let path = path.map(Path::new).unwrap_or_else(|| Path::new(""));
         let repo_path = self.inner.path().to_string_lossy();
         let mut delegate = imp::Traversal::new(repo_path.to_string(), path);
         let _ = tree.traverse().breadthfirst(&mut delegate);
         let reference = reference
             .and_then(|reference| self.inner.find_reference(reference).ok())
             .map(|reference| reference.id())
-            .unwrap_or(self.inner.head_id().expect("HEAD"));
+            .unwrap_or_else(|| self.inner.head_id().expect("HEAD"));
         let tree = self.attach_commit_to_blob(reference, delegate.out)?;
         Ok(tree)
     }
@@ -390,8 +390,6 @@ mod test {
         };
 
         let tree = repo.get_tree_for_path(Some("main"), None)?;
-        println!("{:#?}", tree.blobs);
-        println!("{:#?}", tree.trees);
         let mut blobs_in_root: Vec<String> = tree.blobs.iter().map(BlobInfo::filename).collect();
         blobs_in_root.sort();
 
@@ -403,6 +401,7 @@ mod test {
             "Cargo.toml".to_string(),
             "Cross.toml".to_string(),
             "Dockerfile".to_string(),
+            "LICENSE".to_string(),
             "README.md".to_string(),
             "docker-compose.yml".to_string(),
             "justfile".to_string(),
@@ -411,7 +410,12 @@ mod test {
 
         let tree_names: Vec<String> = tree.trees.into_iter().map(|tree| tree.name).collect();
 
-        assert_that!(tree_names).is_equal_to(vec!["crates".to_string(), "docker".to_string()]);
+        assert_that!(tree_names).is_equal_to(vec![
+            "crates".to_string(),
+            ".github".to_string(),
+            "docs".to_string(),
+            "docker".to_string(),
+        ]);
 
         Ok(())
     }
