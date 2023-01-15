@@ -1,7 +1,6 @@
 /target
 **/target
 /Cargo.lock
-sqlx-data.json
 db-data/
 docker/sshd.env
 docker/dev/home/*
