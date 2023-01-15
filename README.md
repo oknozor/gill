@@ -1,4 +1,10 @@
+
+
 # Gill
+[![CI](https://github.com/oknozor/gill/actions/workflows/CI.yml/badge.svg)](https://github.com/oknozor/gill/actions/workflows/CI.yml)
+[![codecov](https://codecov.io/gh/oknozor/gill/branch/main/graph/badge.svg?token=45W3HMLDU8)](https://codecov.io/gh/oknozor/gill)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+![GitHub](https://img.shields.io/github/license/oknozor/gill)
 
 Gill is a free and open-source git-service based on [ActivityPub](https://www.w3.org/TR/activitypub/)
 and [ForgeFed](https://forgefed.org/). Gill servers are interoperable with other ForgeFed implementation,
