@@ -401,20 +401,24 @@ mod test {
             "Cargo.toml".to_string(),
             "Cross.toml".to_string(),
             "Dockerfile".to_string(),
+            "Dockerfile.dev".to_string(),
+            "INSTALL.md".to_string(),
             "LICENSE".to_string(),
             "README.md".to_string(),
+            "docker-compose.dev.yml".to_string(),
             "docker-compose.yml".to_string(),
             "justfile".to_string(),
+            "sqlx-data.json".to_string(),
             "syntect".to_string(),
         ]);
 
         let tree_names: Vec<String> = tree.trees.into_iter().map(|tree| tree.name).collect();
 
         assert_that!(tree_names).is_equal_to(vec![
-            "crates".to_string(),
             ".github".to_string(),
-            "docs".to_string(),
+            "crates".to_string(),
             "docker".to_string(),
+            "docs".to_string(),
         ]);
 
         Ok(())

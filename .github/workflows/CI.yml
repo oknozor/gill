@@ -56,7 +56,7 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
   lints:
-    name: Lints & Format
+    name: Format & Lint
     runs-on: ubuntu-latest
     env:
       SQLX_OFFLINE: true
