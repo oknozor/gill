@@ -55,14 +55,19 @@ pub async fn git_log(
 #[derive(Template, Debug)]
 #[template(path = "repository/commit-diff.html")]
 pub struct CommitDiffTemplate {
-    repository: String,
-    owner: String,
-    stats: RepositoryStats,
+    // TODO
+    _repository: String,
+    // TODO
+    _owner: String,
+    // TODO
+    _stats: RepositoryStats,
     commit: Commit,
     diff: String,
-    current_branch: Option<String>,
+    // TODO
+    _current_branch: Option<String>,
     user: Option<String>,
-    tab: Tab,
+    // TODO
+    _tab: Tab,
 }
 
 pub async fn commit_diff(
@@ -76,13 +81,13 @@ pub async fn commit_diff(
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 
     Ok(HtmlTemplate(CommitDiffTemplate {
-        repository,
-        owner,
-        stats,
+        _repository: repository,
+        _owner: owner,
+        _stats: stats,
         commit,
         diff,
-        current_branch: None,
+        _current_branch: None,
         user: connected_username,
-        tab: Tab::History,
+        _tab: Tab::History,
     }))
 }

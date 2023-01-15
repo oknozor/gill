@@ -33,7 +33,8 @@ impl Default for Tab {
 #[template(path = "user/settings.html")]
 pub struct UserSettingsTemplate {
     user: Option<String>,
-    tab: Tab,
+    // TODO
+    _tab: Tab,
 }
 
 pub async fn settings(
@@ -49,6 +50,6 @@ pub async fn settings(
 
     Ok(HtmlTemplate(UserSettingsTemplate {
         user: Some(user.username),
-        tab: page.tab,
+        _tab: page.tab,
     }))
 }

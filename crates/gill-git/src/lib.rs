@@ -100,7 +100,7 @@ mod test {
             inner: git_repository::open("repo")?,
         };
 
-        assert_that!(repository.path()).is_equal_to(&PathBuf::from("repo"));
+        assert_that!(repository.path()).is_equal_to(&PathBuf::from("repo/.git"));
         Ok(())
     }
 

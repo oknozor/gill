@@ -31,7 +31,6 @@ use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use user::{ApubUser, PersonAcceptedActivities};
 
-pub mod commit;
 pub mod common;
 pub mod repository;
 pub mod ticket;

@@ -39,7 +39,8 @@ pub struct UserPageTemplate {
     user: Option<String>,
     repositories: Vec<RepositoryDto>,
     stars: Vec<RepositoryDto>,
-    tab: Tab,
+    // TODO
+    _tab: Tab,
 }
 
 pub async fn user_view(
@@ -72,7 +73,7 @@ pub async fn user_view(
         user: username,
         repositories,
         stars,
-        tab: page.tab,
+        _tab: page.tab,
     };
 
     Ok(HtmlTemplate(template))

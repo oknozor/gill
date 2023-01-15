@@ -172,7 +172,8 @@ impl Settings {
     fn from_env() -> Self {
         Settings {
             domain: env::var(DOMAIN).expect("Missing env var 'DOMAIN'"),
-            debug: env::var(DEBUG).expect(DEBUG)
+            debug: env::var(DEBUG)
+                .expect(DEBUG)
                 .parse()
                 .expect("GILL_DEBUG must be a bool"),
             port: env::var(PORT)
@@ -190,7 +191,8 @@ impl Settings {
             database: DbSettings {
                 database: env::var(DB_NAME).expect(DB_NAME),
                 host: env::var(DB_HOST).expect(DB_HOST),
-                port: env::var(DB_PORT).expect(DB_PORT)
+                port: env::var(DB_PORT)
+                    .expect(DB_PORT)
                     .parse()
                     .expect("GILL_DB_PORT must be an integer"),
                 user: env::var(DB_USER).expect(DB_USER),
