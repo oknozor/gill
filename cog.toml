@@ -1,0 +1,63 @@
+branch_whitelist = [ "main" ]
+ignore_merge_commits = true
+
+pre_bump_hooks = [
+    "cargo test",
+    "cargo clippy",
+    "cargo fmt --all",
+    "cargo set-version {{version}}",
+    "cargo build --release",
+]
+
+# TODO
+post_bump_hooks = []
+
+pre_package_bump_hooks = [
+    "cargo set-version {{version}}"
+]
+
+[packages.gill-app]
+path = "gill-app"
+
+[packages.gill-authorize-derive]
+path = "gill-authorize-derive"
+public_api = false
+
+[packages.gill-db]
+path = "gill-db"
+public_api = false
+
+[packages.gill-git]
+path = "gill-git"
+public_api = false
+
+[packages.gill-git-server]
+path = "gill-git-server"
+
+[packages.gill-markdown]
+path = "gill-markdown"
+public_api = false
+
+[packages.gill-settings]
+path = "gill-settings"
+
+[packages.gill-syntax]
+path = "gill-syntax"
+public_api = false
+
+[packages.gill-web-markdown]
+path = "gill-web-markdown"
+
+[packages.syntect-plugin]
+path = "syntect-plugin"
+public_api = false
+
+
+[changelog]
+template = "remote"
+remote = "github.com"
+repository = "gill"
+owner = "oknozor"
+authors = [
+    { signature = "Paul Delafosse", username = "oknozor" },
+]
