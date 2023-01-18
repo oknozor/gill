@@ -43,14 +43,6 @@ impl ActivityHandler for Watch {
         self.user.inner()
     }
 
-    async fn verify(
-        &self,
-        _data: &Data<Self::DataType>,
-        _request_counter: &mut i32,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-
     async fn receive(
         self,
         data: &Data<Self::DataType>,

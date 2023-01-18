@@ -51,14 +51,6 @@ impl ActivityHandler for OfferTicket {
         self.actor.inner()
     }
 
-    async fn verify(
-        &self,
-        _data: &Data<Self::DataType>,
-        _request_counter: &mut i32,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-
     /// Receive an offer ticket activity and automatically send back an accept activity
     /// to the offer sender and the repository followers
     async fn receive(

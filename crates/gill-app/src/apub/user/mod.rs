@@ -113,15 +113,6 @@ impl ApubObject for User {
         })
     }
 
-    async fn verify(
-        _apub: &Self::ApubType,
-        _expected_domain: &Url,
-        _data: &Self::DataType,
-        _request_counter: &mut i32,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-
     async fn from_apub(
         apub: Self::ApubType,
         data: &Self::DataType,

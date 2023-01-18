@@ -68,15 +68,6 @@ impl ApubObject for IssueComment {
         })
     }
 
-    async fn verify(
-        _: &Self::ApubType,
-        _: &Url,
-        _: &Self::DataType,
-        _: &mut i32,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-
     async fn from_apub(
         comment: Self::ApubType,
         context: &Self::DataType,
