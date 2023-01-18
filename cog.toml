@@ -1,5 +1,6 @@
-branch_whitelist = [ "main" ]
+branch_whitelist = ["main"]
 ignore_merge_commits = true
+tag_prefix = "v"
 
 pre_bump_hooks = [
     "SQLX_OFFLINE=true cargo test",
@@ -8,55 +9,35 @@ pre_bump_hooks = [
     "SQLX_OFFLINE=true cargo build --release",
 ]
 
-# TODO
-post_bump_hooks = []
+post_bump_hooks = [
+    "git push",
+    "git push origin --tags",
+]
 
 pre_package_bump_hooks = [
     "cargo set-version {{version}}"
 ]
 
-[packages.gill-app]
-path = "gill-app"
-
-[packages.gill-authorize-derive]
-path = "gill-authorize-derive"
-public_api = false
-
-[packages.gill-db]
-path = "gill-db"
-public_api = false
-
-[packages.gill-git]
-path = "gill-git"
-public_api = false
-
-[packages.gill-git-server]
-path = "gill-git-server"
-
-[packages.gill-markdown]
-path = "gill-markdown"
-public_api = false
-
-[packages.gill-settings]
-path = "gill-settings"
-
-[packages.gill-syntax]
-path = "gill-syntax"
-public_api = false
-
-[packages.gill-web-markdown]
-path = "gill-web-markdown"
-
-[packages.syntect-plugin]
-path = "syntect-plugin"
-public_api = false
-
+[packages]
+gill-app = { path = "crates/gill-app" }
+gill-authorize-derive = { path = "crates/gill-authorize-derive", public_api = false }
+gill-db = { path = "crates/gill-db", public_api = false }
+gill-git = { path = "crates/gill-git", public_api = false }
+gill-git-server = { path = "crates/gill-git-server" }
+gill-markdown = { path = "crates/gill-markdown", public_api = false }
+gill-settings = { path = "crates/gill-settings" }
+gill-syntax = { path = "crates/gill-syntax" }
+gill-web-markdown = { path = "crates/gill-web-markdown" }
+syntect-plugin = { path = "crates/syntect-plugin", public_api = false }
 
 [changelog]
-template = "remote"
+template = "monorepo_remote"
+package_template = "package_remote"
 remote = "github.com"
 repository = "gill"
 owner = "oknozor"
 authors = [
     { signature = "Paul Delafosse", username = "oknozor" },
 ]
+
+
