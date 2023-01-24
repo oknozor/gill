@@ -3,10 +3,11 @@
 db-data/
 docker/sshd.env
 docker/dev/home/*
-!docker/dev/home/entrypoint-debug.sh
-!docker/entrypoint.sh
-!docker/dev/home/config.toml
 docker/dev/home2/*
+
+!docker/dev/home/entrypoint-debug.sh
 !docker/dev/home2/entrypoint-debug.sh
+!docker/home/entrypoint.sh
 !docker/dev/home2/entrypoint.sh
+!docker/dev/home/config.toml
 !docker/dev/home2/config.toml

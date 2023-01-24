@@ -5,7 +5,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./
-    image: "gill/gill:0.0.1"
+    image: "gillpub/gill:latest-amd"
     depends_on:
       - postgres
     restart: unless-stopped

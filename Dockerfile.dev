@@ -32,7 +32,7 @@ COPY target/x86_64-unknown-linux-musl/release/gill-git-server ./bin/gill-git-ser
 COPY target/x86_64-unknown-linux-musl/release/post-receive /usr/share/git-core/templates/hooks/post-receive
 
 COPY crates/gill-app/assets/ /opt/gill/assets
-COPY docker/home/* ./
+COPY docker/dev/home/* ./
 
 RUN chown -R git:git ./
 

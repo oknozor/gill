@@ -1,7 +1,9 @@
 version: '3.9'
 services:
   gill:
-    image: gill-app:latest
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./
     depends_on:
       - postgres
     restart: always
@@ -21,7 +23,9 @@ services:
     entrypoint: /home/git/entrypoint-debug.sh
 
   gill-2:
-    image: gill-app:latest
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./
     depends_on:
       - postgres
     restart: always

@@ -4,13 +4,13 @@ export DATABASE_URL := "postgres://postgres:postgres@localhost/gill"
 
 ## Dev commands
 clean:
-    docker-compose down
+    docker compose -f docker-compose.dev.yml down
     cargo clean
 
 reset-db:
-    docker-compose exec gill "pkill" "gill-app" || true
-    docker-compose exec gill-2 "pkill" "gill-app" || true
-    docker-compose up postgres -d
+    docker-compose -f docker-compose.dev.yml exec gill "pkill" "gill-app" || true
+    docker-compose -f docker-compose.dev.yml exec gill-2 "pkill" "gill-app" || true
+    docker-compose -f docker-compose.dev.yml up postgres -d
     yes | sqlx database drop
     sqlx database create
     sqlx migrate run --source crates/gill-db/migrations
@@ -25,17 +25,17 @@ build: reset-db
     docker-compose up -d
 
 reload:
-    docker-compose exec gill "pkill" "gill-app" || true
-    docker-compose exec gill-2 "pkill" "gill-app" || true
+    docker-compose -f docker-compose.dev.yml exec gill "pkill" "gill-app" || true
+    docker-compose -f docker-compose.dev.yml exec gill-2 "pkill" "gill-app" || true
     cargo sqlx prepare --merged
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
-    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/home/bin/gill-git-server
-    cp target/x86_64-unknown-linux-musl/release/gill-app docker/home/bin/gill-app
-    cp target/x86_64-unknown-linux-musl/release/post-receive docker/home/hooks/post-receive
-    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/home2/bin/gill-git-server
-    cp target/x86_64-unknown-linux-musl/release/post-receive docker/home2/hooks/post-receive
-    cp target/x86_64-unknown-linux-musl/release/gill-app docker/home2/bin/gill-app
-    docker-compose exec gill ./entrypoint.sh
+    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/dev/home/bin/gill-git-server
+    cp target/x86_64-unknown-linux-musl/release/gill-app docker/dev/home/bin/gill-app
+    cp target/x86_64-unknown-linux-musl/release/post-receive docker/dev/home/hooks/post-receive
+    cp target/x86_64-unknown-linux-musl/release/gill-git-server docker/dev/home2/bin/gill-git-server
+    cp target/x86_64-unknown-linux-musl/release/post-receive docker/dev/home2/hooks/post-receive
+    cp target/x86_64-unknown-linux-musl/release/gill-app docker/dev/home2/bin/gill-app
+    docker-compose -f docker-compose.dev.yml exec gill ./entrypoint.sh
 
 css-live-reload:
     cd crates/gill-app && tailwindcss -m -i assets/css/style.css -o assets/css/tailwind.min.css --watch
@@ -43,7 +43,7 @@ css-live-reload:
 
 ## Docker build
 migrate-db:
-    docker-compose up postgres -d
+    docker-compose -f docker-compose.dev.yml up postgres -d
     sqlx migrate run --source crates/gill-db/migrations
     cargo sqlx prepare --merged
 
@@ -66,3 +66,17 @@ generate-ssh-env:
     echo "GILL_SSH_ED25519: '`cat /tmp/etc/ssh/ssh_host_ed25519_key`'" >> docker/sshd.env
     echo "GILL_SSH_RSA_PUB: '`cat /tmp/etc/ssh/ssh_host_rsa_key.pub`'" >> docker/sshd.env
     echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> docker/sshd.env
+
+docker-build:
+    docker build --no-cache --build-arg arch=amd . -t gillpub/gill:latest-amd
+    docker push gillpub/gill:latest-amd
+
+    docker build --no-cache --build-arg arch=arm . -t gillpub/gill:latest-arm
+    docker push gillpub/gill:latest-arm
+
+    docker manifest create gillpub/gill:latest \
+     --amend gillpub/gill:latest-amd \
+     --amend gillpub/gill:latest-arm
+
+    docker manifest push gillpub/gill:latest
+
