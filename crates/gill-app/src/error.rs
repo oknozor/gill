@@ -1,5 +1,6 @@
 use axum::response::{IntoResponse, Response};
 use http::StatusCode;
+use tracing::error;
 
 pub type AppResult<T> = Result<T, AppError>;
 
@@ -15,7 +16,9 @@ where
     T: Into<anyhow::Error>,
 {
     fn from(t: T) -> Self {
-        AppError::Internal(t.into())
+        let err = t.into();
+        error!("{err}");
+        AppError::Internal(err)
     }
 }
 

@@ -91,7 +91,6 @@ impl CreateIssueCommand {
             let attributed_to = repo.attributed_to.to_string();
             if attributed_to != issue.attributed_to.to_string() {
                 let owner = User::by_activity_pub_id(&attributed_to, db).await?;
-
                 issue.add_subscriber(owner.id, db).await?;
             }
 
@@ -102,7 +101,7 @@ impl CreateIssueCommand {
             let recipient = to.clone();
             let create_event = AcceptTicket {
                 id: Url::parse(&id)?,
-                actor: repo.activity_pub_id.into(),
+                actor: user.activity_pub_id.clone().into(),
                 to,
                 object: Url::parse(&format!(
                     "https://{hostname}/activity/{uuid}",
@@ -112,11 +111,6 @@ impl CreateIssueCommand {
                 result: ticket.id,
             };
 
-            tracing::debug!(
-                "Sending accept issue activity to repository followers inboxes {:?}",
-                recipient
-            );
-
             user.send(create_event, recipient, &instance.local_instance)
                 .await?;
 
@@ -124,11 +118,10 @@ impl CreateIssueCommand {
         } else {
             let repository = repo;
             let hostname = &SETTINGS.domain;
-            let to = repository.followers(instance).await?;
-            let recipient = to.clone();
             let attributed_to = user.activity_pub_id.clone().into();
             let actor = user.activity_pub_id.clone().into();
 
+            let repository_activity_pub_id = repository.activity_pub_id;
             let offer = OfferTicket {
                 id: Url::parse(&format!(
                     "https://{hostname}/activity/{uuid}",
@@ -136,7 +129,7 @@ impl CreateIssueCommand {
                 ))?,
                 kind: Default::default(),
                 actor,
-                to: vec![],
+                to: vec![repository_activity_pub_id.clone().into()],
                 object: ApubTicketOffer {
                     kind: Default::default(),
                     attributed_to,
@@ -147,10 +140,11 @@ impl CreateIssueCommand {
                         media_type: "text/markdown".to_string(),
                     },
                 },
-                target: repository.activity_pub_id.into(),
+                target: repository_activity_pub_id.clone().into(),
             };
 
-            user.send(offer, recipient, &instance.local_instance).await
+            user.send(offer, vec![repository.inbox_url], &instance.local_instance)
+                .await
         }
     }
 }

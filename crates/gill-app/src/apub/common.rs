@@ -7,6 +7,7 @@ use activitypub_federation::traits::ActivityHandler;
 use activitypub_federation::LocalInstance;
 use async_session::async_trait;
 use serde::{Deserialize, Serialize};
+use tracing::info;
 use url::{ParseError, Url};
 
 #[async_trait]
@@ -33,6 +34,11 @@ pub trait GillApubObject {
             From<anyhow::Error> + From<serde_json::Error> + From<AppError> + From<ParseError>,
     {
         let activity = WithContext::new_default(activity);
+        info!(
+            "Sending activity {} to {:?}",
+            activity.id(),
+            recipients.iter().map(|r| r.to_string())
+        );
         send_activity(
             activity,
             self.public_key_with_owner()?,

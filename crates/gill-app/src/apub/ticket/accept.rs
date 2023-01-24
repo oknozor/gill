@@ -4,7 +4,7 @@ use crate::instance::InstanceHandle;
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
 use crate::domain::issue::Issue;
-use crate::domain::repository::Repository;
+
 use crate::domain::user::User;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::AcceptType;
@@ -20,7 +20,8 @@ pub struct AcceptTicket {
     #[serde(rename = "type")]
     pub(crate) kind: AcceptType,
     /// The repository managing this ticket
-    pub(crate) actor: ObjectId<Repository>,
+    // todo: should this be user ?
+    pub(crate) actor: ObjectId<User>,
     /// Collection of this repository follower's inboxes and the
     /// offer author inbox
     #[serde(deserialize_with = "deserialize_one_or_many")]
@@ -51,12 +52,15 @@ impl ActivityHandler for AcceptTicket {
         request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
         ObjectId::<User>::new(self.actor)
-            .dereference_local(data)
-            .await?;
-
-        self.result
             .dereference(data, &data.local_instance, request_counter)
             .await?;
+
+        let issue = self
+            .result
+            .dereference(data, &data.local_instance, request_counter)
+            .await?;
+
+        issue.save(data.database()).await?;
 
         Ok(())
     }

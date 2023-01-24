@@ -77,9 +77,10 @@ impl ActivityHandler for OfferTicket {
             "https://{hostname}/activity/{uuid}",
             uuid = Uuid::new_v4()
         ))?;
-        let actor = issue.context.into();
+        let repository_owner =
+            User::by_activity_pub_id(&repository.attributed_to.clone().to_string(), db).await?;
         let result = issue.activity_pub_id.into();
-
+        let actor = repository_owner.activity_pub_id.clone().into();
         let mut to = repository.followers(context).await?;
         to.push(sender.shared_inbox_or_inbox());
         let recipient = to.clone();
@@ -93,7 +94,7 @@ impl ActivityHandler for OfferTicket {
             result,
         };
 
-        repository
+        repository_owner
             .send(accept, recipient, &context.local_instance)
             .await
     }

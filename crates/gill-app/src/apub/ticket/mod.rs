@@ -132,7 +132,6 @@ impl ApubObject for Issue {
             is_local: false,
         };
 
-        let issue = issue.save(context.database()).await?;
         Ok(issue)
     }
 }

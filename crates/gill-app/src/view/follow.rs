@@ -110,6 +110,7 @@ pub async fn follow_form(
 }
 
 async fn resolve_webfinger(webfinger: &str) -> anyhow::Result<Webfinger> {
+    println!("{}", webfinger);
     let webfinger = webfinger::resolve(webfinger, false)
         .await
         .expect("Web finger error");
