@@ -1,4 +1,4 @@
-use crate::apub::common::GillApubObject;
+use crate::apub::common::{GillActivity, GillApubObject};
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::AppError;
@@ -19,6 +19,12 @@ pub struct Fork {
     pub fork: ObjectId<Repository>,
     pub forked_by: ObjectId<User>,
     r#type: CreateType,
+}
+
+impl GillActivity for Fork {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        vec![]
+    }
 }
 
 impl Fork {

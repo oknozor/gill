@@ -27,7 +27,7 @@ impl CreateRepositoryCommand {
         let user_name = user.username.clone();
         let domain = &SETTINGS.domain;
         let apub_id = format!(
-            "{protocol}://{domain}/apub/users/{user_name}/repositories/{}",
+            "{protocol}://{domain}/users/{user_name}/repositories/{}",
             self.name
         );
         let clone_uri = format!("ssh://git@{domain}/~/{user_name}/{}.git", self.name);

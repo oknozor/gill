@@ -33,7 +33,7 @@ pub async fn follow_form(
     let Some(_user) = get_connected_user(&db, connected_user).await else {
         return Err(AppError::from(anyhow!("Unauthorized")));
     };
-
+    println!("{:?}", input);
     // First attempt to parse the whole user url, then fallback to webfinger
     if let Ok(url) = Url::parse(&input.follow) {
         // FIXME: this is not compatible with other forgefed instances and should not be done this way
@@ -110,7 +110,6 @@ pub async fn follow_form(
 }
 
 async fn resolve_webfinger(webfinger: &str) -> anyhow::Result<Webfinger> {
-    println!("{}", webfinger);
     let webfinger = webfinger::resolve(webfinger, false)
         .await
         .expect("Web finger error");

@@ -24,6 +24,7 @@ use tower_http::ServiceBuilderExt;
 
 use uuid::Uuid;
 
+use crate::apub::common::GillApubObject;
 use crate::apub::ticket::comment::ApubIssueComment;
 use crate::domain::issue::comment::IssueComment;
 use crate::domain::issue::Issue;
@@ -115,38 +116,76 @@ async fn user_inbox(
     headers: HeaderMap,
     method: Method,
     OriginalUri(uri): OriginalUri,
+    Path(user): Path<String>,
     State(data): State<InstanceHandle>,
     Extension(digest_verified): Extension<DigestVerified>,
     Json(activity): Json<WithContext<PersonAcceptedActivities>>,
 ) -> impl IntoResponse {
-    receive_activity::<WithContext<PersonAcceptedActivities>, User, InstanceHandle>(
-        digest_verified,
-        activity,
-        &data.clone().local_instance,
-        &Data::new(data),
-        headers,
-        method,
-        uri,
-    )
-    .await
+    let db = data.database();
+    let user = User::by_name(&user, db).await?;
+    let user_activity = activity.inner().clone();
+
+    match activity.inner() {
+        PersonAcceptedActivities::Follow(_) | PersonAcceptedActivities::CreateIssueComment(_) => {
+            receive_activity::<WithContext<PersonAcceptedActivities>, User, InstanceHandle>(
+                digest_verified,
+                activity,
+                &data.clone().local_instance,
+                &Data::new(data.clone()),
+                headers,
+                method,
+                uri,
+            )
+            .await?;
+        }
+        PersonAcceptedActivities::AcceptTicket(ticket) => {
+            let ticket = ticket.clone();
+            // Receive an store the accepted issue
+            receive_activity::<WithContext<PersonAcceptedActivities>, Repository, InstanceHandle>(
+                digest_verified,
+                activity,
+                &data.clone().local_instance,
+                &Data::new(data.clone()),
+                headers,
+                method,
+                uri,
+            )
+            .await?;
+
+            // Since add the issue creator to the list of issue subscriber
+            let issue = ticket.result.dereference_local(&data).await?;
+            issue.add_subscriber(user.id, db).await?;
+        }
+    };
+
+    user.forward_activity(user_activity, &data.local_instance, data.database())
+        .await
 }
 
 async fn repository_inbox(
     headers: HeaderMap,
     method: Method,
+    Path((user, repository)): Path<(String, String)>,
     OriginalUri(uri): OriginalUri,
     State(data): State<InstanceHandle>,
     Extension(digest_verified): Extension<DigestVerified>,
     Json(activity): Json<WithContext<RepositoryAcceptedActivities>>,
 ) -> impl IntoResponse {
+    let repository = Repository::by_namespace(&user, &repository, data.database()).await?;
+    let repository_activity = activity.inner().clone();
+
     receive_activity::<WithContext<RepositoryAcceptedActivities>, User, InstanceHandle>(
         digest_verified,
         activity,
         &data.clone().local_instance,
-        &Data::new(data),
+        &Data::new(data.clone()),
         headers,
         method,
         uri,
     )
-    .await
+    .await?;
+
+    repository
+        .forward_activity(repository_activity, &data.local_instance, data.database())
+        .await
 }

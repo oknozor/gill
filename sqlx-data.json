@@ -1179,6 +1179,26 @@
     },
     "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND r.is_local\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $1 OFFSET $2;"
   },
+  "5e6b09954c499dea77ee73a1e4d017a109ca89d83e3a7656a694f4d3b8b865ec": {
+    "describe": {
+      "columns": [
+        {
+          "name": "inbox_url",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT DISTINCT member.inbox_url\n            FROM users u\n                     LEFT JOIN repository r ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN user_follow uf on u.id = uf.user_id AND r.id IS NULL\n                     LEFT JOIN repository_watch rw on r.id = rw.repository_id AND r.id IS NOT NULL\n                     JOIN users as member on member.id = uf.follower_id OR member.id = rw.watched_by\n                WHERE r.followers_url = $1\n                   OR u.followers_url = $1\n            "
+  },
   "5f75f96fad00b19c37bc23462c851428dca095403ab7e461a9c2d7e89b7b39bb": {
     "describe": {
       "columns": [

@@ -17,6 +17,7 @@ pub struct WebFingerQuery {
     resource: String,
 }
 
+#[derive(Debug)]
 struct WebFingerAcct {
     user: String,
     domain: String,
@@ -53,15 +54,18 @@ pub async fn webfinger(
     Extension(db): Extension<PgPool>,
 ) -> AppResult<Json<Webfinger>> {
     let acct = query.parse().unwrap();
+    println!("ACCT {:?}", acct);
     if acct.domain == SETTINGS.domain {
         if let Some(repository) = acct.repository {
+            println!("user {}", &acct.user);
+            println!("repo {}", &repository);
             Repository::by_namespace(&acct.user, &repository, &db).await?;
             Ok(Json(Webfinger {
                 subject: query.resource,
                 aliases: vec![
                     format!("http://{}/@{}/{}", acct.domain, acct.user, repository),
                     format!(
-                        "http://{}/apub/users/{}/repositories/{}",
+                        "http://{}/users/{}/repositories/{}",
                         acct.domain, acct.user, repository
                     ),
                 ],
@@ -78,7 +82,7 @@ pub async fn webfinger(
                     Link {
                         rel: "self".to_string(),
                         href: Some(format!(
-                            "http://{}/apub/users/{}/repositories/{}",
+                            "http://{}/users/{}/repositories/{}",
                             acct.domain, acct.user, repository
                         )),
                         template: None,
@@ -92,7 +96,7 @@ pub async fn webfinger(
                 subject: query.resource,
                 aliases: vec![
                     format!("http://{}/@{}", acct.domain, acct.user),
-                    format!("http://{}/apub/users/{}", acct.domain, acct.user),
+                    format!("http://{}/users/{}", acct.domain, acct.user),
                 ],
                 links: vec![
                     Link {
@@ -103,7 +107,7 @@ pub async fn webfinger(
                     },
                     Link {
                         rel: "self".to_string(),
-                        href: Some(format!("http://{}/apub/users/{}", acct.domain, acct.user)),
+                        href: Some(format!("http://{}/users/{}", acct.domain, acct.user)),
                         template: None,
                         mime_type: Some("application/activity+json".to_string()),
                     },

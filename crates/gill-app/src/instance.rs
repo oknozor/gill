@@ -93,8 +93,8 @@ impl Instance {
                 get(crate::webfinger::webfinger).with_state(app_state.clone()),
             )
             .nest("/api/v1/", api::router(app_state.clone()))
-            .nest_service("/apub", apub::router(instance))
-            .nest_service("/", view::router(app_state.clone()))
+            .merge(apub::router(instance))
+            .merge(view::router(app_state.clone()))
             .layer(TraceLayer::new_for_http())
             .layer(Extension(db))
             .into_make_service();

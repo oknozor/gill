@@ -5,7 +5,8 @@ use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
 use crate::domain::issue::Issue;
 
-use crate::domain::user::User;
+use crate::apub::common::{is_local, GillActivity};
+use crate::domain::repository::Repository;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::AcceptType;
 use axum::async_trait;
@@ -20,8 +21,7 @@ pub struct AcceptTicket {
     #[serde(rename = "type")]
     pub(crate) kind: AcceptType,
     /// The repository managing this ticket
-    // todo: should this be user ?
-    pub(crate) actor: ObjectId<User>,
+    pub(crate) actor: ObjectId<Repository>,
     /// Collection of this repository follower's inboxes and the
     /// offer author inbox
     #[serde(deserialize_with = "deserialize_one_or_many")]
@@ -31,6 +31,12 @@ pub struct AcceptTicket {
     pub(crate) object: Url,
     /// The accepted ticket
     pub(crate) result: ObjectId<Issue>,
+}
+
+impl GillActivity for AcceptTicket {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        self.to.iter().filter(|url| is_local(url)).collect()
+    }
 }
 
 #[async_trait]
@@ -51,7 +57,7 @@ impl ActivityHandler for AcceptTicket {
         data: &Data<InstanceHandle>,
         request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        ObjectId::<User>::new(self.actor)
+        ObjectId::<Repository>::new(self.actor)
             .dereference(data, &data.local_instance, request_counter)
             .await?;
 

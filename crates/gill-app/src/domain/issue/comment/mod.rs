@@ -14,7 +14,7 @@ use uuid::Uuid;
 pub mod create;
 pub mod digest;
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug)]
 pub struct IssueComment {
     pub id: Uuid,
     pub activity_pub_id: ActivityPubId<IssueComment>,
@@ -92,7 +92,7 @@ impl IssueComment {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!(
-            "{scheme}://{domain}/apub/users/{user}/repositories/{repository}/issues/{issue}/comments/{uuid}"
+            "{scheme}://{domain}/users/{user}/repositories/{repository}/issues/{issue}/comments/{uuid}"
         ))?;
         Ok(ObjectId::new(url))
     }

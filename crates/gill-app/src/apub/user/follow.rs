@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::instance::InstanceHandle;
 
-use crate::apub::common::GillApubObject;
+use crate::apub::common::{GillActivity, GillApubObject};
 use crate::domain::user::User;
 use activitypub_federation::{core::object_id::ObjectId, data::Data, traits::ActivityHandler};
 use activitystreams_kinds::activity::FollowType;
@@ -16,6 +16,12 @@ pub struct Follow {
     pub follower: ObjectId<User>,
     pub followed: ObjectId<User>,
     r#type: FollowType,
+}
+
+impl GillActivity for Follow {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        vec![]
+    }
 }
 
 impl Follow {

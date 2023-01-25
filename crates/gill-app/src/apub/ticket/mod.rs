@@ -145,7 +145,7 @@ impl Issue {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!(
-            "{scheme}://{domain}/apub/users/{user}/repositories/{repository}/issues/{number}"
+            "{scheme}://{domain}/users/{user}/repositories/{repository}/issues/{number}"
         ))?;
 
         Ok(ObjectId::new(url))

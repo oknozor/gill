@@ -1,3 +1,4 @@
+use crate::apub::common::GillActivity;
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::AppError;
@@ -17,6 +18,12 @@ pub struct Star {
     pub user: ObjectId<User>,
     pub repository: ObjectId<Repository>,
     r#type: LikeType,
+}
+
+impl GillActivity for Star {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        vec![]
+    }
 }
 
 impl Star {

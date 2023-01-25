@@ -45,7 +45,7 @@ impl CreateIssueCommand {
             let protocol = SETTINGS.protocol();
             let domain = &SETTINGS.domain;
             let activity_pub_id = format!(
-                "{protocol}://{domain}/apub/users/{owner}/repositories/{repository}/issues/{number}"
+                "{protocol}://{domain}/users/{owner}/repositories/{repository}/issues/{number}"
             );
             let context = repo.activity_pub_id.clone();
             let _attributed_to = user.activity_pub_id.clone();
@@ -99,9 +99,9 @@ impl CreateIssueCommand {
             let ticket = issue.into_apub(instance).await?;
             let to = repo.followers(instance).await?;
             let recipient = to.clone();
-            let create_event = AcceptTicket {
+            let accept_ticket = AcceptTicket {
                 id: Url::parse(&id)?,
-                actor: user.activity_pub_id.clone().into(),
+                actor: repo.activity_pub_id.clone().into(),
                 to,
                 object: Url::parse(&format!(
                     "https://{hostname}/activity/{uuid}",
@@ -111,7 +111,7 @@ impl CreateIssueCommand {
                 result: ticket.id,
             };
 
-            user.send(create_event, recipient, &instance.local_instance)
+            repo.send(accept_ticket, recipient, &instance.local_instance)
                 .await?;
 
             Ok(())

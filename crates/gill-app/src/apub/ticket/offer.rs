@@ -4,7 +4,7 @@ use crate::instance::InstanceHandle;
 use crate::apub::ticket::{ApubTicket, TicketType};
 use activitypub_federation::deser::helpers::deserialize_one_or_many;
 
-use crate::apub::common::{GillApubObject, Source};
+use crate::apub::common::{is_local, GillActivity, GillApubObject, Source};
 use crate::apub::ticket::accept::AcceptTicket;
 use crate::domain::issue::Issue;
 use crate::domain::repository::Repository;
@@ -38,6 +38,12 @@ pub struct OfferTicket {
     pub target: ObjectId<Repository>,
 }
 
+impl GillActivity for OfferTicket {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        self.to.iter().filter(|url| is_local(url)).collect()
+    }
+}
+
 #[async_trait]
 impl ActivityHandler for OfferTicket {
     type DataType = InstanceHandle;
@@ -58,7 +64,7 @@ impl ActivityHandler for OfferTicket {
         context: &Data<InstanceHandle>,
         request_counter: &mut i32,
     ) -> Result<(), Self::Error> {
-        let sender = self
+        let author = self
             .actor
             .dereference(context, &context.local_instance, request_counter)
             .await?;
@@ -70,19 +76,18 @@ impl ActivityHandler for OfferTicket {
         let object = self.id.clone();
         let ticket = ApubTicket::from_offer(self, db).await?;
         let issue = Issue::from_apub(ticket, context, request_counter).await?;
-
         let issue = issue.save(db).await?;
+        issue.add_subscriber(author.id, db).await?;
+
         let hostname = &SETTINGS.domain;
         let id = Url::parse(&format!(
             "https://{hostname}/activity/{uuid}",
             uuid = Uuid::new_v4()
         ))?;
-        let repository_owner =
-            User::by_activity_pub_id(&repository.attributed_to.clone().to_string(), db).await?;
         let result = issue.activity_pub_id.into();
-        let actor = repository_owner.activity_pub_id.clone().into();
+        let actor = repository.activity_pub_id.clone().into();
         let mut to = repository.followers(context).await?;
-        to.push(sender.shared_inbox_or_inbox());
+        to.push(author.shared_inbox_or_inbox());
         let recipient = to.clone();
 
         let accept = AcceptTicket {
@@ -94,7 +99,7 @@ impl ActivityHandler for OfferTicket {
             result,
         };
 
-        repository_owner
+        repository
             .send(accept, recipient, &context.local_instance)
             .await
     }

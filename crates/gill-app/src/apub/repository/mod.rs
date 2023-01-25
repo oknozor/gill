@@ -1,4 +1,4 @@
-use crate::apub::common::GillApubObject;
+use crate::apub::common::{GillActivity, GillApubObject};
 use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::object_id::ObjectId;
@@ -28,7 +28,7 @@ pub mod watch;
 kind!(RepositoryType, Repository);
 
 /// List of all activities which this actor can receive.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(untagged)]
 #[enum_delegate::implement(ActivityHandler)]
 pub enum RepositoryAcceptedActivities {
@@ -37,6 +37,18 @@ pub enum RepositoryAcceptedActivities {
     Fork(Fork),
     OfferIssue(OfferTicket),
     CreateIssueComment(CreateTicketComment),
+}
+
+impl GillActivity for RepositoryAcceptedActivities {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        match self {
+            RepositoryAcceptedActivities::OfferIssue(offer) => offer.forward_addresses(),
+            RepositoryAcceptedActivities::CreateIssueComment(create_comment) => {
+                create_comment.forward_addresses()
+            }
+            _ => vec![],
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -107,7 +119,7 @@ impl Repository {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
         let url = Url::from_str(&format!(
-            "{scheme}://{domain}/apub/users/{user}/repositories/{repository}"
+            "{scheme}://{domain}/users/{user}/repositories/{repository}"
         ))?;
         Ok(ObjectId::new(url))
     }

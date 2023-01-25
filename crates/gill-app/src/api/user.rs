@@ -28,7 +28,7 @@ pub async fn create(
     let protocol = SETTINGS.protocol();
     let domain = &SETTINGS.domain;
     let username = user.username;
-    let apub_id = format!("{protocol}://{domain}/apub/users/{username}");
+    let apub_id = format!("{protocol}://{domain}/users/{username}");
     let user = CreateUser {
         username: username.clone(),
         email: Some(user.email),

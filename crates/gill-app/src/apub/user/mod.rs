@@ -1,4 +1,4 @@
-use crate::apub::common::GillApubObject;
+use crate::apub::common::{GillActivity, GillApubObject};
 
 use crate::apub::ticket::accept::AcceptTicket;
 use crate::apub::ticket::comment::create::CreateTicketComment;
@@ -23,13 +23,23 @@ use url::{ParseError, Url};
 pub mod follow;
 
 /// List of all activities which this actor can receive.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[enum_delegate::implement(ActivityHandler)]
 pub enum PersonAcceptedActivities {
     Follow(Follow),
     AcceptTicket(AcceptTicket),
     CreateIssueComment(CreateTicketComment),
+}
+
+impl GillActivity for PersonAcceptedActivities {
+    fn forward_addresses(&self) -> Vec<&Url> {
+        match self {
+            PersonAcceptedActivities::Follow(activity) => activity.forward_addresses(),
+            PersonAcceptedActivities::AcceptTicket(activity) => activity.forward_addresses(),
+            PersonAcceptedActivities::CreateIssueComment(activity) => activity.forward_addresses(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -149,5 +159,29 @@ impl Actor for User {
 
     fn inbox(&self) -> Url {
         self.inbox_url.clone()
+    }
+}
+
+#[cfg(test)]
+mod archtest {
+    use archunit_rs::rule::{ArchRuleBuilder, CheckRule};
+    use archunit_rs::{ExludeModules, Structs};
+
+    #[test]
+    fn activities_implement_gill_activity() {
+        Structs::that(ExludeModules::cfg_test())
+            .implement("Activity")
+            .should()
+            .implement("GillActivity")
+            .check();
+    }
+
+    #[test]
+    fn actors_implement_gill_apub_object() {
+        Structs::that(ExludeModules::cfg_test())
+            .implement("Actor")
+            .should()
+            .implement("GillApubObject")
+            .check();
     }
 }

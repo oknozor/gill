@@ -19,7 +19,6 @@ use uuid::Uuid;
 pub mod create;
 pub mod ssh_key;
 
-/// A user living in gill database
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct User {
     pub id: i32,
@@ -118,7 +117,7 @@ impl User {
     pub fn activity_pub_id_from_namespace(user: &str) -> AppResult<ObjectId<Self>> {
         let domain = &SETTINGS.domain;
         let scheme = if SETTINGS.debug { "http" } else { "https" };
-        let url = Url::from_str(&format!("{scheme}://{domain}/apub/users/{user}"))?;
+        let url = Url::from_str(&format!("{scheme}://{domain}/users/{user}"))?;
         Ok(ObjectId::new(url))
     }
 

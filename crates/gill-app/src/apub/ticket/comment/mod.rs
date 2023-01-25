@@ -86,7 +86,7 @@ impl ApubObject for IssueComment {
             .dereference(context, &context.local_instance, request_counter)
             .await?;
 
-        let comment = IssueComment {
+        Ok(IssueComment {
             id: Uuid::new_v4(),
             activity_pub_id: comment.id.into(),
             number: issue.number,
@@ -98,8 +98,6 @@ impl ApubObject for IssueComment {
             context: comment.context.into(),
             in_reply_to: comment.attributed_to.into(),
             published: comment.published,
-        };
-
-        comment.save(context.database()).await
+        })
     }
 }
