@@ -25,7 +25,7 @@ static COOKIE_NAME: &str = "GILL_SESSION";
 pub fn oauth_client() -> BasicClient {
     let client_id = SETTINGS.oauth_provider.client_id();
     let client_secret = SETTINGS.oauth_provider.client_secret();
-    let redirect_url = format!("http://{}/auth/authorized", SETTINGS.domain);
+    let redirect_url = format!("{}://{}/auth/authorized", SETTINGS.domain, SETTINGS.protocol());
     let auth_url = SETTINGS.oauth_provider.auth_url();
     let token_url = SETTINGS.oauth_provider.token_url();
 

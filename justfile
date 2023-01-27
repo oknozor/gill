@@ -50,8 +50,11 @@ migrate-db:
 build-x86: migrate-db
     CROSS_CONFIG=Cross.toml cross build --target x86_64-unknown-linux-musl --release
 
-build-arm: migrate-db
+build-arm-v7: migrate-db
     CROSS_CONFIG=Cross.toml cross build --target armv7-unknown-linux-musleabihf --release
+
+build-arm-64: migrate-db
+    CROSS_CONFIG=Cross.toml cross build --target aarch64-unknown-linux-musl --release
 
 build-docker-image: build-x86
     docker compose build --no-cache
@@ -67,16 +70,15 @@ generate-ssh-env:
     echo "GILL_SSH_RSA_PUB: '`cat /tmp/etc/ssh/ssh_host_rsa_key.pub`'" >> docker/sshd.env
     echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> docker/sshd.env
 
-docker-build:
-    docker build --no-cache --build-arg arch=amd . -t gillpub/gill:latest-amd
-    docker push gillpub/gill:latest-amd
-
-    docker build --no-cache --build-arg arch=arm . -t gillpub/gill:latest-arm
-    docker push gillpub/gill:latest-arm
+docker-build: build-arm-64 build-x86 build-arm-v7
+    docker buildx build --push --platform linux/amd64 --no-cache --build-arg arch=amd64 . -t gillpub/gill:latest-amd64
+    docker buildx build --push --platform linux/arm/v7 --no-cache --build-arg arch=arm32v7 . -t gillpub/gill:latest-arm32v7
+    docker buildx build --push --platform linux/arm64/v8 --no-cache --build-arg arch=arm64v8 . -t gillpub/gill:latest-arm64v8
 
     docker manifest create gillpub/gill:latest \
-     --amend gillpub/gill:latest-amd \
-     --amend gillpub/gill:latest-arm
+     --amend gillpub/gill:latest-amd64 \
+     --amend gillpub/gill:latest-arm32v7 \
+     --amend gillpub/gill:latest-arm64v8
 
     docker manifest push gillpub/gill:latest
 
