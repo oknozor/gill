@@ -10,6 +10,7 @@ pub struct RepositoryDigest {
     pub star_count: Option<i64>,
     pub fork_count: Option<i64>,
     pub watch_count: Option<i64>,
+    pub clone_url: String,
 }
 
 impl RepositoryDigest {
@@ -29,7 +30,8 @@ impl RepositoryDigest {
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count,
-                   COUNT(rw.repository_id) as watch_count
+                   COUNT(rw.repository_id) as watch_count,
+                   r.clone_uri as clone_url
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
@@ -63,7 +65,8 @@ impl RepositoryDigest {
                    r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count,
-                   COUNT(rw.repository_id) as watch_count
+                   COUNT(rw.repository_id) as watch_count,
+                   r.clone_uri as clone_url
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_star rs ON rs.repository_id = r.id
@@ -88,6 +91,7 @@ pub struct RepositoryLight {
     pub star_count: Option<i64>,
     pub fork_count: Option<i64>,
     pub watch_count: Option<i64>,
+    pub clone_url: String,
 }
 
 impl RepositoryLight {
@@ -103,7 +107,8 @@ impl RepositoryLight {
             SELECT r.summary,
                    COUNT(rs.repository_id) as star_count,
                    COUNT(rf.repository_id) as fork_count,
-                   COUNT(rw.repository_id) as watch_count
+                   COUNT(rw.repository_id) as watch_count,
+                   r.clone_uri as clone_url
             FROM repository r
                      RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id
                      LEFT JOIN repository_watch rw ON rw.repository_id = r.id

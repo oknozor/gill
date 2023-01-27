@@ -19,7 +19,16 @@ const DB_USER: &str = "GILL_DB_USER";
 const DB_PORT: &str = "GILL_DB_PORT";
 const DB_PASSWORD: &str = "GILL_DB_PASSWORD";
 const PORT: &str = "GILL_PORT";
+const SSH_PORT: &str = "GILL_SSH_PORT";
 const DEBUG: &str = "GILL_DEBUG";
+
+trait DefaultSettings {
+    fn default_ssh_port() -> u16 {
+        22
+    }
+}
+
+impl DefaultSettings for Settings {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
@@ -28,6 +37,8 @@ pub struct Settings {
     pub port: u16,
     pub oauth_provider: AuthSettings,
     pub database: DbSettings,
+    #[serde(default = "Settings::default_ssh_port")]
+    pub ssh_port: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,7 +105,7 @@ impl Settings {
     }
 
     pub(crate) fn get() -> Result<Self, config::ConfigError> {
-        let config_path = PathBuf::from("/home/git/config.toml");
+        let config_path = PathBuf::from("/opt/gill/config.toml");
 
         if config_path.exists() {
             let config: Settings = Config::builder()
@@ -171,7 +182,7 @@ impl Settings {
 
     fn from_env() -> Self {
         Settings {
-            domain: env::var(DOMAIN).expect("Missing env var 'DOMAIN'"),
+            domain: env::var(DOMAIN).expect("Missing env var 'GILL_DOMAIN'"),
             debug: env::var(DEBUG)
                 .expect(DEBUG)
                 .parse()
@@ -198,6 +209,10 @@ impl Settings {
                 user: env::var(DB_USER).expect(DB_USER),
                 password: env::var(DB_PASSWORD).expect(DB_PASSWORD),
             },
+            ssh_port: env::var(SSH_PORT)
+                .expect(SSH_PORT)
+                .parse()
+                .expect("GILL_SSH_PORT must be an integer"),
         }
     }
 }

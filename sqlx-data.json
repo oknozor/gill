@@ -359,6 +359,51 @@
     },
     "query": "\n            select * from users\n            where id = $1\n            "
   },
+  "08f51cde8675daf85e27745bf693dc7366330564968fc52ae49905491a4ef317": {
+    "describe": {
+      "columns": [
+        {
+          "name": "summary",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "star_count",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "fork_count",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "watch_count",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "clone_url",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        true,
+        null,
+        null,
+        null,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count,\n                   r.clone_uri as clone_url\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n            WHERE NOT r.private AND u.username = $1 AND r.name = $2\n            GROUP BY r.id, r.summary"
+  },
   "0faf537feb91db3670578c755ec225080a5de985e4c3e74b05f80cfaf7e93383": {
     "describe": {
       "columns": [
@@ -642,6 +687,75 @@
     },
     "query": "\n        UPDATE branch SET is_default = $1\n        WHERE name = $2 AND repository_id = $3\n        "
   },
+  "30810ec17966a78f7d0a1305a5c03c4dd19efd51fe40a4c53d20543dbc5c9b78": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "owner",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "domain",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "star_count",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "fork_count",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "watch_count",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "clone_url",
+          "ordinal": 8,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        null,
+        null,
+        null,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count,\n                   r.clone_uri as clone_url\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND r.is_local\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $1 OFFSET $2;"
+  },
   "3c36c9c3e7f77c33655386f128fe495a05113a7ec54dd72530dc0009bb8ebb38": {
     "describe": {
       "columns": [],
@@ -823,108 +937,6 @@
       }
     },
     "query": "\n           UPDATE pull_request SET state = 'Closed'\n            WHERE pull_request.number = $1 AND repository_id = $2;\n           "
-  },
-  "46306de1ea71a6c57384e896a78a5c3bbbeaa09e621f277a41f733ab3a335655": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "owner",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "domain",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "star_count",
-          "ordinal": 5,
-          "type_info": "Int8"
-        },
-        {
-          "name": "fork_count",
-          "ordinal": 6,
-          "type_info": "Int8"
-        },
-        {
-          "name": "watch_count",
-          "ordinal": 7,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND NOT r.is_local\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $1 OFFSET $2;"
-  },
-  "4fd356d0d76898ad638c7fe3042979c32ca675ed0e15d720e3e22707fdf944a2": {
-    "describe": {
-      "columns": [
-        {
-          "name": "summary",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "star_count",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "fork_count",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "watch_count",
-          "ordinal": 3,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        true,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Text"
-        ]
-      }
-    },
-    "query": "\n            SELECT r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n            WHERE NOT r.private AND u.username = $1 AND r.name = $2\n            GROUP BY r.id, r.summary"
   },
   "524ecbc7e9c57318eede14fe634ae1e4b09a39d9fdedd182b74ccc1912f89e31": {
     "describe": {
@@ -1116,69 +1128,6 @@
     },
     "query": "\n                SELECT u.id, username, domain, email, public_key, private_key, inbox_url, outbox_url,\n                followers_url, is_local, activity_pub_id\n                FROM repository_watch w\n                JOIN users u ON w.watched_by = u.id\n                LIMIT $1\n                OFFSET $2\n            "
   },
-  "590db62f52e22494ebb8408d33e90e63df63709b712466199f17168bedfafde5": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "owner",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "domain",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "star_count",
-          "ordinal": 5,
-          "type_info": "Int8"
-        },
-        {
-          "name": "fork_count",
-          "ordinal": 6,
-          "type_info": "Int8"
-        },
-        {
-          "name": "watch_count",
-          "ordinal": 7,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND r.is_local\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $1 OFFSET $2;"
-  },
   "5e6b09954c499dea77ee73a1e4d017a109ca89d83e3a7656a694f4d3b8b865ec": {
     "describe": {
       "columns": [
@@ -1276,6 +1225,68 @@
       }
     },
     "query": "\n           SELECT c.id, c.repository_id, u.username as created_by, c.content FROM issue_comment c\n                JOIN users u on u.id = c.created_by\n                WHERE c.repository_id = $1\n                AND c.number = $2;\n           "
+  },
+  "689fc1371f3c866a0b5497e4eb2015afdbc5aac7ad5ef6dbbab848ba51182f8e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "repository_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "number",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "opened_by",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "title",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "content",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "state: IssueState",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "Open",
+                  "Closed"
+                ]
+              },
+              "name": "issue_state"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n                SELECT\n                        i.repository_id,\n                        i.number,\n                        u.username as opened_by,\n                        i.title,\n                        i.content,\n                        i.state as \"state: IssueState\"\n                FROM issue i\n                JOIN repository r ON r.id = $1\n                JOIN users u on u.id = i.opened_by\n                WHERE i.repository_id = $1\n                LIMIT $2\n                OFFSET $3\n            "
   },
   "7169c621843778f5fe5df834b204bfdbb2bca69974724425ec96ffd701a41b2d": {
     "describe": {
@@ -1464,68 +1475,6 @@
     },
     "query": "\n            INSERT INTO gill.public.repository_fork (repository_id, fork_id, forked_by)\n            VALUES ($1, $2, $3)\n            "
   },
-  "7cf0568ce8f12b165c27cbf5e372909c370e9677de1048e714b4eb7e516a73f5": {
-    "describe": {
-      "columns": [
-        {
-          "name": "repository_id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "number",
-          "ordinal": 1,
-          "type_info": "Int4"
-        },
-        {
-          "name": "opened_by",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "title",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "content",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "state: IssueState",
-          "ordinal": 5,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "Open",
-                  "Closed"
-                ]
-              },
-              "name": "issue_state"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int4",
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                SELECT\n                        i.repository_id,\n                        i.number,\n                        u.username as opened_by,\n                        i.title,\n                        i.content,\n                        i.state as \"state: IssueState\"\n                FROM issue i\n                JOIN repository r ON r.id = $1\n                JOIN users u on u.id = i.opened_by\n                LIMIT $2\n                OFFSET $3\n            "
-  },
   "88261ebcd9a9f093d07b4cc14b1c3c2a79be00c414db84864696bfe1cf79134e": {
     "describe": {
       "columns": [
@@ -1557,6 +1506,76 @@
       }
     },
     "query": "\n            SELECT b.name, repository_id, is_default FROM branch b\n            JOIN repository r on r.id = b.repository_id\n            WHERE repository_id = $1 AND b.is_default\n            "
+  },
+  "8cdaaa44f61972029ee6050b41ceaf6bbe13dc2e502ea20b6ddd6fd7bd6d0db5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "owner",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "domain",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "star_count",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "fork_count",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "watch_count",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "clone_url",
+          "ordinal": 8,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        null,
+        null,
+        null,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count,\n                   r.clone_uri as clone_url\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND rs.starred_by = $1\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $2 OFFSET $3;"
   },
   "8d9b70f196e07fe944c85f0ec269dd87498c006132ecc3c68bcb2aa6171fa8a8": {
     "describe": {
@@ -1660,6 +1679,76 @@
     },
     "query": "\n                UPDATE repository\n                SET item_count = item_count + 1\n                WHERE id = $1\n                "
   },
+  "972650e42c356c079c9936f209dcd1de16b16b9e2627eee47cd1c1c01c27aca8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "owner",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "domain",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "star_count",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "fork_count",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "watch_count",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "clone_url",
+          "ordinal": 8,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        null,
+        null,
+        null,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count,\n                   r.clone_uri as clone_url\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND r.is_local AND r.attributed_to = $1\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $2 OFFSET $3;"
+  },
   "98e91fb765f236449f3fc682086b504f0ea3b778bef36b13174922d00a5d0919": {
     "describe": {
       "columns": [
@@ -1740,6 +1829,75 @@
     },
     "query": "\n            select * from users\n            where username = $1\n            "
   },
+  "99f2d9ac0dc4739496e775fb06cbd188cd140159dd701882d65bfa7eb78ce0d5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "owner",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "domain",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "star_count",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "fork_count",
+          "ordinal": 6,
+          "type_info": "Int8"
+        },
+        {
+          "name": "watch_count",
+          "ordinal": 7,
+          "type_info": "Int8"
+        },
+        {
+          "name": "clone_url",
+          "ordinal": 8,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        null,
+        null,
+        null,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count,\n                   r.clone_uri as clone_url\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND NOT r.is_local\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $1 OFFSET $2;"
+  },
   "9fb401d099d96f5e934997c53fd3914e7903c005a099319adc2e1a10d524936b": {
     "describe": {
       "columns": [
@@ -1797,70 +1955,6 @@
       }
     },
     "query": "\n            INSERT INTO repository_star (repository_id, starred_by)\n            VALUES ($1, $2)\n            "
-  },
-  "b4d362471fbca262f84258dc7ff12bf0bddf60a6ad510766530235fe71b1c83e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "owner",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "domain",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "star_count",
-          "ordinal": 5,
-          "type_info": "Int8"
-        },
-        {
-          "name": "fork_count",
-          "ordinal": 6,
-          "type_info": "Int8"
-        },
-        {
-          "name": "watch_count",
-          "ordinal": 7,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Int4",
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND rs.starred_by = $1\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $2 OFFSET $3;"
   },
   "b7ba459f3b631c4262d48dab004eb8153de8d1c33690b716c0cb645c75fe8015": {
     "describe": {
@@ -2169,70 +2263,6 @@
       }
     },
     "query": "\n            select * from users\n            where email = $1\n            "
-  },
-  "bf4dffe9a50ef8a6e683cc87e9d04c656f5654a2ab159d5cc851f1648e796a39": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "owner",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "domain",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "star_count",
-          "ordinal": 5,
-          "type_info": "Int8"
-        },
-        {
-          "name": "fork_count",
-          "ordinal": 6,
-          "type_info": "Int8"
-        },
-        {
-          "name": "watch_count",
-          "ordinal": 7,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n            SELECT r.id,\n                   r.name,\n                   u.username as owner,\n                   r.domain,\n                   r.summary,\n                   COUNT(rs.repository_id) as star_count,\n                   COUNT(rf.repository_id) as fork_count,\n                   COUNT(rw.repository_id) as watch_count\n            FROM repository r\n                     RIGHT JOIN users u ON r.attributed_to = u.activity_pub_id\n                     LEFT JOIN repository_star rs ON rs.repository_id = r.id\n                     LEFT JOIN repository_fork rf ON rf.repository_id = r.id\n                     LEFT JOIN repository_watch rw ON rw.repository_id = r.id\n            WHERE NOT r.private AND r.is_local AND r.attributed_to = $1\n            GROUP BY r.id, u.username, r.name, r.id, r.summary\n            LIMIT $2 OFFSET $3;"
   },
   "c1436c057044a5a2da6ceb3d16f84f9fab536e83d5f12e597023dcac2cf24529": {
     "describe": {

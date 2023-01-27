@@ -7,6 +7,7 @@ pub struct RepositoryStats {
     pub fork_count: u32,
     pub star_count: u32,
     pub watch_count: u32,
+    pub clone_url: String,
 }
 
 impl From<RepositoryLight> for RepositoryStats {
@@ -15,6 +16,7 @@ impl From<RepositoryLight> for RepositoryStats {
             watch_count: stats.watch_count.unwrap_or(0) as u32,
             fork_count: stats.fork_count.unwrap_or(0) as u32,
             star_count: stats.star_count.unwrap_or(0) as u32,
+            clone_url: stats.clone_url,
         }
     }
 }
@@ -25,6 +27,7 @@ impl From<&RepositoryDigest> for RepositoryStats {
             watch_count: repo.watch_count.unwrap_or(0) as u32,
             fork_count: repo.fork_count.unwrap_or(0) as u32,
             star_count: repo.star_count.unwrap_or(0) as u32,
+            clone_url: repo.clone_url.clone(),
         }
     }
 }

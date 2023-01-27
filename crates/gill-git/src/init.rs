@@ -41,7 +41,7 @@ mod imp {
             let repository = git_repository::init_bare(path)?;
             let hook_path = repository.path().join("hooks");
             std::os::unix::fs::symlink(
-                "/home/git/hooks/post-receive",
+                "/usr/share/git-core/templates/hooks/post-receive",
                 hook_path.join("post-receive"),
             )?;
 

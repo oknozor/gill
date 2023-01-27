@@ -8,18 +8,13 @@ services:
       - postgres
     restart: always
     container_name: gill-app
-    environment:
-      DB_NAME: gill
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
     ports:
       - "3000:3000"
       - "2222:22"
     volumes:
       - ./docker/dev/home:/home/git
       - ./crates/gill-app/assets:/opt/gill/assets
+      - ./docker/dev/config-instance-1:/opt/gill/config.toml
     entrypoint: /home/git/entrypoint-debug.sh
 
   gill-2:
@@ -30,18 +25,13 @@ services:
       - postgres
     restart: always
     container_name: gill-app-2
-    environment:
-      DB_NAME: gill_2
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
     ports:
       - "3001:3000"
       - "12222:22"
     volumes:
       - ./docker/dev/home2:/home/git
       - ./crates/gill-app/assets:/opt/gill/assets
+      - ./docker/dev/config-instance-2:/opt/gill/config.toml
     entrypoint: /home/git/entrypoint-debug.sh
 
   postgres:

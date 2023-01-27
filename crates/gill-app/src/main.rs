@@ -17,6 +17,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let connection_url = &SETTINGS.database_url();
+
     tracing::debug!("Connecting to {connection_url}");
     let db = PgPoolOptions::new()
         .max_connections(10)
@@ -24,6 +25,8 @@ async fn main() -> anyhow::Result<()> {
         .connect(connection_url)
         .await
         .expect("can connect to database");
+
+    sqlx::migrate!("../gill-db/migrations").run(&db).await?;
 
     tracing::debug!("Loading config: {:?}", *SETTINGS);
     let instance = Instance::new(SETTINGS.domain.to_string(), db).unwrap();

@@ -2,7 +2,6 @@ use crate::error::AppResult;
 use crate::oauth::Oauth2User;
 use crate::view::repository::{BranchDto, Tab};
 use crate::view::{DynHtmlTemplate, HtmlTemplate};
-use anyhow::anyhow;
 use askama::{DynTemplate, Template};
 use axum::extract::Path;
 
@@ -99,6 +98,17 @@ pub struct GitTreeTemplate {
     tab: Tab,
 }
 
+#[derive(Template, Debug)]
+#[template(path = "repository/tree/empty.html")]
+pub struct EmptyRepositoryTemplate {
+    repository: String,
+    owner: String,
+    user: Option<String>,
+    tab: Tab,
+    stats: RepositoryStats,
+    current_branch: Option<String>,
+}
+
 /// Returns a tree with for a given owner, repository and a branch
 pub async fn tree(
     user: Option<Oauth2User>,
@@ -148,14 +158,22 @@ pub async fn root(
     let stats = RepositoryStats::get(&owner, &repository, &db).await?;
 
     if repo.is_local {
-        let branch = repo
-            .get_default_branch(&db)
-            .await
-            .ok_or_else(|| anyhow!("No default branch"))?;
-
-        let template =
-            imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db).await?;
-        Ok(DynHtmlTemplate(Box::new(template.inner())))
+        match repo.get_default_branch(&db).await {
+            None => Ok(DynHtmlTemplate(Box::new(EmptyRepositoryTemplate {
+                repository,
+                owner,
+                user: connected_username,
+                tab: Tab::Code,
+                stats,
+                current_branch: None,
+            }))),
+            Some(branch) => {
+                let template =
+                    imp::get_tree_root(&owner, &repository, branch.name, connected_username, &db)
+                        .await?;
+                Ok(DynHtmlTemplate(Box::new(template.inner())))
+            }
+        }
     } else {
         Ok(DynHtmlTemplate(Box::new(FederatedRepositoryTemplate {
             repository: repository.to_string(),

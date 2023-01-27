@@ -24,8 +24,8 @@ RUN apk --no-cache add openssh git
 # Setup sshd
 COPY docker/sshd_config /etc/ssh/sshd_config
 
-RUN adduser -D -s /bin/sh git
-
+RUN adduser -D -s /bin/sh git \
+    && echo git:gill | chpasswd # This is needed so the user is not locked
 WORKDIR /home/git
 USER git
 
@@ -34,7 +34,6 @@ RUN mkdir .ssh \
   && touch .ssh/authorized_keys \
   && chmod 700 .ssh \
   && chmod -R 600 .ssh/*
-RUN mkdir bin
 
 # Install binaries
 COPY --from=final /gill-app /usr/bin/gill-app

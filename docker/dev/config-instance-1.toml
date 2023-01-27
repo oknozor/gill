@@ -1,17 +1,18 @@
-domain = "bore.pub:37349"
+domain = "bore.pub:45136"
 debug = true
 port = 3000
+ssh_port = 2222
 
 [database]
 host = "postgres"
 port = 5432
-database = "gill_2"
+database = "gill"
 user = "postgres"
 password = "postgres"
 
 [oauth_provider]
 client_id = "gill"
-client_secret = "8Nup063EeIOYzSsEyVZkbo67sUpIX0Bc"
+client_secret = "n5obgGTk855H1Mx3b2YG2JCO8Bc6WGq1"
 provider = "https://keycloak.cloud.hoohoot.org"
 user_info_url = "/auth/realms/hoohoot/protocol/openid-connect/userinfo"
 auth_url = "/auth/realms/hoohoot/protocol/openid-connect/auth"

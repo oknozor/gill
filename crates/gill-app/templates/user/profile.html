@@ -28,6 +28,17 @@
 
 <div>
     <div id="repositories" class="tab">
+        <script>
+            const goToCreateRepository = () => {
+                window.location.href = "/new"
+            }
+        </script>
+        <button
+                onclick="goToCreateRepository()"
+                class="max-w-md shadow-sm drop-shadow-sm border border-sky-200 py-2 px-3 items-center bg-sky-300 hover:bg-sky-500 rounded-md">
+            <i class="text-sm ti ti-book-2"></i>
+            New
+        </button>
         <ul class="flex flex-col divide-y divide-slate-200">
             {% for repo in repositories %}
             <li class="flex flex-col py-4">

@@ -11,6 +11,7 @@ use std::fmt::Formatter;
 pub mod activity;
 pub mod blob;
 pub mod commits;
+pub mod create;
 pub mod diff;
 pub mod issues;
 pub mod pull_request;
@@ -27,6 +28,8 @@ pub enum Tab {
 
 pub fn routes() -> Router<AppState> {
     let router = Router::new()
+        .route("/new", get(create::view))
+        .route("/create-repository", get(create::submit))
         .route("/:owner/:repository", get(tree::root))
         .route("/:owner/:repository/tree/:branch", get(tree::tree_root))
         .route("/:owner/:repository/tree/:branch/*tree", get(tree::tree))

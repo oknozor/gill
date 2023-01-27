@@ -29,8 +29,10 @@ async fn main() -> anyhow::Result<()> {
         panic!("Expected user_id in pack-serve arguments {args:?}");
     };
     let user_id = user_id.parse()?;
+    writeln!(log_file, "ssh connection from [user id: {user_id}]")?;
     let cmd = env::var("SSH_ORIGINAL_COMMAND")?;
     let words = shellwords::split(&cmd)?;
+    writeln!(log_file, "command: {words:?}")?;
     let verb = &words[0];
     let repo_path = &words[1];
     let (owner, repo_name) = repo_path.rsplit_once('/').expect("/ in repo path");

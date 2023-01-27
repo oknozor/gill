@@ -211,6 +211,7 @@ impl Repository {
                 FROM issue i
                 JOIN repository r ON r.id = $1
                 JOIN users u on u.id = i.opened_by
+                WHERE i.repository_id = $1
                 LIMIT $2
                 OFFSET $3
             "#,

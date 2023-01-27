@@ -13,6 +13,7 @@ pub struct RepositoryDigest {
     pub star_count: Option<i64>,
     pub fork_count: Option<i64>,
     pub watch_count: Option<i64>,
+    pub clone_url: String,
 }
 
 impl From<RepositoryDigestEntity> for RepositoryDigest {
@@ -26,6 +27,7 @@ impl From<RepositoryDigestEntity> for RepositoryDigest {
             star_count: digest.star_count,
             fork_count: digest.fork_count,
             watch_count: digest.watch_count,
+            clone_url: digest.clone_url,
         }
     }
 }
