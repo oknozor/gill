@@ -54,7 +54,7 @@ pub async fn webfinger(
     Extension(db): Extension<PgPool>,
 ) -> AppResult<Json<Webfinger>> {
     let acct = query.parse().unwrap();
-    println!("ACCT {:?}", acct);
+    println!("ACCT {acct:?}");
     if acct.domain == SETTINGS.domain {
         if let Some(repository) = acct.repository {
             println!("user {}", &acct.user);
