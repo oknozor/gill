@@ -1,25 +1,15 @@
 use git_repository::{Commit, Id, Repository, Tree};
-use std::io::Write;
 use std::path::PathBuf;
-use std::{fs, io};
 
 pub mod clone;
 pub mod commits;
 pub mod diffs;
 pub mod init;
 pub mod merge;
+pub mod ssh;
 pub mod traversal;
 
 const REPO_DIR: &str = "/home/git";
-
-pub fn append_ssh_key(ssh_key: &str, user_id: i32) -> io::Result<()> {
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .append(true) // This is needed to append to file
-        .open("/home/git/.ssh/authorized_keys")?;
-
-    write!(file, r#"command="gill-git-server {user_id}" {ssh_key}\n"#)
-}
 
 #[derive(Debug)]
 pub struct GitRepository {
@@ -103,6 +93,18 @@ mod test {
 
     #[sealed_test]
     fn should_get_bare_repository_path() -> anyhow::Result<()> {
+        run_cmd!(git init --bare repo;)?;
+
+        let repository = GitRepository {
+            inner: git_repository::open("repo")?,
+        };
+
+        assert_that!(repository.path()).is_equal_to(&PathBuf::from("repo"));
+        Ok(())
+    }
+
+    #[sealed_test]
+    fn should_append_ssh_key() -> anyhow::Result<()> {
         run_cmd!(git init --bare repo;)?;
 
         let repository = GitRepository {

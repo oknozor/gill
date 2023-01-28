@@ -25,6 +25,6 @@ pub async fn add(
     let raw_key = RawSshkey::from(input.key);
     let (key_type, key) = raw_key.key_parts();
     user.add_ssh_key(&input.title, key, key_type, &db).await?;
-    gill_git::append_ssh_key(raw_key.full_key(), user.id).expect("Failed to append ssh key");
+    gill_git::ssh::append_key(raw_key.full_key(), user.id).expect("Failed to append ssh key");
     Ok(Redirect::to("/settings/profile?tab=ssh-key"))
 }
