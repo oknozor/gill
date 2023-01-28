@@ -56,29 +56,8 @@ pub async fn view(
 
 impl CreateRepositoryForm {
     fn map_to_domain(self, user: &User) -> AppResult<CreateRepository> {
-        let protocol = &SETTINGS.protocol();
-        let user_name = user.username.clone();
-        let domain = &SETTINGS.domain;
-        let apub_id = format!(
-            "{protocol}://{domain}/users/{user_name}/repositories/{}",
-            self.name
-        );
-
-        let ssh_port = SETTINGS.ssh_port;
-        // TODO: domain and port should be split split in config to avoid this
-        //  or we should build this from Url
-        let clone_uri = if let Some((domain, _port)) = domain.rsplit_once(':') {
-            format!(
-                "ssh://git@{domain}:{ssh_port}/~/{user_name}/{}.git",
-                self.name
-            )
-        } else {
-            format!(
-                "ssh://git@{domain}:{ssh_port}/~/{user_name}/{}.git",
-                self.name
-            )
-        };
-
+        let apub_id = self.generate_activity_pub_id(user);
+        let clone_uri = self.generate_clone_uri(user);
         let key_pair = generate_actor_keypair()?;
         let activity_pub_id = ActivityPubId::try_from(apub_id.clone())?;
 
@@ -98,8 +77,30 @@ impl CreateRepositoryForm {
             private_key: Some(key_pair.private_key),
             ticket_tracked_by: activity_pub_id.clone(),
             send_patches_to: activity_pub_id,
-            domain: domain.to_string(),
+            domain: SETTINGS.domain.to_string(),
             is_local: true,
         })
+    }
+
+    fn generate_activity_pub_id(&self, user: &User) -> String {
+        let protocol = &SETTINGS.protocol();
+        let user_name = user.username.clone();
+        let domain = &SETTINGS.domain;
+        format!(
+            "{protocol}://{domain}/users/{user_name}/repositories/{}",
+            self.name
+        )
+    }
+
+    fn generate_clone_uri(&self, user: &User) -> String {
+        let ssh_port = SETTINGS.ssh_port;
+        let domain = SETTINGS.domain_url().expect("valid domain");
+        let repository_name = &self.name;
+        let username = &user.username;
+        if ssh_port == 22 {
+            format!("git@{domain}:{username}/{repository_name}.git")
+        } else {
+            format!("ssh://git@{domain}:{ssh_port}/~/{username}/{repository_name}.git")
+        }
     }
 }

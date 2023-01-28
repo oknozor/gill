@@ -3,6 +3,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::path::PathBuf;
+use url::{ParseError, Url};
 
 pub static SETTINGS: Lazy<Settings> = Lazy::new(|| Settings::get().expect("Config error"));
 
@@ -92,6 +93,11 @@ impl Settings {
             port = self.database.port,
             db = self.database.database
         )
+    }
+
+    pub fn domain_url(&self) -> Result<Url, ParseError> {
+        let url = format!("{}://{}", self.protocol(), self.domain);
+        Url::parse(&url)
     }
 }
 
