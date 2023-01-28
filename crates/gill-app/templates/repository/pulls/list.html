@@ -16,13 +16,18 @@
 
 </script>
 <div class="flex flex-col gap-3">
+    {% match user %}
+    {%- when Some with (user) -%}
     <div class="flex flex-row justify-end">
         <button
                 onclick="openPull()"
                 class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-blue-300 bg-blue-200 rounded-lg px-3">
-            <span class="pt-1">New pull request<span>
+            <span class="pt-1">New pull request</span>
         </button>
     </div>
+    {%- when None -%}
+    {%- endmatch -%}
+
 
     {%- match pull_requests -%}
     {%- when Some with (pulls) -%}

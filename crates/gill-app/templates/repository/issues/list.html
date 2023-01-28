@@ -1,7 +1,9 @@
 {% extends "base_repository.html" %}
 
 {% block head %}
+<script type="text/javascript" src="/assets/js/bootstrap.js"></script>
 {% endblock %}
+
 
 {% block content %}
 <script>
@@ -13,16 +15,20 @@
     const goToIssue = (number) => {
         window.location.href = `/{{owner}}/{{repository}}/issues/${number}`
     }
-
 </script>
 <div id="issue-list" class="flex flex-col gap-3">
+    {% match user %}
+    {%- when Some with (user) -%}
     <div class="flex flex-row justify-end">
         <button
                 onclick="newIssue()"
                 class="flex flex-row items-center grow-0 h-12 min-w-40 max-w-60 border border-blue-300 bg-blue-200 rounded-lg px-3">
-            New issue
+            <span class="pt-1">New issue</span>
         </button>
     </div>
+    {%- when None -%}
+    {%- endmatch -%}
+
 
     {%- match issues -%}
     {%- when Some with (issues) -%}
@@ -51,24 +57,8 @@
     {%- endmatch -%}
 </div>
 
-<div id="create-issue-form" class="pb-2 flex flex-row bg-stone-100 border-slate-400 rounded-md border hidden">
-    <form class="flex flex-col flex-1 gap-2 px-5 py-3"
-          action="/{{owner}}/{{repository}}/issues/create">
-        <label class="font-bold" for="title">Title</label><br>
-        <input class="pb-2 rounded-md bg-gray-100" type="text" id="title" name="title"
-               placeholder="Title"><br>
-        <label class="font-bold" for="content">Description</label><br>
-        <textarea class="rounded-md h-48 bg-gray-100 pb-2" type="text" id="content" name="content"
-                  placeholder="Describe your pull request"></textarea>
-        <input class="max-w-lg drop-shadow-sm border border-green-300 py-2 px-3 items-center bg-green-400 hover:bg-green-400 rounded-md"
-               type="submit" value="Create issue">
-    </form>
-    <div class="flex-1 m-5 bg-neutral-50 border border-slate-300 rounded-md">
-        <div id="preview-issue" class="prose prose-slate max-w-none px-2">
-
-        </div>
-    </div>
+<div id="create-issue-form" class="hidden">
+    {{markdown_preview_form|safe}}
 </div>
-
 {% endblock %}
 

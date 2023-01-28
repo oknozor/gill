@@ -57,6 +57,7 @@ pub async fn view(
         current_branch,
         comments,
         markdown_preview_form: MarkdownPreviewForm {
+            with_title: false,
             action_href,
             submit_value: "Comment".to_string(),
             owner,

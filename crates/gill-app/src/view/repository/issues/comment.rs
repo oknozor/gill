@@ -13,7 +13,7 @@ use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct IssueCommentForm {
-    pub comment: String,
+    pub content: String,
 }
 
 #[authorized]
@@ -29,7 +29,7 @@ pub async fn comment(
         repository: &repository,
         author_id: user.id,
         issue_number,
-        content: &input.comment,
+        content: &input.content,
     };
 
     create_comment.execute(&state.instance).await?;

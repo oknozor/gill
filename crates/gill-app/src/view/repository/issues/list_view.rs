@@ -12,6 +12,7 @@ use axum::Extension;
 use crate::domain::issue::digest::IssueDigest;
 use crate::domain::issue::IssueState;
 use crate::domain::repository::Repository;
+use crate::view::component::MarkdownPreviewForm;
 use crate::view::repository::Tab;
 use sqlx::PgPool;
 
@@ -24,6 +25,7 @@ pub struct IssuesTemplate {
     issues: Option<Vec<IssueDigest>>,
     stats: RepositoryStats,
     current_branch: Option<String>,
+    markdown_preview_form: MarkdownPreviewForm,
     tab: Tab,
 }
 
@@ -39,13 +41,22 @@ pub async fn list_view(
     let pull_requests = (!issues.is_empty()).then_some(issues);
     let current_branch = repo.get_default_branch(&db).await.map(|branch| branch.name);
 
+    let action_href = format!("/{owner}/{repository}/issues/create");
+
     Ok(HtmlTemplate(IssuesTemplate {
         user: connected_username,
-        owner,
-        repository,
+        owner: owner.clone(),
+        repository: repository.clone(),
         issues: pull_requests,
         stats,
         current_branch,
         tab: Tab::Issues,
+        markdown_preview_form: MarkdownPreviewForm {
+            with_title: true,
+            action_href,
+            submit_value: "Create issue".to_string(),
+            owner,
+            repository,
+        },
     }))
 }

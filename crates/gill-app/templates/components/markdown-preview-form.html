@@ -1,10 +1,10 @@
 <script>
     const showWriteComment = () => {
-        let commentButton = document.getElementById("write-comment-button");
-        let previewButton = document.getElementById("preview-comment-button");
+        let commentButton = document.getElementById("write-content-button");
+        let previewButton = document.getElementById("preview-button");
         let sideBySideButton = document.getElementById("side-by-side-view-button");
-        let preview = document.getElementById("new-comment-preview");
-        let textInput = document.getElementById("new-comment");
+        let preview = document.getElementById("content-preview");
+        let textInput = document.getElementById("content");
         activeTab(commentButton);
         inactiveTab(previewButton);
         inactiveTab(sideBySideButton);
@@ -12,11 +12,11 @@
         textInput.classList.remove("collapse");
     }
     const showPreviewComment = () => {
-        let commentButton = document.getElementById("write-comment-button");
-        let previewButton = document.getElementById("preview-comment-button");
+        let commentButton = document.getElementById("write-content-button");
+        let previewButton = document.getElementById("preview-button");
         let sideBySideButton = document.getElementById("side-by-side-view-button");
-        let preview = document.getElementById("new-comment-preview");
-        let textInput = document.getElementById("new-comment");
+        let preview = document.getElementById("content-preview");
+        let textInput = document.getElementById("content");
         activeTab(previewButton);
         inactiveTab(commentButton);
         inactiveTab(sideBySideButton);
@@ -25,11 +25,11 @@
     }
 
     const showSideBySideComment = () => {
-        let commentButton = document.getElementById("write-comment-button");
-        let previewButton = document.getElementById("preview-comment-button");
+        let commentButton = document.getElementById("write-content-button");
+        let previewButton = document.getElementById("preview-button");
         let sideBySideButton = document.getElementById("side-by-side-view-button");
-        let preview = document.getElementById("new-comment-preview");
-        let textInput = document.getElementById("new-comment");
+        let preview = document.getElementById("content-preview");
+        let textInput = document.getElementById("content");
         activeTab(sideBySideButton);
         inactiveTab(previewButton);
         inactiveTab(commentButton);
@@ -47,37 +47,43 @@
         button.classList.remove("border-red-300");
     }
     const onInput = (newComment) => {
-        let preview = document.getElementById("new-comment-preview");
+        let preview = document.getElementById("content-preview");
         preview.innerHTML = render_markdown(newComment.value, "{{owner}}", "{{repository}}");
     };
 </script>
 <div class="flex flex-col border border-slate-200 rounded-md gap-2 p-3">
-    <div class="flex flex-row items-center justify-items-start border-b-2 border-slate-200 pb-2">
-        <button id="write-comment-button"
-                onclick="showWriteComment()"
-                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md border-b-4 border-red-300">
-            Write
-        </button>
-        <button id="preview-comment-button"
-                onclick="showPreviewComment()"
-                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
-            Preview
-        </button>
-        <button id="side-by-side-view-button"
-                onclick="showSideBySideComment()"
-                class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
-            Side by Side
-        </button>
-    </div>
-    <form class="flex flex-col gap-2"
-          action="{{action_href}}">
+    <form class="flex flex-col gap-2" action="{{action_href}}">
+        {% if with_title %}
+        <div class="flex flex-row gap-2 border-b border-slate-400 pb-2">
+            <label class="" for="title"></label>
+            <input class="flex-1 pb-2 rounded-md bg-gray-100 mr-2" type="text" id="title" name="title"
+                   placeholder="Title">
+        </div>
+        {% endif %}
+        <div class="flex flex-row items-center justify-items-start border-b border-slate-400 pb-2">
+            <button type="button" id="write-content-button"
+                    onclick="showWriteComment()"
+                    class="px-3 py-2 hover:bg-slate-200 hover:rounded-md border-b-4 border-red-300">
+                Write
+            </button>
+            <button type="button" id="preview-button"
+                    onclick="showPreviewComment()"
+                    class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
+                Preview
+            </button>
+            <button type="button" id="side-by-side-view-button"
+                    onclick="showSideBySideComment()"
+                    class="px-3 py-2 hover:bg-slate-200 hover:rounded-md">
+                Side by Side
+            </button>
+        </div>
         <div class="flex flex-row gap-2">
-            <label for="new-comment">
-            </label>
-            <textarea id="new-comment"
+            <label for="content"></label>
+            <textarea id="content"
                       oninput="onInput(this)"
-                      class="resize-none h-48 max-h-full flex-1 rounded-md bg-gray-100 pb-2" type="text" name="comment"></textarea>
-            <div id="new-comment-preview" class="flex-1 prose prose-slate max-w-none py-3 px-5 collapse">
+                      class="resize-none h-48 max-h-full flex-1 rounded-md bg-gray-100 pb-2" type="text"
+                      name="content"></textarea>
+            <div id="content-preview" class="flex-1 prose prose-slate max-w-none py-3 px-5 collapse">
             </div>
         </div>
         <input

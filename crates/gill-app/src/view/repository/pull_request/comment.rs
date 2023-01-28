@@ -11,7 +11,7 @@ use sqlx::PgPool;
 
 #[derive(Deserialize, Debug)]
 pub struct CommentPullRequestForm {
-    pub comment: String,
+    pub content: String,
 }
 
 #[authorized]
@@ -25,7 +25,7 @@ pub async fn comment(
         .await?
         .get_pull_request(pull_request_number, &db)
         .await?
-        .comment(&input.comment, user.id, &db)
+        .comment(&input.content, user.id, &db)
         .await?;
 
     Ok(Redirect::to(&format!(
