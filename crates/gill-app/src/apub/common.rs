@@ -1,3 +1,4 @@
+use crate::domain::apub::inbox_for_url;
 use crate::error::{AppError, AppResult};
 use crate::instance::InstanceHandle;
 use activitypub_federation::core::activity_queue::send_activity;
@@ -6,7 +7,6 @@ use activitypub_federation::deser::context::WithContext;
 use activitypub_federation::traits::ActivityHandler;
 use activitypub_federation::LocalInstance;
 use async_session::async_trait;
-use gill_db::inbox_for_url;
 use gill_settings::SETTINGS;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;

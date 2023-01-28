@@ -1,3 +1,4 @@
+pub mod apub;
 pub mod commit;
 pub mod id;
 pub mod issue;
