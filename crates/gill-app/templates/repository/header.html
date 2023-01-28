@@ -1,49 +1,4 @@
 <script>
-    const watch = () => {
-        fetch('/{{owner}}/{{repository}}/watch', {
-            method: 'POST',
-        }).then(() => {
-            let count = document.getElementById("watch-count");
-            count.innerHTML += 1;
-        })
-    }
-
-    const star = () => {
-        fetch('/{{owner}}/{{repository}}/star', {
-            method: 'POST',
-        }).then(() => {
-            let count = document.getElementById("star-count");
-            count.innerHTML += 1;
-        })
-    }
-
-    const fork = () => {
-        fetch('/{{owner}}/{{repository}}/fork', {
-            method: 'POST',
-        }).then(() => {
-            let count = document.getElementById("fork-count");
-            count.innerHTML += 1;
-        })
-    }
-
-    const closeCloneDropDown = () => {
-        let branchesMenu = document.getElementById("clone-dropdown")
-        branchesMenu.classList.replace("opacity-100", "opacity-0");
-    }
-
-    const dropDownCloneUri = () => {
-        let branchesMenu = document.getElementById("clone-dropdown")
-        branchesMenu.classList.remove("invisible");
-        branchesMenu.classList.replace("opacity-0", "opacity-100");
-    }
-
-    document.addEventListener('click', function (e) {
-        let container = document.getElementById('clone-dropdown-container');
-        if (!container.contains(e.target)) {
-            closeCloneDropDown();
-        }
-    });
-
     const goToIssues = () => {
         window.location.href = "/{{owner}}/{{repository}}/issues"
     }
@@ -91,44 +46,11 @@
                     href="/{{owner}}/{{repository}}"
                     class="text-lg text-sky-600 font-bold hover:underline">{{repository}}</a>
         </div>
-        <div class="flex flex-row space-around gap-x-10">
-            <button
-                    onclick="watch()"
-                    class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
-                <i class="text-lg ti ti-eye"></i>
-                <span class="pt-1">Watch</span>
-                <span id="watch-count" class="rounded-full p-1 bg border border-slate-200">{{stats.watch_count}}</span>
-            </button>
-
-            <button class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
-                <i class="text-lg ti ti-git-fork"></i>
-                <span class="pt-1">Fork</span>
-                <span id="fork-count" class="rounded-full p-1 bg border border-slate-200">{{stats.fork_count}}</span>
-            </button>
-
-            <button
-                    onclick="star()"
-                    class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
-                <i class="text-lg ti ti-star"></i>
-                <span class="pt-1">Star</span>
-                <span id="star-count" class="rounded-full p-1 bg border border-slate-200">{{stats.star_count}}</span>
-            </button>
-            <div id="clone-dropdown-container" class="flex flex-row items-center space-around">
-                <button
-                        onclick="dropDownCloneUri()"
-                        class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
-                    <i class="text-lg ti ti-copy"></i>
-                    <span class="pt-1">Clone</span>
-                </button>
-            </div>
-            <div class="relative -bottom-4">
-                <div id="clone-dropdown" class="
-           bg-zinc-200
-           absolute z-50 w-400  border-slate-400 rounded-md divide-y divide-slate-400 invisible
-           transform transition-all duration-150 ease-out opacity-0">
-                    <span>{{stats.clone_url}}</span>
-                </div>
-            </div>
+        <div class="flex flex-row space-around gap-x-8">
+            {% include "repository/components/watch-button.html" %}
+            {% include "repository/components/fork-button.html" %}
+            {% include "repository/components/star-button.html" %}
+            {% include "repository/components/clone-button.html" %}
         </div>
     </div>
     <div class="flex flex-row items-center justify-around border-b-2 border-slate-200 pb-2">

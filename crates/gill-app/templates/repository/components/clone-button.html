@@ -1,0 +1,52 @@
+<script>
+    const closeCloneDropDown = () => {
+        let cloneDropDown = document.getElementById("clone-dropdown")
+        cloneDropDown.classList.replace("opacity-100", "opacity-0");
+        cloneDropDown.classList.replace("z-50", "-z-50")
+    }
+
+    const dropDownCloneUri = () => {
+        let cloneDropDown = document.getElementById("clone-dropdown")
+        cloneDropDown.classList.remove("invisible");
+        cloneDropDown.classList.replace("opacity-0", "opacity-100");
+        cloneDropDown.classList.replace("-z-50", "z-50");
+    }
+
+    const copyCloneUrl = () => {
+        let cloneUrl = document.getElementById("clone-url").innerText;
+        navigator.clipboard.writeText(cloneUrl);
+        let icon = document.getElementById("copy-icon");
+        icon.classList.replace("ti-copy", "ti-check")
+        icon.classList.add("text-blue-500")
+        setTimeout(() => {
+            icon.classList.replace("ti-check", "ti-copy");
+            icon.classList.remove("text-blue-500");
+        }, 3000)
+    }
+
+    document.addEventListener('click', function (e) {
+        let container = document.getElementById('clone-dropdown-container');
+        if (!container.contains(e.target)) {
+            closeCloneDropDown();
+        }
+    });
+</script>
+
+<div id="clone-dropdown-container" class="relative">
+    <button
+            onclick="dropDownCloneUri()"
+            class="flex items-center justify-around rounded-md drop-shadow-sm border bg-neutral-50 py-1 hover:bg-slate-200 h-11 gap-2 px-2">
+        <i class="text-lg ti ti-copy"></i>
+        <span class="pt-1">Clone</span>
+    </button>
+    <div id="clone-dropdown"
+         class="bg-zinc-200 p-4 absolute float-right right-0 mt-2 w-max
+           z-50 border-slate-400 rounded-md invisible drop-shadow-lg
+           transform transition-all duration-150 ease-out opacity-0">
+        <div class="flex flex-row gap-2">
+            <button onclick="copyCloneUrl()"><i id="copy-icon" class="text-lg ti ti-copy"></i></button>
+            <span id="clone-url">{{stats.clone_url}}</span>
+        </div>
+    </div>
+</div>
+

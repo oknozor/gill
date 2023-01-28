@@ -1,8 +1,9 @@
 <script>
     const dropDownUserMenu = () => {
-        let branchesMenu = document.getElementById("user-dropdown-menu")
-        branchesMenu.classList.remove("invisible");
-        branchesMenu.classList.replace("opacity-0", "opacity-100");
+        let settingsMenu = document.getElementById("user-dropdown-menu")
+        settingsMenu.classList.remove("invisible");
+        settingsMenu.classList.replace("opacity-0", "opacity-100");
+        settingsMenu.classList.replace("-z-50", "z-50");
     }
 
     document.addEventListener('click', function (e) {
@@ -13,8 +14,9 @@
     });
 
     const closeUserDropDownMenu = () => {
-        let branchesMenu = document.getElementById("user-dropdown-menu")
-        branchesMenu.classList.replace("opacity-100", "opacity-0");
+        let settingsMenu = document.getElementById("user-dropdown-menu")
+        settingsMenu.classList.replace("opacity-100", "opacity-0");
+        settingsMenu.classList.replace("z-50", "-z-50");
     }
 </script>
 
@@ -76,14 +78,10 @@
         </div>
     </nav>
 
-    <div class="relative -bottom-4">
-        <div id="user-dropdown-menu" class="
-           absolute right-10 top-0
-           bg-neutral-50
-           drop-shadow-lg
-           z-50 w-400
-           border-slate-400 rounded-md divide-y divide-slate-500 border border-slate-500
-           invisible
+    <div class="relative">
+        <div id="user-dropdown-menu"
+             class="absolute mt-2 mr-3 float-right right-0 bg-neutral-50 drop-shadow-lg z-50 w-400
+           border-slate-400 rounded-md divide-y divide-slate-500 border border-slate-500 invisible
            transform transition-all duration-150 ease-out opacity-0">
             <div class="flex flex-col divide-y divide-slate-300 text-sm">
                 {%- match user -%}
