@@ -15,6 +15,12 @@ allowing users to manage bug reports, merge requests and notifications across in
 ⚠️ Gill is far from being ready for production use.
 Use at your own risk, expect bugs and breaking changes until first release.
 
+## Demo
+
+Here is a [live demo](https://home-raspberry.gill.pub/oknozor/gill) of Gill. 
+Note that the instance is self-hosted on a Raspberrypi 3 with an average upload bandwidth of 4.19Mbps so 
+it might feel slow depending on your location. 
+
 ## Goal
 
 - Provide a decentralized alternative proprietary git-service.
