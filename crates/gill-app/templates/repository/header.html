@@ -17,7 +17,7 @@
         window.location.href = `/{{owner}}/{{repository}}/tree/${branch}`
     }
     const highlightButton = () => {
-        // @formatter:off
+        /* @formatter:off */
         {% match tab %}
         {% when Tab::Code  %}
             let button = document.getElementById("code")
@@ -28,7 +28,7 @@
         {% when Tab::History  %}
             let button = document.getElementById("history")
         {% endmatch %}
-        // @formatter:on
+        /* @formatter:on */
 
         button.classList.add("border-red-300");
         button.classList.add("border-b-4");

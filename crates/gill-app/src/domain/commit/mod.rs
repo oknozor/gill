@@ -1,3 +1,4 @@
+use crate::domain::pull_request::PullRequest;
 use crate::domain::repository::Repository;
 use crate::domain::user::User;
 use crate::error::AppResult;
@@ -50,6 +51,26 @@ impl Repository {
     ) -> AppResult<Vec<Commit>> {
         let repo = GitRepository::open(owner, name)?;
         let git_commits = repo.history(branch)?;
+        let mut commits = vec![];
+
+        // TODO: Sql query to resolve all username onces
+        for commit in git_commits {
+            let commit = Commit::from_git_commit(commit, db).await?;
+            commits.push(commit)
+        }
+
+        Ok(commits)
+    }
+
+    pub async fn get_commits_for_pull_request(
+        owner: &str,
+        name: &str,
+        pull_request: &PullRequest,
+        db: &PgPool,
+    ) -> AppResult<Vec<Commit>> {
+        let repo = GitRepository::open(owner, name)?;
+        let git_commits =
+            repo.list_commits_between_ref(&pull_request.base, &pull_request.compare)?;
         let mut commits = vec![];
 
         // TODO: Sql query to resolve all username onces

@@ -1,15 +1,19 @@
 use crate::state::AppState;
 use crate::view::repository::pull_request::comment::comment;
+use crate::view::repository::pull_request::commits::{commit_diff, commits};
 use crate::view::repository::pull_request::compare::compare;
 use crate::view::repository::pull_request::create::create;
+use crate::view::repository::pull_request::diff::diff;
 use crate::view::repository::pull_request::list_view::list_view;
 use crate::view::repository::pull_request::view::{close, merge, view};
 use axum::routing::get;
 use axum::Router;
 
 pub mod comment;
+pub mod commits;
 pub mod compare;
 pub mod create;
+pub mod diff;
 pub mod list_view;
 pub mod view;
 
@@ -17,6 +21,12 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/:owner/:repository/pulls", get(list_view))
         .route("/:owner/:repository/pulls/:number", get(view))
+        .route("/:owner/:repository/pulls/:number/diff", get(diff))
+        .route("/:owner/:repository/pulls/:number/commits", get(commits))
+        .route(
+            "/:owner/:repository/pulls/:number/commits/:sha",
+            get(commit_diff),
+        )
         .route("/:owner/:repository/pulls/:number/comment", get(comment))
         .route("/:owner/:repository/pulls/:number/merge", get(merge))
         .route(

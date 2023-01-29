@@ -1,0 +1,33 @@
+{% extends "base_repository.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col space-around gap-5">
+    {% include "repository/pulls/summary.html" %}
+    {% include "repository/pulls/nav.html" %}
+    <div class="flex flex-col rounded-md border border-slate-200 divide-slate-200 divide-y gap-2 px-2">
+        <div class="flex flex-row items-center pt-2">
+            <span class="text-lg font-bold">{{commit.summary}}</span>
+            <span>{{commit.id|sha_digest}}</span>
+        </div>
+        {% match commit.body %}
+        {% when Some with (body) %}
+        <span>{{body}}</span>
+        {% when None %}
+        {% endmatch %}
+        {% match commit.author %}
+        {% when Author::Known with (author) %}
+        <a href="/{{author}}">
+            @{{author}}
+        </a>
+        {% when Author::Raw with (author) %}
+        <span>{{author}}</span>
+        {% endmatch %}
+    </div>
+    {{diff|safe}}
+</div>
+
+{% endblock %}

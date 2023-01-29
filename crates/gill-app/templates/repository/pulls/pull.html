@@ -1,15 +1,15 @@
 {% extends "base_repository.html" %}
 
 {% block head %}
-<script type="text/javascript" src="/assets/js/bootstrap.js"></script>
+<script defer type="text/javascript" src="/assets/js/bootstrap.js"></script>
 {% endblock %}
 
 {% block content %}
-
-
 <script>
-    // @formatter:off
-    window.addEventListener("WasmLoaded", () => {
+    window.addEventListener("WasmLoaded", () => renderMarkdownElements());
+
+    const renderMarkdownElements = () => {
+        /* @formatter:off */
         {% match pull_request.description %}
         {% when Some with (description) %}
         let description = document.getElementById("pr-description");
@@ -21,47 +21,14 @@
         document.getElementById("comment-{{comment.id}}").innerHTML
             = render_markdown('{{comment.content|safe}}', "{{owner}}", "{{repository}}");
         {% endfor %}
-    });
-    // @formatter:on
+        /* @formatter:on */
+    }
 </script>
 
 <div class="flex flex-col space-around gap-5">
-    <h3 class="text-4xl">{{pull_request.title}}
-        <span class="text-scale-600">
-            #{{pull_request.number}}
-        </span>
-    </h3>
-    <div class="flex flex-row items-center">
-        {%- match pull_request.state -%}
-        {%- when PullRequestState::Open -%}
-        <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-sky-400 gap-2">
-            <i class="ti ti-git-pull-request"></i>
-            <span class="pt-1">Open</span>
-        </div>
-        {%- when PullRequestState::Closed -%}
-        <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-red-400  gap-2">
-            <i class="ti ti-git-pull-request-closed"></i>
-            <span class="pt-1">Closed</span>
-        </div>
-        {%- when Merged -%}
-        <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-pink-400  gap-2">
-            <i class="ti ti-git-merge"></i>
-            <span class="pt-1">Merged</span>
-        </div>
-        {%- endmatch -%}
-        &nbsp;
-        <p>
-            <a class="text-sky-600" href='/{{pull_request.opened_by}}'>{{pull_request.opened_by}}</a> wants to merge
-            <a id="compare-branch" class="text-sky-600" href=''>{{pull_request.compare}}</a> into
-            <a id="base-branch" class="text-sky-600" href=''>{{pull_request.base}}</a>
-            <script>
-                let base = encodeURIComponent("{{pull_request.compare}}");
-                let compare = encodeURIComponent("{{pull_request.base}}");
-                document.getElementById("compare-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${compare}`);
-                document.getElementById("base-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${base}`);
-            </script>
-        </p>
-    </div>
+    {% include "repository/pulls/summary.html" %}
+    {% include "repository/pulls/nav.html" %}
+
     <div class="flex flex-col border border-slate-200 rounded-md">
         <div class="px-3 flex flex-row items-center p-2 justify-items-center font-bold border-b-2 border-slate-200">
             {{pull_request.opened_by}}
@@ -90,8 +57,6 @@
     {%- match user -%}
     {%- when Some with (user) -%}
     {{markdown_preview_form|safe}}
-
-
     {%- if user.as_str() == owner -%}
     <span class="border-b border-slate-300"></span>
     <div class="flex flex-row gap-2 p-2 justify-end">
@@ -119,6 +84,5 @@
     {%- when None -%}
     {%- endmatch -%}
 </div>
-
 {% endblock %}
 

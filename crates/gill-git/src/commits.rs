@@ -9,6 +9,10 @@ impl GitRepository {
     pub fn history(&self, branch: &str) -> anyhow::Result<Vec<OwnedCommit>> {
         self.list_commits(branch)
     }
+
+    pub fn history_between(&self, base: &str, compare: &str) -> anyhow::Result<Vec<OwnedCommit>> {
+        self.list_commits_between_ref(base, compare)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -75,6 +79,39 @@ mod imp {
 
             Ok(commits)
         }
+
+        pub fn list_commits_between_ref(
+            &self,
+            base: &str,
+            compare: &str,
+        ) -> Result<Vec<OwnedCommit>> {
+            let base = format!("refs/heads/{base}");
+            let compare = format!("refs/heads/{compare}");
+            let base_tree = self.inner.find_reference(&base)?;
+            let compare_tree = self.inner.find_reference(&compare)?;
+            let target_ref_base = base_tree.target();
+            let target_ref_compare = compare_tree.target();
+            let base_head = self
+                .inner
+                .find_object(target_ref_base.id())?
+                .try_into_commit()?;
+            let compare_head = self
+                .inner
+                .find_object(target_ref_compare.id())?
+                .try_into_commit()?;
+            let mut commits = vec![];
+            for commit in compare_head.ancestors().all()? {
+                let id = commit?;
+                if id == base_head.id {
+                    break;
+                }
+                let commit = id.object()?.try_into_commit()?;
+                let commit = OwnedCommit::try_from(&commit)?;
+                commits.push(commit);
+            }
+
+            Ok(commits)
+        }
     }
 }
 
@@ -115,6 +152,33 @@ mod test {
 
         // Assert
         assert_that!(commits).has_length(3);
+        Ok(())
+    }
+
+    #[sealed_test]
+    fn list_commit_between_branches() -> anyhow::Result<()> {
+        // Arrange
+        run_cmd!(
+            git init;
+            git commit --allow-empty -m "one";
+            git commit --allow-empty -m "two";
+            git commit --allow-empty -m "three";
+            git checkout -b other;
+            git commit --allow-empty -m "other_one";
+            git commit --allow-empty -m "other_two";
+        )?;
+
+        let repo = GitRepository {
+            inner: git_repository::open(".")?,
+        };
+
+        // Act
+        let commits = repo.list_commits_between_ref("master", "other")?;
+
+        // Assert
+        assert_that!(commits).has_length(2);
+        assert_that!(commits[1].summary).is_equal_to(&"other_one".to_string());
+        assert_that!(commits[0].summary).is_equal_to(&"other_two".to_string());
         Ok(())
     }
 
