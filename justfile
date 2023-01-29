@@ -71,9 +71,9 @@ generate-ssh-env:
     echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> docker/sshd.env
 
 docker-build: build-arm-64 build-x86 build-arm-v7
-    docker buildx --no-cache build --push --platform linux/amd64 --no-cache --build-arg arch=amd64 . -t gillpub/gill:latest-amd64
-    docker buildx --no-cache build --push --platform linux/arm/v7 --no-cache --build-arg arch=arm32v7 . -t gillpub/gill:latest-arm32v7
-    docker buildx --no-cache build --push --platform linux/arm64/v8 --no-cache --build-arg arch=arm64v8 . -t gillpub/gill:latest-arm64v8
+    docker buildx build --push --platform linux/amd64 --no-cache --build-arg arch=amd64 . -t gillpub/gill:latest-amd64
+    docker buildx build --push --platform linux/arm/v7 --no-cache --build-arg arch=arm32v7 . -t gillpub/gill:latest-arm32v7
+    docker buildx build --push --platform linux/arm64/v8 --no-cache --build-arg arch=arm64v8 . -t gillpub/gill:latest-arm64v8
 
     docker manifest create gillpub/gill:latest \
      --amend gillpub/gill:latest-amd64 \
