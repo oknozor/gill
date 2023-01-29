@@ -1,12 +1,12 @@
 {% extends "base_repository.html" %}
 
 {% block head %}
-<script type="text/javascript" src="/assets/js/bootstrap.js"></script>
+<script defer type="text/javascript" src="/assets/js/bootstrap.js"></script>
 {% endblock %}
 
 {% block content %}
 <script>
-    // @formatter:off
+    /* @formatter:off */
     window.addEventListener("WasmLoaded", () => {
         let description = document.getElementById("issue-content");
         description.innerHTML = render_markdown('{{issue.content|safe}}', "{{owner}}", "{{repository}}");
@@ -15,7 +15,7 @@
                 render_markdown('{{comment.content|safe}}', "{{owner}}", "{{repository}}");
             {% endfor %}
     });
-    // @formatter:on
+    /* @formatter:on */
 </script>
 
 <div class="flex flex-col space-around gap-5">

@@ -1,0 +1,15 @@
+{% extends "base_repository.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col space-around gap-5">
+    {% include "repository/pulls/summary.html" %}
+    {% include "repository/pulls/nav.html" %}
+    {{diff|safe}}
+</div>
+
+{% endblock %}
+

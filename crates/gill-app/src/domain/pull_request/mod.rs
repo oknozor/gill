@@ -5,6 +5,8 @@ use std::cmp::Ordering;
 use gill_db::repository::pull_request::{
     PullRequest as PullRequestEntity, PullRequestState as PullRequestStateEntity,
 };
+use gill_git::diffs::Diff;
+use gill_git::GitRepository;
 use sqlx::PgPool;
 
 pub mod comment;
@@ -118,5 +120,11 @@ impl PullRequest {
     pub async fn set_merged(&self, db: &PgPool) -> AppResult<()> {
         let entity: PullRequestEntity = self.clone().into();
         entity.set_merged(db).await.map_err(Into::into)
+    }
+
+    pub fn get_diff(&self, owner: &str, name: &str) -> AppResult<Vec<Diff>> {
+        let repo = GitRepository::open(owner, name)?;
+        let diff = repo.diff(&self.base, &self.compare)?;
+        Ok(diff)
     }
 }

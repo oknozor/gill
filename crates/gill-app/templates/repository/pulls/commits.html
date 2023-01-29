@@ -1,0 +1,39 @@
+{% extends "base_repository.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col space-around gap-5">
+    {% include "repository/pulls/summary.html" %}
+    {% include "repository/pulls/nav.html" %}
+
+    <div class="flex flex-col rounded-md border border-slate-200 divide-y divide-slate-200">
+        {% for commit in commits %}
+        <div class="flex flex-row gap-2 py-3 px-4 items-center">
+            <a class="w-40 text-sky-600 hover:underline font-bold"
+               href="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/commits/{{commit.id}}">
+                {{commit.id|sha_digest}}
+            </a>
+            <a href="/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/commits/{{commit.id}}"
+               class="text-gray-400 hover:underline grow truncate ...">
+                {{commit.summary}}
+            </a>
+            {% match commit.author %}
+            {% when Author::Known with (author) %}
+            <a href="/{{author}}"
+               class="self-end grow-0 text-left w-40 text-sky-600 hover:underline truncate ...">
+                @{{author}}
+            </a>
+            {% when Author::Raw with (author) %}
+            <span class="self-end grow-0 text-left w-40 truncate ...">{{author}}</span>
+            {% endmatch %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+{% endblock %}
+

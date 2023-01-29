@@ -1,0 +1,50 @@
+<script>
+    const goToPullRequestCommits = () => {
+        window.location.href = "/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/commits"
+    }
+
+    const goToPullRequestComments = () => {
+        window.location.href = "/{{owner}}/{{repository}}/pulls/{{pull_request.number}}"
+    }
+
+    const goToPullRequestDiff = () => {
+        window.location.href = "/{{owner}}/{{repository}}/pulls/{{pull_request.number}}/diff"
+    }
+</script>
+<div onload="addActiveTabBorder()" class="flex flex-row border-slate-500">
+    <button id="comments-nav-button" onclick="goToPullRequestComments()" class="px-3 py-2">
+        <i class="text-lg ti ti-messages"></i>
+        <span class="pt-1">Comments</span>
+    </button>
+    <button id="commits-nav-button" onclick="goToPullRequestCommits()" class="px-3 py-2">
+        <i class="text-lg ti ti-git-commit"></i>
+        <span class="pt-1">Commits</span>
+    </button>
+    <button id="diff-nav-button" onclick="goToPullRequestDiff()" class="px-3 py-2">
+        <i class="text-lg ti ti-file-diff"></i>
+        <span class="pt-1">Diff</span>
+    </button>
+    <span class="border-b grow"></span>
+    <script>
+        let button;
+        let pathname = window.location.pathname;
+        let paths = pathname.split("/");
+
+        if (paths[paths.length - 1] === "diff") {
+            button = document.getElementById("diff-nav-button");
+            document.getElementById("commits-nav-button").classList.add("border-b");
+            document.getElementById("comments-nav-button").classList.add("border-b");
+        } else if (paths[paths.length - 1] === "commits" || paths[paths.length - 2] === "commits") {
+            button = document.getElementById("commits-nav-button")
+            document.getElementById("diff-nav-button").classList.add("border-b");
+            document.getElementById("comments-nav-button").classList.add("border-b");
+        } else {
+            button = document.getElementById("comments-nav-button")
+            document.getElementById("commits-nav-button").classList.add("border-b");
+            document.getElementById("diff-nav-button").classList.add("border-b");
+        }
+        button.classList.add("rounded-t-lg")
+        button.classList.add("border-x")
+        button.classList.add("border-t")
+    </script>
+</div>

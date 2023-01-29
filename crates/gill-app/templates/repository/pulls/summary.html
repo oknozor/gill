@@ -1,0 +1,36 @@
+<h3 class="text-4xl">{{pull_request.title}}
+    <span class="text-scale-600">
+            #{{pull_request.number}}
+        </span>
+</h3>
+<div class="flex flex-row items-center">
+    {%- match pull_request.state -%}
+    {%- when PullRequestState::Open -%}
+    <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-sky-400 gap-2">
+        <i class="ti ti-git-pull-request"></i>
+        <span class="pt-1">Open</span>
+    </div>
+    {%- when PullRequestState::Closed -%}
+    <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-red-400  gap-2">
+        <i class="ti ti-git-pull-request-closed"></i>
+        <span class="pt-1">Closed</span>
+    </div>
+    {%- when Merged -%}
+    <div class="flex items-center justify-center p-2 max-w-md rounded-lg bg-pink-400  gap-2">
+        <i class="ti ti-git-merge"></i>
+        <span class="pt-1">Merged</span>
+    </div>
+    {%- endmatch -%}
+    &nbsp;
+    <p>
+        <a class="text-sky-600" href='/{{pull_request.opened_by}}'>{{pull_request.opened_by}}</a> wants to merge
+        <a id="compare-branch" class="text-sky-600" href=''>{{pull_request.compare}}</a> into
+        <a id="base-branch" class="text-sky-600" href=''>{{pull_request.base}}</a>
+        <script>
+            let base = encodeURIComponent("{{pull_request.compare}}");
+            let compare = encodeURIComponent("{{pull_request.base}}");
+            document.getElementById("compare-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${compare}`);
+            document.getElementById("base-branch").href = encodeURIComponent(`/{{owner}}/{{repository}}/tree/${base}`);
+        </script>
+    </p>
+</div>
