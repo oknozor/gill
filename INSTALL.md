@@ -1,53 +1,77 @@
-### Prerequisites 
-- [rust](https://www.rust-lang.org/tools/installsql)
-- [sqlx-cli](https://crates.io/crates/sqlx-cli)
-- [docker](https://www.docker.com/)
-- [just](https://crates.io/crates/just)
-- [cross](https://crates.io/crates/cross)
+## Using docker
 
-**sqlx-cli:** 
+### Config 
+
+```toml
+domain = "example.gill.org"
+debug = false
+port = 3000
+ssh_port = 2222
+
+[database]
+host = "gill.example.db"
+port = 5432
+database = "gill"
+user = "postgres"
+password = "password"
+
+[oauth_provider]
+client_id = "gill"
+client_secret = "n5obgGTk855H1Mx3b2YG2JCO8Bc6WGq1"
+provider = "https://keycloak.cloud.hoohoot.org"
+user_info_url = "/auth/realms/hoohoot/protocol/openid-connect/userinfo"
+auth_url = "/auth/realms/hoohoot/protocol/openid-connect/auth"
+token_url = "/auth/realms/hoohoot/protocol/openid-connect/token"
 ```
-cargo install sqlx-cli
+
+### Docker setup
+
+#### Creating the ssh keys
+
+```shell
+    mkdir -p /tmp/etc/ssh
+    ssh-keygen -A -f /tmp
+    echo "GILL_SSH_ECDSA_PUB: '`cat /tmp/etc/ssh/ssh_host_ecdsa_key.pub`'" >> sshd.env
+    echo "GILL_SSH_ECDSA: '`cat /tmp/etc/ssh/ssh_host_ecdsa_key`'" >> sshd.env
+    echo "GILL_SSH_ED25519_PUB: '`cat /tmp/etc/ssh/ssh_host_ed25519_key.pub`'" >> sshd.env
+    echo "GILL_SSH_ED25519: '`cat /tmp/etc/ssh/ssh_host_ed25519_key`'" >> sshd.env
+    echo "GILL_SSH_RSA_PUB: '`cat /tmp/etc/ssh/ssh_host_rsa_key.pub`'" >> sshd.env
+    echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> sshd.env
 ```
 
-**just:**
+#### Running with docker
+
+```shell
+docker run --env-file sshd.env   \ 
+  --port 3000:3000 -p 2222:22    \
+  --volume ./gill_data:/home/git \ 
+  --volume ./config.toml:/opt/gill/config.toml
 ```
-cargo install just
+
+#### Running with docker compose
+
+```yaml
+version: '3.9'
+services:
+  gill:
+    image: "gillpub/gill:latest"
+    restart: unless-stopped
+    container_name: gill
+    env_file:
+      - sshd.env
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    volumes:
+      - ./gill_data:/home/git
+      - ./config.toml:/opt/gill/config.toml
+    networks:
+      - gill
+
+volumes:
+  gill_data:
 ```
 
-### Docker build
+**Run:**
 
-1. Generate sshd host keys
-    ```shell
-    just generate-ssh-env
-    ```
-
-2. Build the docker image. 
-    ```sh
-    just build-docker-image
-    ```
-3. Setup environment:
-
-    Edit the `[docker-compose.yml](docker-compose.yml)` environment.
-   
-4. Set up the database
-
-   Note that a running postgres database is needed during the build step.
-   A postgres container is provided via the `[docker-compose.yml](docker-compose.yml)`
-   but you might want to use another postgres instance for production.
-   If so you will need to create your database and run the sqlx migrations.
-   
-   **Example:**
-   
-   ```sql
-   CREATE DATABASE gill;
-   GRANT ALL PRIVILEGES ON DATABASE gill TO postgres;
-   ```
-   
-   ```shell
-   sqlx migrate run --source crates/gill-db/migrations --database-url "postgres://postgres:postgres@localhost/gill"
-   ```
-5. Starting the container
-   
-   If you don't want to use the provided database container run 
-   `docker compose up gill -d`, if you do `docker compose up -d`
+`docker compose up -d`

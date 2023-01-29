@@ -1,0 +1,9 @@
+*
+!crates/**
+!Cargo.toml
+!Cargo.lock
+!sqlx-data.json
+!/etc/ssh/sshd_config
+!/opt/gill/migrations/**
+!docker/entrypoint.sh
+!docker/sshd_config
