@@ -54,11 +54,8 @@ pub async fn webfinger(
     Extension(db): Extension<PgPool>,
 ) -> AppResult<Json<Webfinger>> {
     let acct = query.parse().unwrap();
-    println!("ACCT {acct:?}");
     if acct.domain == SETTINGS.domain {
         if let Some(repository) = acct.repository {
-            println!("user {}", &acct.user);
-            println!("repo {}", &repository);
             Repository::by_namespace(&acct.user, &repository, &db).await?;
             Ok(Json(Webfinger {
                 subject: query.resource,
