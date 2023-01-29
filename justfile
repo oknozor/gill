@@ -2,7 +2,7 @@
 
 export DATABASE_URL := "postgres://postgres:postgres@localhost/gill"
 
-## Dev commands
+## Dev
 clean:
     docker compose -f docker-compose.dev.yml down
     cargo clean
@@ -40,8 +40,7 @@ reload:
 css-live-reload:
     cd crates/gill-app && tailwindcss -m -i assets/css/style.css -o assets/css/tailwind.min.css --watch
 
-
-## Docker build
+## Build
 migrate-db:
     docker-compose -f docker-compose.dev.yml up postgres -d
     sqlx migrate run --source crates/gill-db/migrations
@@ -56,8 +55,10 @@ build-arm-v7: migrate-db
 build-arm-64: migrate-db
     CROSS_CONFIG=Cross.toml cross build --target aarch64-unknown-linux-musl --release
 
-build-docker-image: build-x86
-    docker compose build --no-cache
+build-all: build-x86 build-arm-v7 build-arm-64
+
+docker-build: build-all
+    docker buildx build --no-cache --push --platform linux/amd64,linux/arm/v7,linux/arm64/v8  . -t gillpub/gill:latest
 
 # Helpers
 generate-ssh-env:
@@ -69,16 +70,3 @@ generate-ssh-env:
     echo "GILL_SSH_ED25519: '`cat /tmp/etc/ssh/ssh_host_ed25519_key`'" >> docker/sshd.env
     echo "GILL_SSH_RSA_PUB: '`cat /tmp/etc/ssh/ssh_host_rsa_key.pub`'" >> docker/sshd.env
     echo "GILL_SSH_RSA: '`cat /tmp/etc/ssh/ssh_host_rsa_key`'" >> docker/sshd.env
-
-docker-build: build-arm-64 build-x86 build-arm-v7
-    docker buildx build --push --platform linux/amd64 --no-cache --build-arg arch=amd64 . -t gillpub/gill:latest-amd64
-    docker buildx build --push --platform linux/arm/v7 --no-cache --build-arg arch=arm32v7 . -t gillpub/gill:latest-arm32v7
-    docker buildx build --push --platform linux/arm64/v8 --no-cache --build-arg arch=arm64v8 . -t gillpub/gill:latest-arm64v8
-
-    docker manifest create gillpub/gill:latest \
-     --amend gillpub/gill:latest-amd64 \
-     --amend gillpub/gill:latest-arm32v7 \
-     --amend gillpub/gill:latest-arm64v8
-
-    docker manifest push gillpub/gill:latest
-

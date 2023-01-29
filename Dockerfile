@@ -1,23 +1,23 @@
-ARG arch
+# Note that the following build needs binaries to be precompiled for the target
+# architectures. Use the `build-all` just recipies to build for all targets.
+FROM alpine as arm-builder
+COPY ./target/armv7-unknown-linux-musleabihf/release/gill-app /gill-app
+COPY ./target/armv7-unknown-linux-musleabihf/release/gill-git-server /gill-git-server
+COPY ./target/armv7-unknown-linux-musleabihf/release/post-receive /post-receive
 
-FROM ${arch}/alpine AS build-arm32v7
-COPY target/armv7-unknown-linux-musleabihf/release/gill-app /gill-app
-COPY target/armv7-unknown-linux-musleabihf/release/gill-git-server /gill-git-server
-COPY target/armv7-unknown-linux-musleabihf/release/post-receive /post-receive
+FROM alpine as arm64-builder
+COPY ./target/aarch64-unknown-linux-musl/release/gill-app /gill-app
+COPY ./target/aarch64-unknown-linux-musl/release/gill-git-server /gill-git-server
+COPY ./target/aarch64-unknown-linux-musl/release/post-receive /post-receive
 
-FROM ${arch}/alpine AS build-arm64v8
-COPY target/aarch64-unknown-linux-musl/release/gill-app /gill-app
-COPY target/aarch64-unknown-linux-musl/release/gill-git-server /gill-git-server
-COPY target/aarch64-unknown-linux-musl/release/post-receive /post-receive
+FROM alpine as amd64-builder
+COPY ./target/x86_64-unknown-linux-musl/release/gill-app /gill-app
+COPY ./target/x86_64-unknown-linux-musl/release/gill-git-server /gill-git-server
+COPY ./target/x86_64-unknown-linux-musl/release/post-receive /post-receive
 
-FROM ${arch}/alpine AS build-amd64
-COPY target/x86_64-unknown-linux-musl/release/gill-app /gill-app
-COPY target/x86_64-unknown-linux-musl/release/gill-git-server /gill-git-server
-COPY target/x86_64-unknown-linux-musl/release/post-receive /post-receive
+FROM ${TARGETARCH}-builder AS builder
 
-FROM build-${arch} AS final
-
-FROM ${arch}/alpine
+FROM alpine
 MAINTAINER Paul Delafosse "paul.delafosse@protonmail.com"
 RUN apk --no-cache add openssh git
 
@@ -36,9 +36,9 @@ RUN mkdir .ssh \
   && chmod -R 600 .ssh/*
 
 # Install binaries
-COPY --from=final /gill-app /usr/bin/gill-app
-COPY --from=final /gill-git-server /usr/bin/gill-git-server
-COPY --from=final /post-receive /usr/share/git-core/templates/hooks/post-receive
+COPY --from=builder /gill-app /usr/bin/gill-app
+COPY --from=builder /gill-git-server /usr/bin/gill-git-server
+COPY --from=builder /post-receive /usr/share/git-core/templates/hooks/post-receive
 
 # Install assets
 COPY crates/gill-db/migrations /opt/gill/migrations
