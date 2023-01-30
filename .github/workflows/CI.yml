@@ -150,44 +150,25 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v3
         with:
-          name: "armv7-unknown-linux-musleabihf-gill-app-latest"
-          path: ./target/armv7-unknown-linux-musleabihf/release/gill-app
-      - uses: actions/download-artifact@master
-        with:
-          name: "armv7-unknown-linux-musleabihf-gill-git-server-latest"
-          path: ./target/armv7-unknown-linux-musleabihf/release/gill-git-server
-      - uses: actions/download-artifact@master
-        with:
-          name: "armv7-unknown-linux-musleabihf-post-receive-latest"
-          path: ./target/armv7-unknown-linux-musleabihf/release/post-receive
+          path: ~/artifacts
 
-      - uses: actions/download-artifact@master
-        with:
-          name: "x86_64-unknown-linux-musl-gill-app-latest"
-          path: ./target/x86_64-unknown-linux-musl/release/gill-app
-      - uses: actions/download-artifact@master
-        with:
-          name: "x86_64-unknown-linux-musl-gill-git-server-latest"
-          path: ./target/x86_64-unknown-linux-musl/release/gill-git-server
-      - uses: actions/download-artifact@master
-        with:
-          name: "x86_64-unknown-linux-musl-post-receive-latest"
-          path: ./target/x86_64-unknown-linux-musl/release/post-receive
-
-      - uses: actions/download-artifact@master
-        with:
-          name: "aarch64-unknown-linux-musl-gill-app-latest"
-          path: ./target/aarch64-unknown-linux-musl/release/gill-app
-      - uses: actions/download-artifact@master
-        with:
-          name: "aarch64-unknown-linux-musl-gill-git-server-latest"
-          path: ./target/aarch64-unknown-linux-musl/release/gill-git-server
-      - uses: actions/download-artifact@master
-        with:
-          name: "aarch64-unknown-linux-musl-post-receive-latest"
-          path: ./target/aarch64-unknown-linux-musl/release/post-receive
+      - name: Copy artifacts to build dir
+        run: |
+          mkdir -p target/x86_64-unknown-linux-musl/release/
+          mkdir -p target/aarch64-unknown-linux-musl/release/
+          mkdir -p target/armv7-unknown-linux-musleabihf/release/
+          cp ~/artifacts/aarch64-unknown-linux-musl-gill-app-latest target/aarch64-unknown-linux-musl/release/
+          cp ~/artifacts/aarch64-unknown-linux-musl-gill-git-server-latest target/aarch64-unknown-linux-musl/release/
+          cp ~/artifacts/aarch64-unknown-linux-musl-post-receive-latest target/aarch64-unknown-linux-musl/release/
+          cp ~/artifacts/armv7-unknown-linux-musleabihf-gill-app-latest target/armv7-unknown-linux-musleabihf/release/
+          cp ~/artifacts/armv7-unknown-linux-musleabihf-gill-git-server-latest target/armv7-unknown-linux-musleabihf/release/
+          cp ~/artifacts/armv7-unknown-linux-musleabihf-post-receive-latest target/armv7-unknown-linux-musleabihf/release/
+          cp ~/artifacts/x86_64-unknown-linux-musl-gill-app-latest target/x86_64-unknown-linux-musl/release/
+          cp ~/artifacts/x86_64-unknown-linux-musl-gill-git-server-latest target/x86_64-unknown-linux-musl/release/
+          cp ~/artifacts/x86_64-unknown-linux-musl-post-receive-latest target/x86_64-unknown-linux-musl/release/
+        working-directory: ./
 
       - name: Update multi-arch container latest
         run: |
