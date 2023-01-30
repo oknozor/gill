@@ -95,7 +95,7 @@ jobs:
       CROSS_CONFIG: Cross.toml
     strategy:
       matrix:
-        target: [ "armv7-unknown-linux-musleabihf", "x86_64-unknown-linux-musl" "aarch64-unknown-linux-musl" ]
+        target: [ "armv7-unknown-linux-musleabihf", "x86_64-unknown-linux-musl", "aarch64-unknown-linux-musl" ]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -106,8 +106,88 @@ jobs:
           toolchain: stable
           override: true
           target: ${{ matrix.target }}
-      - uses: actions-rs/cargo@v1
+
+      - name: Cargo build
+        uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --target ${{ matrix.target }}
+          args: --target ${{ matrix.target }} --release
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.target }}-gill-app:latest
+          path: ./target/${{ matrix.target }}/release/gill-app
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.target }}-gill-git-server:latest
+          path: ./target/${{ matrix.target }}/release/gill-git-server
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.target }}-post-receive:latest
+          path: ./target/${{ matrix.target }}/release/post-receive
+
+  docker-build:
+    name: Update docker multi-arch latest
+    needs: [ arch-matrix ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install docker buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: Docker Hub login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+      - uses: actions/download-artifact@master
+        with:
+          name: "armv7-unknown-linux-musleabihf-gill-app:latest"
+          path: ./target/armv7-unknown-linux-musleabihf/release/gill-app
+      - uses: actions/download-artifact@master
+        with:
+          name: "armv7-unknown-linux-musleabihf-gill-git-server:latest"
+          path: ./target/armv7-unknown-linux-musleabihf/release/gill-git-server
+      - uses: actions/download-artifact@master
+        with:
+          name: "armv7-unknown-linux-musleabihf-post-receive:latest"
+          path: ./target/armv7-unknown-linux-musleabihf/release/post-receive
+
+      - uses: actions/download-artifact@master
+        with:
+          name: "x86_64-unknown-linux-musl-gill-app:latest"
+          path: ./target/x86_64-unknown-linux-musl/release/gill-app
+      - uses: actions/download-artifact@master
+        with:
+          name: "x86_64-unknown-linux-musl-gill-git-server:latest"
+          path: ./target/x86_64-unknown-linux-musl/release/gill-git-server
+      - uses: actions/download-artifact@master
+        with:
+          name: "x86_64-unknown-linux-musl-post-receive:latest"
+          path: ./target/x86_64-unknown-linux-musl/release/post-receive
+
+      - uses: actions/download-artifact@master
+        with:
+          name: "aarch64-unknown-linux-musl-gill-app:latest"
+          path: ./target/aarch64-unknown-linux-musl/release/gill-app
+      - uses: actions/download-artifact@master
+        with:
+          name: "aarch64-unknown-linux-musl-gill-git-server:latest"
+          path: ./target/aarch64-unknown-linux-musl/release/gill-git-server
+      - uses: actions/download-artifact@master
+        with:
+          name: "aarch64-unknown-linux-musl-post-receive:latest"
+          path: ./target/aarch64-unknown-linux-musl/release/post-receive
+
+      - name: Update multi-arch container latest
+        run: |
+          docker buildx build \
+          --push --platform linux/amd64,linux/arm/v7,linux/arm64/v8 \
+          . -t gillpub/gill:latest
