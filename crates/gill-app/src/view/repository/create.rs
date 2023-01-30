@@ -95,12 +95,14 @@ impl CreateRepositoryForm {
     fn generate_clone_uri(&self, user: &User) -> String {
         let ssh_port = SETTINGS.ssh_port;
         let domain = SETTINGS.domain_url().expect("valid domain");
+        let host = domain.host_str().expect("valid host");
         let repository_name = &self.name;
         let username = &user.username;
+
         if ssh_port == 22 {
-            format!("git@{domain}:{username}/{repository_name}.git")
+            format!("git@{host}:{username}/{repository_name}.git")
         } else {
-            format!("ssh://git@{domain}:{ssh_port}/~/{username}/{repository_name}.git")
+            format!("ssh://git@{host}:{ssh_port}/~/{username}/{repository_name}.git")
         }
     }
 }
