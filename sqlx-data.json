@@ -938,81 +938,6 @@
     },
     "query": "\n           UPDATE pull_request SET state = 'Closed'\n            WHERE pull_request.number = $1 AND repository_id = $2;\n           "
   },
-  "524ecbc7e9c57318eede14fe634ae1e4b09a39d9fdedd182b74ccc1912f89e31": {
-    "describe": {
-      "columns": [
-        {
-          "name": "repository_id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "number",
-          "ordinal": 1,
-          "type_info": "Int4"
-        },
-        {
-          "name": "opened_by",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "title",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "base",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "compare",
-          "ordinal": 6,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "state: PullRequestState",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "Open",
-                  "Closed",
-                  "Merged"
-                ]
-              },
-              "name": "pull_request_state"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int4",
-          "Int8",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                SELECT\n                        P.repository_id,\n                        p.number,\n                        u.username as opened_by,\n                        p.title,\n                        p.description,\n                        p.base,\n                        p.compare,\n                        p.state as \"state: PullRequestState\"\n                FROM pull_request p\n                JOIN repository r ON r.id = $1\n                JOIN users u on u.id = p.opened_by\n                LIMIT $2\n                OFFSET $3\n            "
-  },
   "52ec552a42f53300adf514b4bccc7ee6a9c7f34218d832eab72566433064b311": {
     "describe": {
       "columns": [
@@ -2296,6 +2221,81 @@
       }
     },
     "query": "\n            select username from repository r\n            JOIN users u ON r.attributed_to = r.activity_pub_id\n            where r.id = $1\n\n            "
+  },
+  "c6e4913aa498472324e46a0d71c4a5bf5edd774fec1c9326547ccf1e3973491a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "repository_id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "number",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "opened_by",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "title",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "base",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "compare",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "state: PullRequestState",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "Open",
+                  "Closed",
+                  "Merged"
+                ]
+              },
+              "name": "pull_request_state"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int8",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n                SELECT\n                        P.repository_id,\n                        p.number,\n                        u.username as opened_by,\n                        p.title,\n                        p.description,\n                        p.base,\n                        p.compare,\n                        p.state as \"state: PullRequestState\"\n                FROM pull_request p\n                JOIN repository r ON r.id = $1\n                JOIN users u on u.id = p.opened_by\n                WHERE r.id = p.repository_id\n                LIMIT $2\n                OFFSET $3\n            "
   },
   "cb6f3607f354a0507ff114b396595aaf3b2cca016d911f21bcf6476301ccda55": {
     "describe": {
