@@ -117,17 +117,17 @@ jobs:
 
       - uses: actions/upload-artifact@master
         with:
-          name: ${{ matrix.target }}-gill-app:latest
+          name: ${{ matrix.target }}-gill-app-latest
           path: ./target/${{ matrix.target }}/release/gill-app
 
       - uses: actions/upload-artifact@master
         with:
-          name: ${{ matrix.target }}-gill-git-server:latest
+          name: ${{ matrix.target }}-gill-git-server-latest
           path: ./target/${{ matrix.target }}/release/gill-git-server
 
       - uses: actions/upload-artifact@master
         with:
-          name: ${{ matrix.target }}-post-receive:latest
+          name: ${{ matrix.target }}-post-receive-latest
           path: ./target/${{ matrix.target }}/release/post-receive
 
   docker-build:
@@ -150,41 +150,41 @@ jobs:
 
       - uses: actions/download-artifact@master
         with:
-          name: "armv7-unknown-linux-musleabihf-gill-app:latest"
+          name: "armv7-unknown-linux-musleabihf-gill-app-latest"
           path: ./target/armv7-unknown-linux-musleabihf/release/gill-app
       - uses: actions/download-artifact@master
         with:
-          name: "armv7-unknown-linux-musleabihf-gill-git-server:latest"
+          name: "armv7-unknown-linux-musleabihf-gill-git-server-latest"
           path: ./target/armv7-unknown-linux-musleabihf/release/gill-git-server
       - uses: actions/download-artifact@master
         with:
-          name: "armv7-unknown-linux-musleabihf-post-receive:latest"
+          name: "armv7-unknown-linux-musleabihf-post-receive-latest"
           path: ./target/armv7-unknown-linux-musleabihf/release/post-receive
 
       - uses: actions/download-artifact@master
         with:
-          name: "x86_64-unknown-linux-musl-gill-app:latest"
+          name: "x86_64-unknown-linux-musl-gill-app-latest"
           path: ./target/x86_64-unknown-linux-musl/release/gill-app
       - uses: actions/download-artifact@master
         with:
-          name: "x86_64-unknown-linux-musl-gill-git-server:latest"
+          name: "x86_64-unknown-linux-musl-gill-git-server-latest"
           path: ./target/x86_64-unknown-linux-musl/release/gill-git-server
       - uses: actions/download-artifact@master
         with:
-          name: "x86_64-unknown-linux-musl-post-receive:latest"
+          name: "x86_64-unknown-linux-musl-post-receive-latest"
           path: ./target/x86_64-unknown-linux-musl/release/post-receive
 
       - uses: actions/download-artifact@master
         with:
-          name: "aarch64-unknown-linux-musl-gill-app:latest"
+          name: "aarch64-unknown-linux-musl-gill-app-latest"
           path: ./target/aarch64-unknown-linux-musl/release/gill-app
       - uses: actions/download-artifact@master
         with:
-          name: "aarch64-unknown-linux-musl-gill-git-server:latest"
+          name: "aarch64-unknown-linux-musl-gill-git-server-latest"
           path: ./target/aarch64-unknown-linux-musl/release/gill-git-server
       - uses: actions/download-artifact@master
         with:
-          name: "aarch64-unknown-linux-musl-post-receive:latest"
+          name: "aarch64-unknown-linux-musl-post-receive-latest"
           path: ./target/aarch64-unknown-linux-musl/release/post-receive
 
       - name: Update multi-arch container latest
