@@ -6,6 +6,7 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 ![GitHub](https://img.shields.io/github/license/oknozor/gill)
 [![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/gillpub/gill/latest?label=docker)](https://hub.docker.com/repository/docker/gillpub/gill/general)
+[![Join the chat on matrix at #gill:hoohoot.org](https://img.shields.io/badge/%5Bm%5D-%23gill%3Ahoohoot.org-blue.svg)](https://matrix.to/#/#gill:hoohoot.org)
 
 Gill is a free and open-source git-service based on [ActivityPub](https://www.w3.org/TR/activitypub/)
 and [ForgeFed](https://forgefed.org/). Gill servers are interoperable with other ForgeFed implementation,
