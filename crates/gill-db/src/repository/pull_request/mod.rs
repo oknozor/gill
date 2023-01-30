@@ -160,6 +160,7 @@ impl Repository {
                 FROM pull_request p
                 JOIN repository r ON r.id = $1
                 JOIN users u on u.id = p.opened_by
+                WHERE r.id = p.repository_id
                 LIMIT $2
                 OFFSET $3
             "#,
