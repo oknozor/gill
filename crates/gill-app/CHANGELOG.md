@@ -2,6 +2,29 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [gill-app-v0.2.0](https://github.com/oknozor/gill/compare/159e6064facbbb96b05b51f6201c449305ec27b2..gill-app-v0.2.0) - 2025-10-17
+#### Features
+- (**apub**) implement forward inboxes - ([0fc1e6d](https://github.com/oknozor/gill/commit/0fc1e6dadec078259ec585b0c15eed6c5150a537)) - [@oknozor](https://github.com/oknozor)
+- (**apub**) send accept activity when creating issue - ([159e606](https://github.com/oknozor/gill/commit/159e6064facbbb96b05b51f6201c449305ec27b2)) - [@oknozor](https://github.com/oknozor)
+- api  feature - ([3e38ad3](https://github.com/oknozor/gill/commit/3e38ad3da52d557b3dabad9ddf2adc88c4053d2a)) - [@oknozor](https://github.com/oknozor)
+- add pull requests diff and commits views - ([b848f2d](https://github.com/oknozor/gill/commit/b848f2d9a16f938a324604afde44ee8cfaaf11b8)) - [@oknozor](https://github.com/oknozor)
+- generate repository clone uri according to ssh port - ([3c8c1e8](https://github.com/oknozor/gill/commit/3c8c1e8c541f4f8e817c25603e944e7baf070ae4)) - [@oknozor](https://github.com/oknozor)
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+#### Bug Fixes
+- fix ssh clone uri host - ([991fa5a](https://github.com/oknozor/gill/commit/991fa5a8f342713b747c9135a838020ad6b787f9)) - [@oknozor](https://github.com/oknozor)
+- fix apppend authorized ssh keys - ([ee11c1c](https://github.com/oknozor/gill/commit/ee11c1cfcad4e4645e3da62e6e4fa26664d7d064)) - [@oknozor](https://github.com/oknozor)
+- fix various UI components - ([9057b12](https://github.com/oknozor/gill/commit/9057b12c6991c65b54ec0cbdf9a1e5e41c60bd3b)) - [@oknozor](https://github.com/oknozor)
+- fix dropdowns positions - ([a7a7458](https://github.com/oknozor/gill/commit/a7a7458fbb7c0baec1ae40e3146fb8b0a4213903)) - [@oknozor](https://github.com/oknozor)
+#### Build system
+- fix multiarch docker images - ([cb1a8a6](https://github.com/oknozor/gill/commit/cb1a8a6f9f75b223bb500a1249f933bca0200a27)) - [@oknozor](https://github.com/oknozor)
+#### Refactoring
+- add domain inbox_for_url method - ([a1c3d87](https://github.com/oknozor/gill/commit/a1c3d871142618cc31565da2f2969c7360560d92)) - [@oknozor](https://github.com/oknozor)
+#### Miscellaneous Chores
+- remove print statements - ([c0a1373](https://github.com/oknozor/gill/commit/c0a1373266c5c0cfb9f964d727498b5a5a685d6f)) - [@oknozor](https://github.com/oknozor)
+- clippy - ([9d28a0b](https://github.com/oknozor/gill/commit/9d28a0b91a158f8ae81ca115cabb5a3e7d23b0b4)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [gill-app-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-app-v0.1.0) - 2023-01-18
 #### Bug Fixes
 - **(css)** fix user profile header style - ([0b75027](https://github.com/oknozor/gill/commit/0b7502788e2afa300ed3c650db5089934c361fd8)) - [@oknozor](https://github.com/oknozor)

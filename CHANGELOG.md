@@ -2,6 +2,44 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.0](https://github.com/oknozor/gill/compare/9a29e4b84b9964e48aa9a06e9ade8548fe0770fa..v0.2.0) - 2025-10-17
+### Package updates
+- [gill-git-server-v0.2.0](crates/gill-git-server) bumped to [gill-git-server-v0.2.0](https://github.com/oknozor/gill/compare/gill-git-server-v0.1.0..gill-git-server-v0.2.0)
+- [gill-git-v0.2.0](crates/gill-git) bumped to [gill-git-v0.2.0](https://github.com/oknozor/gill/compare/gill-git-v0.1.0..gill-git-v0.2.0)
+- [gill-db-v0.2.0](crates/gill-db) bumped to [gill-db-v0.2.0](https://github.com/oknozor/gill/compare/gill-db-v0.1.0..gill-db-v0.2.0)
+- [gill-app-v0.2.0](crates/gill-app) bumped to [gill-app-v0.2.0](https://github.com/oknozor/gill/compare/gill-app-v0.1.0..gill-app-v0.2.0)
+- [gill-settings-v0.2.0](crates/gill-settings) bumped to [gill-settings-v0.2.0](https://github.com/oknozor/gill/compare/gill-settings-v0.1.0..gill-settings-v0.2.0)
+### Global changes
+#### Features
+- (**apub**) implement forward inboxes - ([0fc1e6d](https://github.com/oknozor/gill/commit/0fc1e6dadec078259ec585b0c15eed6c5150a537)) - [@oknozor](https://github.com/oknozor)
+- generate repository clone uri according to ssh port - ([3c8c1e8](https://github.com/oknozor/gill/commit/3c8c1e8c541f4f8e817c25603e944e7baf070ae4)) - [@oknozor](https://github.com/oknozor)
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+#### Bug Fixes
+- fix dropdowns positions - ([a7a7458](https://github.com/oknozor/gill/commit/a7a7458fbb7c0baec1ae40e3146fb8b0a4213903)) - [@oknozor](https://github.com/oknozor)
+#### Documentation
+- add matrix room badge - ([72b2142](https://github.com/oknozor/gill/commit/72b2142d0ec1bfc197e58255578f0532ef94207b)) - [@oknozor](https://github.com/oknozor)
+- add dockerhub badge - ([c016ab8](https://github.com/oknozor/gill/commit/c016ab80b4d6c2deb686d602a7f5ab0207754ee7)) - [@oknozor](https://github.com/oknozor)
+- add demo instance to the readme - ([5f773eb](https://github.com/oknozor/gill/commit/5f773eba690224fdf77fcb69f9e197ddf99726c0)) - [@oknozor](https://github.com/oknozor)
+#### Build system
+- add docker multiarch build - ([2b84ec8](https://github.com/oknozor/gill/commit/2b84ec898615d3c02cb7a1f4aa9ba0cee37c9055)) - [@oknozor](https://github.com/oknozor)
+- fix typo in docker-build recipe - ([482b5cd](https://github.com/oknozor/gill/commit/482b5cd911a793571cb724e7647e33e14f9c99c5)) - [@oknozor](https://github.com/oknozor)
+- fix multiarch docker images - ([cb1a8a6](https://github.com/oknozor/gill/commit/cb1a8a6f9f75b223bb500a1249f933bca0200a27)) - [@oknozor](https://github.com/oknozor)
+- fix docker dev environment - ([9a29e4b](https://github.com/oknozor/gill/commit/9a29e4b84b9964e48aa9a06e9ade8548fe0770fa)) - [@oknozor](https://github.com/oknozor)
+#### Continuous Integration
+- fix artifact path for docker build - ([e664cfe](https://github.com/oknozor/gill/commit/e664cfe630e3bb3132cd3c3f204aa9224c18577c)) - [@oknozor](https://github.com/oknozor)
+- fix artifact path for docker build - ([ea0a548](https://github.com/oknozor/gill/commit/ea0a5484cfd407458ec8b6c1758280ffe9ead0ed)) - [@oknozor](https://github.com/oknozor)
+- add assets and migrations to builx context - ([a4ffc28](https://github.com/oknozor/gill/commit/a4ffc288498a549f48658cf3449f965fb1c7ab7d)) - [@oknozor](https://github.com/oknozor)
+- remove forbidden colon in artifact upload - ([171ce1b](https://github.com/oknozor/gill/commit/171ce1b0ff83d0e3391034788b73d5282001c632)) - [@oknozor](https://github.com/oknozor)
+- fix codecov upload - ([499c6a1](https://github.com/oknozor/gill/commit/499c6a1775879b4f72e1a95741cd46e00f0f061a)) - [@oknozor](https://github.com/oknozor)
+- add multiarch docker build - ([178bec3](https://github.com/oknozor/gill/commit/178bec3f995fe6e3a57071b82160e1bd5141968b)) - [@oknozor](https://github.com/oknozor)
+- update cocogitto-action  version - ([3cfb9a6](https://github.com/oknozor/gill/commit/3cfb9a65efc9a1e208613c7f7ab239defcfb002e)) - [@oknozor](https://github.com/oknozor)
+#### Miscellaneous Chores
+- disable push on release - ([057d3d4](https://github.com/oknozor/gill/commit/057d3d4f77087aec4ced34090fff92cd6509e563)) - [@oknozor](https://github.com/oknozor)
+- update sql-data - ([857d19c](https://github.com/oknozor/gill/commit/857d19ca18c487d9c06dd7397dd9f6e263b5a74f)) - [@oknozor](https://github.com/oknozor)
+- remove tmp files - ([e28ab9c](https://github.com/oknozor/gill/commit/e28ab9cb858d59a78f98840b5aad2f2f3cfd6207)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..v0.1.0) - 2023-01-18
 ### Package updates
 - [gill-db](crates/gill-db) bumped to [gill-db-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-db-v0.1.0)

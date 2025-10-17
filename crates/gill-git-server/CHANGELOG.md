@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [gill-git-server-v0.2.0](https://github.com/oknozor/gill/compare/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415..gill-git-server-v0.2.0) - 2025-10-17
+#### Features
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [gill-git-server-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-git-server-v0.1.0) - 2023-01-18
 #### Features
 - implement activity pub ticket comment - ([e7cad5a](https://github.com/oknozor/gill/commit/e7cad5a48d5f9ba66c20b5e0ebdefe0ca6bf88bd)) - [@oknozor](https://github.com/oknozor)

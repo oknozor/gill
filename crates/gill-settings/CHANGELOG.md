@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [gill-settings-v0.2.0](https://github.com/oknozor/gill/compare/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415..gill-settings-v0.2.0) - 2025-10-17
+#### Features
+- generate repository clone uri according to ssh port - ([3c8c1e8](https://github.com/oknozor/gill/commit/3c8c1e8c541f4f8e817c25603e944e7baf070ae4)) - [@oknozor](https://github.com/oknozor)
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [gill-settings-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-settings-v0.1.0) - 2023-01-18
 #### Build system
 - add production docker image - ([8bcdd72](https://github.com/oknozor/gill/commit/8bcdd72fb65809ce5199639a1b03d180675e567b)) - [@oknozor](https://github.com/oknozor)

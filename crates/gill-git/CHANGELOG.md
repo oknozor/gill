@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [gill-git-v0.2.0](https://github.com/oknozor/gill/compare/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415..gill-git-v0.2.0) - 2025-10-17
+#### Features
+- add pull requests diff and commits views - ([b848f2d](https://github.com/oknozor/gill/commit/b848f2d9a16f938a324604afde44ee8cfaaf11b8)) - [@oknozor](https://github.com/oknozor)
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+#### Bug Fixes
+- fix apppend authorized ssh keys - ([ee11c1c](https://github.com/oknozor/gill/commit/ee11c1cfcad4e4645e3da62e6e4fa26664d7d064)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [gill-git-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-git-v0.1.0) - 2023-01-18
 #### Bug Fixes
 - fix gh workflow path - ([9b0ea8a](https://github.com/oknozor/gill/commit/9b0ea8a42244965b8920155ffbaec0685499c9ee)) - [@oknozor](https://github.com/oknozor)

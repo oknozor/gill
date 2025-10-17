@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [gill-db-v0.2.0](https://github.com/oknozor/gill/compare/0fc1e6dadec078259ec585b0c15eed6c5150a537..gill-db-v0.2.0) - 2025-10-17
+#### Features
+- (**apub**) implement forward inboxes - ([0fc1e6d](https://github.com/oknozor/gill/commit/0fc1e6dadec078259ec585b0c15eed6c5150a537)) - [@oknozor](https://github.com/oknozor)
+- add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
+#### Bug Fixes
+- pull request list - ([2303742](https://github.com/oknozor/gill/commit/23037421768034c195b5db5f3e55b19357246494)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [gill-db-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-db-v0.1.0) - 2023-01-18
 #### Bug Fixes
 - fix pull request state display - ([9a4c755](https://github.com/oknozor/gill/commit/9a4c7551ec145fb133068a35163390895e22d14d)) - [@oknozor](https://github.com/oknozor)
