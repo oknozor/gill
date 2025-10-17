@@ -3,19 +3,12 @@ ignore_merge_commits = true
 tag_prefix = "v"
 
 pre_bump_hooks = [
-    "SQLX_OFFLINE=true cargo test",
-    "SQLX_OFFLINE=true cargo clippy",
-    "cargo fmt --all",
-    "SQLX_OFFLINE=true cargo build --release",
 ]
 
 post_bump_hooks = [
-    "git push",
-    "git push origin --tags",
 ]
 
 pre_package_bump_hooks = [
-    "cargo set-version {{version}}"
 ]
 
 [packages]
@@ -39,5 +32,3 @@ owner = "oknozor"
 authors = [
     { signature = "Paul Delafosse", username = "oknozor" },
 ]
-
-
