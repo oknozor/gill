@@ -11,17 +11,55 @@ post_bump_hooks = [
 pre_package_bump_hooks = [
 ]
 
-[packages]
-gill-app = { path = "crates/gill-app" }
-gill-authorize-derive = { path = "crates/gill-authorize-derive", public_api = false }
-gill-db = { path = "crates/gill-db", public_api = false }
-gill-git = { path = "crates/gill-git", public_api = false }
-gill-git-server = { path = "crates/gill-git-server" }
-gill-markdown = { path = "crates/gill-markdown", public_api = false }
-gill-settings = { path = "crates/gill-settings" }
-gill-syntax = { path = "crates/gill-syntax" }
-gill-web-markdown = { path = "crates/gill-web-markdown" }
-syntect-plugin = { path = "crates/syntect-plugin", public_api = false }
+[packages.gill-app]
+path = "crates/gill-app"
+public_api = true
+bump_order = 1
+
+[packages.gill-authorize-derive]
+path = "crates/gill-authorize-derive"
+public_api = false
+bump_order = 1
+
+[packages.gill-db]
+path = "crates/gill-db"
+public_api = false
+bump_order = 1
+
+[packages.gill-git]
+path = "crates/gill-git"
+public_api = false
+bump_order = 1
+
+[packages.gill-git-server]
+path = "crates/gill-git-server"
+public_api = true
+bump_order = 1
+
+[packages.gill-markdown]
+path = "crates/gill-markdown"
+public_api = false
+bump_order = 1
+
+[packages.gill-settings]
+path = "crates/gill-settings"
+public_api = true
+bump_order = 1
+
+[packages.gill-syntax]
+path = "crates/gill-syntax"
+public_api = true
+bump_order = 1
+
+[packages.gill-web-markdown]
+path = "crates/gill-web-markdown"
+public_api = true
+bump_order = 1
+
+[packages.syntect-plugin]
+path = "crates/syntect-plugin"
+public_api = false
+bump_order = 1
 
 [changelog]
 template = "monorepo_remote"

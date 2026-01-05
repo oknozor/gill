@@ -1,20 +1,27 @@
-# Changelog
-All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
-
-- - -
-## [v0.2.0](https://github.com/oknozor/gill/compare/9a29e4b84b9964e48aa9a06e9ade8548fe0770fa..v0.2.0) - 2025-10-17
+## [v0.2.0](https://github.com/oknozor/gill/compare/v0.1.0..v0.2.0) - 2025-10-17
 ### Package updates
-- [gill-git-server-v0.2.0](crates/gill-git-server) bumped to [gill-git-server-v0.2.0](https://github.com/oknozor/gill/compare/gill-git-server-v0.1.0..gill-git-server-v0.2.0)
-- [gill-git-v0.2.0](crates/gill-git) bumped to [gill-git-v0.2.0](https://github.com/oknozor/gill/compare/gill-git-v0.1.0..gill-git-v0.2.0)
-- [gill-db-v0.2.0](crates/gill-db) bumped to [gill-db-v0.2.0](https://github.com/oknozor/gill/compare/gill-db-v0.1.0..gill-db-v0.2.0)
-- [gill-app-v0.2.0](crates/gill-app) bumped to [gill-app-v0.2.0](https://github.com/oknozor/gill/compare/gill-app-v0.1.0..gill-app-v0.2.0)
-- [gill-settings-v0.2.0](crates/gill-settings) bumped to [gill-settings-v0.2.0](https://github.com/oknozor/gill/compare/gill-settings-v0.1.0..gill-settings-v0.2.0)
+- [gill-app](crates/gill-app) bumped to [gill-app-v0.2.0](https://github.com/oknozor/gill/compare/c135100e2f3d53ed48fcbafe621c789b58c83dcc..gill-app-v0.2.0)
+- [gill-db](crates/gill-db) bumped to [gill-db-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-db-v0.2.0)
+- [gill-git](crates/gill-git) bumped to [gill-git-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-git-v0.2.0)
+- [gill-git-server](crates/gill-git-server) bumped to [gill-git-server-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-git-server-v0.2.0)
+- [gill-markdown](crates/gill-markdown) bumped to [gill-markdown-v0.1.0](https://github.com/oknozor/gill/compare/3bbfb8aeb08d031a5a5563aa1dfb41877a792f37..gill-markdown-v0.1.0)
+- [gill-settings](crates/gill-settings) bumped to [gill-settings-v0.2.0](https://github.com/oknozor/gill/compare/25c3dcfc265ace5599106632640565437092ed6c..gill-settings-v0.2.0)
+- [gill-syntax](crates/gill-syntax) bumped to [gill-syntax-v0.1.0](https://github.com/oknozor/gill/compare/0875ad900f819309209827df89b6639444fa9006..gill-syntax-v0.1.0)
+- [gill-web-markdown](crates/gill-web-markdown) bumped to [gill-web-markdown-v0.1.0](https://github.com/oknozor/gill/compare/910c9d32cf9ae5d476611d38135a8e8be32deb36..gill-web-markdown-v0.1.0)
+- [syntect-plugin](crates/syntect-plugin) bumped to [syntect-plugin-v0.1.0](https://github.com/oknozor/gill/compare/c135100e2f3d53ed48fcbafe621c789b58c83dcc..syntect-plugin-v0.1.0)
 ### Global changes
 #### Features
 - (**apub**) implement forward inboxes - ([0fc1e6d](https://github.com/oknozor/gill/commit/0fc1e6dadec078259ec585b0c15eed6c5150a537)) - [@oknozor](https://github.com/oknozor)
+- (**apub**) send accept activity when creating issue - ([159e606](https://github.com/oknozor/gill/commit/159e6064facbbb96b05b51f6201c449305ec27b2)) - [@oknozor](https://github.com/oknozor)
+- api  feature - ([3e38ad3](https://github.com/oknozor/gill/commit/3e38ad3da52d557b3dabad9ddf2adc88c4053d2a)) - [@oknozor](https://github.com/oknozor)
+- add pull requests diff and commits views - ([b848f2d](https://github.com/oknozor/gill/commit/b848f2d9a16f938a324604afde44ee8cfaaf11b8)) - [@oknozor](https://github.com/oknozor)
 - generate repository clone uri according to ssh port - ([3c8c1e8](https://github.com/oknozor/gill/commit/3c8c1e8c541f4f8e817c25603e944e7baf070ae4)) - [@oknozor](https://github.com/oknozor)
 - add create repository view - ([0175d29](https://github.com/oknozor/gill/commit/0175d29cfb21d6ee3a7f0696ccc08a37dcbae415)) - [@oknozor](https://github.com/oknozor)
 #### Bug Fixes
+- pull request list - ([2303742](https://github.com/oknozor/gill/commit/23037421768034c195b5db5f3e55b19357246494)) - [@oknozor](https://github.com/oknozor)
+- fix ssh clone uri host - ([991fa5a](https://github.com/oknozor/gill/commit/991fa5a8f342713b747c9135a838020ad6b787f9)) - [@oknozor](https://github.com/oknozor)
+- fix apppend authorized ssh keys - ([ee11c1c](https://github.com/oknozor/gill/commit/ee11c1cfcad4e4645e3da62e6e4fa26664d7d064)) - [@oknozor](https://github.com/oknozor)
+- fix various UI components - ([9057b12](https://github.com/oknozor/gill/commit/9057b12c6991c65b54ec0cbdf9a1e5e41c60bd3b)) - [@oknozor](https://github.com/oknozor)
 - fix dropdowns positions - ([a7a7458](https://github.com/oknozor/gill/commit/a7a7458fbb7c0baec1ae40e3146fb8b0a4213903)) - [@oknozor](https://github.com/oknozor)
 #### Documentation
 - add matrix room badge - ([72b2142](https://github.com/oknozor/gill/commit/72b2142d0ec1bfc197e58255578f0532ef94207b)) - [@oknozor](https://github.com/oknozor)
@@ -33,48 +40,62 @@ All notable changes to this project will be documented in this file. See [conven
 - fix codecov upload - ([499c6a1](https://github.com/oknozor/gill/commit/499c6a1775879b4f72e1a95741cd46e00f0f061a)) - [@oknozor](https://github.com/oknozor)
 - add multiarch docker build - ([178bec3](https://github.com/oknozor/gill/commit/178bec3f995fe6e3a57071b82160e1bd5141968b)) - [@oknozor](https://github.com/oknozor)
 - update cocogitto-action  version - ([3cfb9a6](https://github.com/oknozor/gill/commit/3cfb9a65efc9a1e208613c7f7ab239defcfb002e)) - [@oknozor](https://github.com/oknozor)
+#### Refactoring
+- add domain inbox_for_url method - ([a1c3d87](https://github.com/oknozor/gill/commit/a1c3d871142618cc31565da2f2969c7360560d92)) - [@oknozor](https://github.com/oknozor)
 #### Miscellaneous Chores
+- (**version**) v0.2.0 - ([5a84a5a](https://github.com/oknozor/gill/commit/5a84a5ae64124529e1a7373881755fcb69b08066)) - [@oknozor](https://github.com/oknozor)
 - disable push on release - ([057d3d4](https://github.com/oknozor/gill/commit/057d3d4f77087aec4ced34090fff92cd6509e563)) - [@oknozor](https://github.com/oknozor)
 - update sql-data - ([857d19c](https://github.com/oknozor/gill/commit/857d19ca18c487d9c06dd7397dd9f6e263b5a74f)) - [@oknozor](https://github.com/oknozor)
 - remove tmp files - ([e28ab9c](https://github.com/oknozor/gill/commit/e28ab9cb858d59a78f98840b5aad2f2f3cfd6207)) - [@oknozor](https://github.com/oknozor)
+- remove print statements - ([c0a1373](https://github.com/oknozor/gill/commit/c0a1373266c5c0cfb9f964d727498b5a5a685d6f)) - [@oknozor](https://github.com/oknozor)
+- clippy - ([9d28a0b](https://github.com/oknozor/gill/commit/9d28a0b91a158f8ae81ca115cabb5a3e7d23b0b4)) - [@oknozor](https://github.com/oknozor)
 
 - - -
 
 ## [v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..v0.1.0) - 2023-01-18
 ### Package updates
-- [gill-db](crates/gill-db) bumped to [gill-db-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-db-v0.1.0)
-- [gill-markdown](crates/gill-markdown) bumped to [gill-markdown-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-markdown-v0.1.0)
-- [gill-git-server](crates/gill-git-server) bumped to [gill-git-server-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-git-server-v0.1.0)
-- [syntect-plugin](crates/syntect-plugin) bumped to [syntect-plugin-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..syntect-plugin-v0.1.0)
-- [gill-web-markdown](crates/gill-web-markdown) bumped to [gill-web-markdown-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-web-markdown-v0.1.0)
-- [gill-app](crates/gill-app) bumped to [gill-app-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-app-v0.1.0)
-- [gill-settings](crates/gill-settings) bumped to [gill-settings-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-settings-v0.1.0)
-- [gill-syntax](crates/gill-syntax) bumped to [gill-syntax-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-syntax-v0.1.0)
-- [gill-git](crates/gill-git) bumped to [gill-git-v0.1.0](https://github.com/oknozor/gill/compare/f81dee255ce5d86aad8119a44b8232153b30daca..gill-git-v0.1.0)
+- [gill-app](crates/gill-app) bumped to [gill-app-v0.2.0](https://github.com/oknozor/gill/compare/c135100e2f3d53ed48fcbafe621c789b58c83dcc..gill-app-v0.2.0)
+- [gill-db](crates/gill-db) bumped to [gill-db-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-db-v0.2.0)
+- [gill-git](crates/gill-git) bumped to [gill-git-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-git-v0.2.0)
+- [gill-git-server](crates/gill-git-server) bumped to [gill-git-server-v0.2.0](https://github.com/oknozor/gill/compare/5f96d9529a9aef13cc3b6034dd21683c25d797d6..gill-git-server-v0.2.0)
+- [gill-markdown](crates/gill-markdown) bumped to [gill-markdown-v0.1.0](https://github.com/oknozor/gill/compare/3bbfb8aeb08d031a5a5563aa1dfb41877a792f37..gill-markdown-v0.1.0)
+- [gill-settings](crates/gill-settings) bumped to [gill-settings-v0.2.0](https://github.com/oknozor/gill/compare/25c3dcfc265ace5599106632640565437092ed6c..gill-settings-v0.2.0)
+- [gill-syntax](crates/gill-syntax) bumped to [gill-syntax-v0.1.0](https://github.com/oknozor/gill/compare/0875ad900f819309209827df89b6639444fa9006..gill-syntax-v0.1.0)
+- [gill-web-markdown](crates/gill-web-markdown) bumped to [gill-web-markdown-v0.1.0](https://github.com/oknozor/gill/compare/910c9d32cf9ae5d476611d38135a8e8be32deb36..gill-web-markdown-v0.1.0)
+- [syntect-plugin](crates/syntect-plugin) bumped to [syntect-plugin-v0.1.0](https://github.com/oknozor/gill/compare/c135100e2f3d53ed48fcbafe621c789b58c83dcc..syntect-plugin-v0.1.0)
 ### Global changes
-#### Bug Fixes
-- fix gh workflow path - ([9b0ea8a](https://github.com/oknozor/gill/commit/9b0ea8a42244965b8920155ffbaec0685499c9ee)) - [@oknozor](https://github.com/oknozor)
-- user apub domain and url - ([a7021d3](https://github.com/oknozor/gill/commit/a7021d358262f5b31217e4b43b62b7a5d721da25)) - [@oknozor](https://github.com/oknozor)
-#### Build system
-- prepare github action - ([7e299d3](https://github.com/oknozor/gill/commit/7e299d3ada10e094cee3dabecba7bee9fb4e61b0)) - [@oknozor](https://github.com/oknozor)
-- add production docker image - ([8bcdd72](https://github.com/oknozor/gill/commit/8bcdd72fb65809ce5199639a1b03d180675e567b)) - [@oknozor](https://github.com/oknozor)
-#### Continuous Integration
-- format packages in cog.toml - ([94fbaa8](https://github.com/oknozor/gill/commit/94fbaa8a211051c57aef1759973fd4b26ece4dd9)) - [@oknozor](https://github.com/oknozor)
-- remove global set-version - ([e8e9461](https://github.com/oknozor/gill/commit/e8e9461823e4ea6384e9d6a619f921abbce3a226)) - [@oknozor](https://github.com/oknozor)
-- add cog.toml - ([9879971](https://github.com/oknozor/gill/commit/9879971c870cdf63833db6d9a55c2676ee7bcf41)) - [@oknozor](https://github.com/oknozor)
-- update checkout to v3 - ([96bcd10](https://github.com/oknozor/gill/commit/96bcd10b9202849026db31c22dde45caa57a0e3c)) - [@oknozor](https://github.com/oknozor)
-#### Documentation
-- add README - ([0ba7587](https://github.com/oknozor/gill/commit/0ba7587daa93de4be840241b19812733229b25d1)) - [@oknozor](https://github.com/oknozor)
 #### Features
-- **(activitypub)** toward a working apub impl - ([564423e](https://github.com/oknozor/gill/commit/564423ef6427fdda461a9fb85b904bcdacbc45c5)) - [@oknozor](https://github.com/oknozor)
-- **(front)** add navbar skeleton - ([357918a](https://github.com/oknozor/gill/commit/357918a4c13cc91c5ee322e5fa4926f24c9ea2a2)) - [@oknozor](https://github.com/oknozor)
+- (**activitypub**) toward a working apub impl - ([564423e](https://github.com/oknozor/gill/commit/564423ef6427fdda461a9fb85b904bcdacbc45c5)) - [@oknozor](https://github.com/oknozor)
+- (**app**) pull request comments - ([8a5ba1f](https://github.com/oknozor/gill/commit/8a5ba1fdbbcda93fd1690d70ccfcbddbb67db5b2)) - [@oknozor](https://github.com/oknozor)
+- (**front**) add navbar skeleton - ([357918a](https://github.com/oknozor/gill/commit/357918a4c13cc91c5ee322e5fa4926f24c9ea2a2)) - [@oknozor](https://github.com/oknozor)
+- (**git**) add diff for a single commit - ([1434e08](https://github.com/oknozor/gill/commit/1434e08e5716b1274e8030407777370a2d6394b8)) - [@oknozor](https://github.com/oknozor)
+- (**git**) implement rebase and merge - ([d86c685](https://github.com/oknozor/gill/commit/d86c685f728b4ff693fdb9979392c59b42f222a6)) - [@oknozor](https://github.com/oknozor)
+- (**git**) implement diff - ([9937637](https://github.com/oknozor/gill/commit/99376373c2aedc1259522a3ffc7b89f59ac59168)) - [@oknozor](https://github.com/oknozor)
+- (**view**) generate commit author href and improve history view - ([e59ed77](https://github.com/oknozor/gill/commit/e59ed77f137b8b446626f60e217c694a56ce10f5)) - [@oknozor](https://github.com/oknozor)
 - implement activity pub ticket comment - ([e7cad5a](https://github.com/oknozor/gill/commit/e7cad5a48d5f9ba66c20b5e0ebdefe0ca6bf88bd)) - [@oknozor](https://github.com/oknozor)
 - implement activity pub ticket - ([3a005e5](https://github.com/oknozor/gill/commit/3a005e5fa703073585f8146e1592146d4a2bec9d)) - [@oknozor](https://github.com/oknozor)
+- implement issues - ([f55696d](https://github.com/oknozor/gill/commit/f55696d5122e9056e545bcf554e82ee9725c08e1)) - [@oknozor](https://github.com/oknozor)
+- improve markdown rendering style - ([505546a](https://github.com/oknozor/gill/commit/505546a9ae60c92316b4c2407d029af00a3167f1)) - [@oknozor](https://github.com/oknozor)
+- improve several ui elements - ([bb855ca](https://github.com/oknozor/gill/commit/bb855ca4c64666209d91e2c0d802a34261869edd)) - [@oknozor](https://github.com/oknozor)
 - improve git traversal and add commit info to tree view - ([f39650b](https://github.com/oknozor/gill/commit/f39650bf128dafb0ef4ad6cbd004ddc08b035ad5)) - [@oknozor](https://github.com/oknozor)
+- rebase and merge from UI - ([a69b42d](https://github.com/oknozor/gill/commit/a69b42da3fd8fb350041914f065218f3505bedec)) - [@oknozor](https://github.com/oknozor)
+- add markdown preview and wasm module - ([910c9d3](https://github.com/oknozor/gill/commit/910c9d32cf9ae5d476611d38135a8e8be32deb36)) - [@oknozor](https://github.com/oknozor)
 - canonicalize image links in markdown - ([3bbfb8a](https://github.com/oknozor/gill/commit/3bbfb8aeb08d031a5a5563aa1dfb41877a792f37)) - [@oknozor](https://github.com/oknozor)
 - base pull requests - ([058d054](https://github.com/oknozor/gill/commit/058d0546320f3b184ca5096e1cde6a8bd80fe9cc)) - [@oknozor](https://github.com/oknozor)
+- use tailwind typography instead off custom style for readmes - ([26af8de](https://github.com/oknozor/gill/commit/26af8de6f0b87244bcb968abeb1bb44c279d53a5)) - [@oknozor](https://github.com/oknozor)
 - syntect diff again - ([dff84e5](https://github.com/oknozor/gill/commit/dff84e5c269702d09934505ff4e90a092a068143)) - [@oknozor](https://github.com/oknozor)
+- add issues and PR db entity - ([53abb55](https://github.com/oknozor/gill/commit/53abb553874eea9b3cfd179c58bf3dba74f9a0c1)) - [@oknozor](https://github.com/oknozor)
+- add repository navbar for issues, prs and code - ([ab41955](https://github.com/oknozor/gill/commit/ab419552f2e00995349ad0a334e254ce2c6f763c)) - [@oknozor](https://github.com/oknozor)
+- sort tree and blobs in tree view - ([742f6e1](https://github.com/oknozor/gill/commit/742f6e14ccccfbbe1fc7d158060ce080d9236f9a)) - [@oknozor](https://github.com/oknozor)
+- truncate branch name when too long on tree view - ([3561b78](https://github.com/oknozor/gill/commit/3561b788ff5a0204260fb9cb07ff5ec9f02a7e28)) - [@oknozor](https://github.com/oknozor)
+- add ssh key from UI - ([d7fa4c9](https://github.com/oknozor/gill/commit/d7fa4c9a751ca6cc46cd6ec5bd7292fb67c76c23)) - [@oknozor](https://github.com/oknozor)
 - fine grained ssh permission - ([3dc4b26](https://github.com/oknozor/gill/commit/3dc4b26f7f777a921245d99e9d3d0a32aa3807ce)) - [@oknozor](https://github.com/oknozor)
+- add settings view skeleton - ([9580561](https://github.com/oknozor/gill/commit/9580561876e837d0f077e7388b1341fa91700aab)) - [@oknozor](https://github.com/oknozor)
+- add support for image preview in treeview - ([1b55fc2](https://github.com/oknozor/gill/commit/1b55fc2f828c7235ff861dbae4e9c1499cefe807)) - [@oknozor](https://github.com/oknozor)
+- simple diff with diff2html - ([c3d7f71](https://github.com/oknozor/gill/commit/c3d7f71bb8ba02f8e7dcee2fbe41dd7c7e537817)) - [@oknozor](https://github.com/oknozor)
+- html diff - ([c9c6fc7](https://github.com/oknozor/gill/commit/c9c6fc7946fb78f9e3b18c078cdb07229d295dba)) - [@oknozor](https://github.com/oknozor)
+- naive attempt to diff replacement - ([4f12797](https://github.com/oknozor/gill/commit/4f12797b620bb1a5a10bea8623d58ad268871ed7)) - [@oknozor](https://github.com/oknozor)
+- git diff - ([ab864e0](https://github.com/oknozor/gill/commit/ab864e078066f33f5a83b2fc0f581d890e2d26ab)) - [@oknozor](https://github.com/oknozor)
 - implement base repository activities - ([733afcc](https://github.com/oknozor/gill/commit/733afcc9039a822fde766909a903c5b1fea4a09a)) - [@oknozor](https://github.com/oknozor)
 - add templates for user profile and settings - ([2789ba7](https://github.com/oknozor/gill/commit/2789ba7d1b729af7e50e352f1cc20becaea41c78)) - [@oknozor](https://github.com/oknozor)
 - reorganize submodules - ([1d8b5e4](https://github.com/oknozor/gill/commit/1d8b5e408b41f5a31277989fda2d7aa6cb17b8db)) - [@oknozor](https://github.com/oknozor)
@@ -98,15 +119,59 @@ All notable changes to this project will be documented in this file. See [conven
 - add dummy database model - ([271c804](https://github.com/oknozor/gill/commit/271c8042cd5a68e0796afce898e9190381e4bb43)) - [@oknozor](https://github.com/oknozor)
 - add open api + some refactoring - ([972b1f5](https://github.com/oknozor/gill/commit/972b1f541f0afe53f54ece5e4c6f9e45d40646e7)) - [@oknozor](https://github.com/oknozor)
 - git server base ops - ([c108109](https://github.com/oknozor/gill/commit/c1081096cabbefbf67839f1d367cbab6a1feee32)) - [@oknozor](https://github.com/oknozor)
+#### Bug Fixes
+- (**css**) fix user profile header style - ([0b75027](https://github.com/oknozor/gill/commit/0b7502788e2afa300ed3c650db5089934c361fd8)) - [@oknozor](https://github.com/oknozor)
+- fix gh workflow path - ([9b0ea8a](https://github.com/oknozor/gill/commit/9b0ea8a42244965b8920155ffbaec0685499c9ee)) - [@oknozor](https://github.com/oknozor)
+- fix ssh clone uri - ([55aea04](https://github.com/oknozor/gill/commit/55aea04eab6e43429c643e753f4709cadb6599d6)) - [@oknozor](https://github.com/oknozor)
+- fix pr markdown description escape & highlithed line nth - ([07f90d5](https://github.com/oknozor/gill/commit/07f90d5b1aa33ebd54ff234fdbcd9bf9715ac9cf)) - [@oknozor](https://github.com/oknozor)
+- fix non bare repo paths - ([49a44b6](https://github.com/oknozor/gill/commit/49a44b6314d5afcea30389bf4fdcc0d21513aead)) - [@oknozor](https://github.com/oknozor)
+- typos - ([74ed983](https://github.com/oknozor/gill/commit/74ed983517a6dfa1ca37b2e41478abb3827ba68c)) - [@oknozor](https://github.com/oknozor)
+- fix pull request state display - ([9a4c755](https://github.com/oknozor/gill/commit/9a4c7551ec145fb133068a35163390895e22d14d)) - [@oknozor](https://github.com/oknozor)
+- encode branch uri component - ([19866ad](https://github.com/oknozor/gill/commit/19866ad7be01e9eaac6a4383bdb3f7f791084b1d)) - [@oknozor](https://github.com/oknozor)
+- user apub domain and url - ([a7021d3](https://github.com/oknozor/gill/commit/a7021d358262f5b31217e4b43b62b7a5d721da25)) - [@oknozor](https://github.com/oknozor)
+#### Documentation
+- add README - ([0ba7587](https://github.com/oknozor/gill/commit/0ba7587daa93de4be840241b19812733229b25d1)) - [@oknozor](https://github.com/oknozor)
+#### Tests
+- fix tests - ([ddde273](https://github.com/oknozor/gill/commit/ddde2731da692745f27631e36c3c4267a6a66b1b)) - [@oknozor](https://github.com/oknozor)
+- fix sqlx test compilation - ([0af6d9b](https://github.com/oknozor/gill/commit/0af6d9b001d2a86a092058e4a95736172e1d57cb)) - [@oknozor](https://github.com/oknozor)
+#### Build system
+- prepare github action - ([7e299d3](https://github.com/oknozor/gill/commit/7e299d3ada10e094cee3dabecba7bee9fb4e61b0)) - [@oknozor](https://github.com/oknozor)
+- add production docker image - ([8bcdd72](https://github.com/oknozor/gill/commit/8bcdd72fb65809ce5199639a1b03d180675e567b)) - [@oknozor](https://github.com/oknozor)
+#### Continuous Integration
+- format packages in cog.toml - ([94fbaa8](https://github.com/oknozor/gill/commit/94fbaa8a211051c57aef1759973fd4b26ece4dd9)) - [@oknozor](https://github.com/oknozor)
+- remove global set-version - ([e8e9461](https://github.com/oknozor/gill/commit/e8e9461823e4ea6384e9d6a619f921abbce3a226)) - [@oknozor](https://github.com/oknozor)
+- add cog.toml - ([9879971](https://github.com/oknozor/gill/commit/9879971c870cdf63833db6d9a55c2676ee7bcf41)) - [@oknozor](https://github.com/oknozor)
+- update checkout to v3 - ([96bcd10](https://github.com/oknozor/gill/commit/96bcd10b9202849026db31c22dde45caa57a0e3c)) - [@oknozor](https://github.com/oknozor)
+#### Refactoring
+- remove unused deps - ([9e67cbf](https://github.com/oknozor/gill/commit/9e67cbfe394411f9573b9a29eadb9b930670b49b)) - [@oknozor](https://github.com/oknozor)
+- remove outdated database tests - ([3316383](https://github.com/oknozor/gill/commit/33163836e725c3945974b05ba4f049394bf3a822)) - [@oknozor](https://github.com/oknozor)
+- remove unused derive trait for db structs - ([c445872](https://github.com/oknozor/gill/commit/c445872d6bf2d43381be8616a51d2529002f9a6e)) - [@oknozor](https://github.com/oknozor)
+- remove unused methods - ([cdb5aa9](https://github.com/oknozor/gill/commit/cdb5aa9100e4eae66b8b760d36039a4c69cfc025)) - [@oknozor](https://github.com/oknozor)
+- add AppResult type - ([0797cf9](https://github.com/oknozor/gill/commit/0797cf9f82de845b91be1e7783aad0c24b1f59fd)) - [@oknozor](https://github.com/oknozor)
+- add authorize derive macro - ([94ae7e4](https://github.com/oknozor/gill/commit/94ae7e42a14eaaf929a6b34ec9411294c9d84df3)) - [@oknozor](https://github.com/oknozor)
+- move rebase and merge to domain - ([3df5bb9](https://github.com/oknozor/gill/commit/3df5bb9a56cf08533f1c7cb25e6f663f03a0d151)) - [@oknozor](https://github.com/oknozor)
+- domain driven design step 1 - ([987c8a8](https://github.com/oknozor/gill/commit/987c8a8053010bcfd99d56f6e73f373bedb7765e)) - [@oknozor](https://github.com/oknozor)
+- reorganize activity pub modules - ([c6cd274](https://github.com/oknozor/gill/commit/c6cd2740e2490298ca2058a41e997554b201895f)) - [@oknozor](https://github.com/oknozor)
+- move tree template to subdir - ([60bd18b](https://github.com/oknozor/gill/commit/60bd18b906556273e8b3f556c7b655a017a7fc3d)) - [@oknozor](https://github.com/oknozor)
+- remove duplication - ([6ab853d](https://github.com/oknozor/gill/commit/6ab853db9dab5ed27566e8a735c1bbff4c682d05)) - [@oknozor](https://github.com/oknozor)
+- extract syntax highlight to a dedicated crate - ([0875ad9](https://github.com/oknozor/gill/commit/0875ad900f819309209827df89b6639444fa9006)) - [@oknozor](https://github.com/oknozor)
+- single app for all http endpoint - ([e50141f](https://github.com/oknozor/gill/commit/e50141f5549ff6c050051a37fa3a00a5d055dd75)) - [@oknozor](https://github.com/oknozor)
+- extract database logic to its own module - ([f6dc7f9](https://github.com/oknozor/gill/commit/f6dc7f9ac1d4c5c2b0130d796b79b8f7add13660)) - [@oknozor](https://github.com/oknozor)
+- move module app to lib - ([b382618](https://github.com/oknozor/gill/commit/b382618081cc8a6fb4dd5e77a216d7b5f7dfd3e6)) - [@oknozor](https://github.com/oknozor)
 #### Miscellaneous Chores
+- (**fixme**) disable test for now - ([2e2be52](https://github.com/oknozor/gill/commit/2e2be52a94dcc6d2af0187f2433c40894353fa16)) - [@oknozor](https://github.com/oknozor)
+- (**version**) v0.1.0 - ([1a3f1c9](https://github.com/oknozor/gill/commit/1a3f1c9fe4576c0bf50cba83bbc5e243156000d2)) - [@oknozor](https://github.com/oknozor)
 - include Cargo.lock - ([c493df7](https://github.com/oknozor/gill/commit/c493df76fdfe16eb7b1a34e0dd3998f8740e3a2d)) - [@oknozor](https://github.com/oknozor)
 - update actiity-pub-federation rust - ([dd48114](https://github.com/oknozor/gill/commit/dd48114f71dabf2e4b5dd780142febf0bc585432)) - [@oknozor](https://github.com/oknozor)
 - add readme badges - ([46af14f](https://github.com/oknozor/gill/commit/46af14f22471a60145151076ff10e26ac098510a)) - [@oknozor](https://github.com/oknozor)
 - minify css - ([d2342fa](https://github.com/oknozor/gill/commit/d2342faf8156c9582a259abf585736fba2476733)) - [@oknozor](https://github.com/oknozor)
 - add github sponsor - ([c7e940c](https://github.com/oknozor/gill/commit/c7e940c7343d475c53d40740186c2563548cac3e)) - [@oknozor](https://github.com/oknozor)
 - add MIT License - ([56ac3b0](https://github.com/oknozor/gill/commit/56ac3b038ef38aed29cdd135ca4d96ad32987b9f)) - [@oknozor](https://github.com/oknozor)
+- clippy lints - ([7e1c51d](https://github.com/oknozor/gill/commit/7e1c51d14d725e56ee46b9ce7ab26bcbeb04e7ad)) - [@oknozor](https://github.com/oknozor)
+- fmt & clippy - ([bc7b579](https://github.com/oknozor/gill/commit/bc7b57935fc2ec725f58610a0f56285725102043)) - [@oknozor](https://github.com/oknozor)
 - switch back to file assets for dev xp - ([10da582](https://github.com/oknozor/gill/commit/10da58287078c0a4ec44f30b35587783af063b8e)) - [@oknozor](https://github.com/oknozor)
 - remove readme - ([7b75cb0](https://github.com/oknozor/gill/commit/7b75cb0d03cf2e3d7fdd37ab23829ce78c7133a7)) - [@oknozor](https://github.com/oknozor)
+- thanks clippy - ([350fb65](https://github.com/oknozor/gill/commit/350fb653764636f393251bbd49d81a84d2ceb1fd)) - [@oknozor](https://github.com/oknozor)
 - add http2 axum feature, remove header check for repo root - ([4f42e5d](https://github.com/oknozor/gill/commit/4f42e5d6fbcba5afef33aaacf8357407a1e2bdf0)) - [@oknozor](https://github.com/oknozor)
 - linguist, ignore assets - ([fb91f08](https://github.com/oknozor/gill/commit/fb91f080b2810e7688beaeb1be4308e5945925d0)) - [@oknozor](https://github.com/oknozor)
 - delete unused files - ([0c81856](https://github.com/oknozor/gill/commit/0c818560246425797c402f3f994c23414e785a1d)) - [@oknozor](https://github.com/oknozor)
@@ -117,15 +182,6 @@ All notable changes to this project will be documented in this file. See [conven
 - fmt all - ([5cf74d2](https://github.com/oknozor/gill/commit/5cf74d2329f5e4122594c7a9fdadafbee6a4d1b3)) - [@oknozor](https://github.com/oknozor)
 - change docker env - ([8066b2d](https://github.com/oknozor/gill/commit/8066b2d322e3b3e48cb736836443e66bb1e62341)) - [@oknozor](https://github.com/oknozor)
 - rework dev environment to prepare for oauth integration - ([01bc3da](https://github.com/oknozor/gill/commit/01bc3da8eb9167d2af7ffd2846d0b4193180bef9)) - [@oknozor](https://github.com/oknozor)
-#### Refactoring
-- remove unused deps - ([9e67cbf](https://github.com/oknozor/gill/commit/9e67cbfe394411f9573b9a29eadb9b930670b49b)) - [@oknozor](https://github.com/oknozor)
-- single app for all http endpoint - ([e50141f](https://github.com/oknozor/gill/commit/e50141f5549ff6c050051a37fa3a00a5d055dd75)) - [@oknozor](https://github.com/oknozor)
-- extract database logic to its own module - ([f6dc7f9](https://github.com/oknozor/gill/commit/f6dc7f9ac1d4c5c2b0130d796b79b8f7add13660)) - [@oknozor](https://github.com/oknozor)
-- move module app to lib - ([b382618](https://github.com/oknozor/gill/commit/b382618081cc8a6fb4dd5e77a216d7b5f7dfd3e6)) - [@oknozor](https://github.com/oknozor)
-#### Tests
-- fix tests - ([ddde273](https://github.com/oknozor/gill/commit/ddde2731da692745f27631e36c3c4267a6a66b1b)) - [@oknozor](https://github.com/oknozor)
-- fix sqlx test compilation - ([0af6d9b](https://github.com/oknozor/gill/commit/0af6d9b001d2a86a092058e4a95736172e1d57cb)) - [@oknozor](https://github.com/oknozor)
+- first commit - ([f81dee2](https://github.com/oknozor/gill/commit/f81dee255ce5d86aad8119a44b8232153b30daca)) - [@oknozor](https://github.com/oknozor)
 
-- - -
 
-Changelog generated by [cocogitto](https://github.com/cocogitto/cocogitto).
